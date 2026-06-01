@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Horizon Drive - File Detail with AI Recap</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eaedff",
+                        "on-secondary-container": "#626567",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#c4c7c9",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface": "#faf8ff",
+                        "on-primary-container": "#eeefff",
+                        "on-tertiary-container": "#e9f0ff",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#444749",
+                        "secondary-container": "#e0e3e5",
+                        "secondary-fixed": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-surface": "#283044",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-error-container": "#93000a",
+                        "background": "#faf8ff",
+                        "surface-container-highest": "#dae2fd",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface": "#131b2e",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed": "#191c1e",
+                        "primary": "#004ac6",
+                        "outline": "#737686",
+                        "primary-container": "#2563eb",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#5e6e85",
+                        "surface-container-high": "#e2e7ff",
+                        "secondary": "#5c5f61",
+                        "surface-bright": "#faf8ff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "surface-tint": "#0053db",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-container-low": "#f2f3ff",
+                        "error": "#ba1a1a",
+                        "tertiary": "#46566c",
+                        "surface-dim": "#d2d9f4",
+                        "on-background": "#131b2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-grid": "1.5rem",
+                        "stack-sm": "0.5rem",
+                        "padding-card": "1.25rem",
+                        "margin-page": "2rem",
+                        "stack-md": "1rem",
+                        "stack-lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Manrope"],
+                        "label-md": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ai-gradient-text {
+            background: linear-gradient(135deg, #2563EB 0%, #004ac6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        .document-overlay {
+            background: radial-gradient(circle at center, transparent 0%, rgba(250, 248, 255, 0.4) 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d2d9f4;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #c3c6d7;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen overflow-hidden flex flex-col antialiased selection:bg-primary-container selection:text-on-primary">
+    <!-- TopNavBar -->
+    <header class="bg-surface dark:bg-surface flex justify-between items-center h-16 px-gutter-grid w-full full-width top-0 sticky flat no shadows z-50 border-b border-surface-variant/50">
+        <div class="flex items-center gap-4">
+            <a href="admin.html" class="flex items-center gap-2 group cursor-pointer text-primary dark:text-inverse-primary hover:opacity-80 transition-opacity">
+                <span class="material-symbols-outlined" data-icon="cloud" style="font-variation-settings: 'FILL' 1;">cloud</span>
+                <span class="text-headline-md font-headline-md font-bold">Horizon Drive</span>
+            </a>
+            <!-- Search Bar -->
+            <div class="ml-8 hidden md:flex items-center bg-surface-container-low rounded-full px-4 py-2 w-[400px] border border-transparent focus-within:border-primary-container focus-within:bg-surface-container-lowest transition-all">
+                <span class="material-symbols-outlined text-outline mr-2 text-[20px]" data-icon="search">search</span>
+                <input class="bg-transparent border-none outline-none text-body-md font-body-md w-full placeholder-on-surface-variant/60 focus:ring-0 text-on-surface" placeholder="Search Drive..." type="text"/>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors text-on-surface-variant dark:text-outline-variant flex items-center justify-center">
+                <span class="material-symbols-outlined" data-icon="help">help</span>
+            </button>
+            <button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors text-on-surface-variant dark:text-outline-variant flex items-center justify-center">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+            </button>
+            <button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors text-on-surface-variant dark:text-outline-variant flex items-center justify-center relative">
+                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+            </button>
+            <div class="ml-4 flex items-center gap-3 pl-4 border-l border-surface-variant cursor-pointer group">
+                <span class="text-label-md font-label-md text-on-surface hidden md:block group-hover:text-primary transition-colors">Jessica</span>
+                <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-md font-bold uppercase shadow-sm">
+                    J
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Main Document Area -->
+        <main class="flex-1 relative bg-surface-container-low overflow-hidden flex justify-center pt-8 px-8">
+            <!-- Document Back action -->
+            <div class="absolute top-4 left-4 z-10">
+                <a href="admin.html" class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest rounded-full shadow-sm hover:shadow-md transition-all text-on-surface hover:text-primary border border-surface-variant/50">
+                    <span class="material-symbols-outlined text-[18px]" data-icon="arrow_back">arrow_back</span>
+                    <span class="text-label-md font-label-md">Back to Overview</span>
+                </a>
+            </div>
+            
+            <!-- The Document Preview -->
+            <div class="w-full max-w-[850px] bg-surface-container-lowest shadow-[0px_4px_20px_rgba(15,23,42,0.05)] rounded-t-xl border border-surface-variant/50 flex flex-col relative overflow-hidden transition-all duration-300" id="document-preview">
+                <!-- Document Header -->
+                <div class="px-8 py-6 border-b border-surface-variant flex items-center justify-between bg-surface-container-lowest z-10 sticky top-0">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined" data-icon="description">description</span>
+                        </div>
+                        <div>
+                            <h1 class="text-headline-md font-headline-md text-on-surface">Q3 Global Strategy Report.pdf</h1>
+                            <p class="text-label-sm font-label-sm text-on-surface-variant mt-1">Modified Oct 12, 2023 • 2.4 MB</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant transition-colors" title="Share">
+                            <span class="material-symbols-outlined" data-icon="share">share</span>
+                        </button>
+                        <button class="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant transition-colors" title="Download">
+                            <span class="material-symbols-outlined" data-icon="download">download</span>
+                        </button>
+                        <button class="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant transition-colors" title="More">
+                            <span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Document Content (High fidelity mock content for Q3 Strategy) -->
+                <div class="flex-1 p-12 overflow-y-auto custom-scrollbar relative bg-slate-50">
+                    <div class="absolute inset-0 document-overlay pointer-events-none z-10"></div>
+                    <div class="max-w-[650px] mx-auto bg-white p-12 shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-slate-100 rounded-lg space-y-8 relative">
+                        <!-- Top Header Logo simulated -->
+                        <div class="flex justify-between items-center border-b pb-6">
+                            <div>
+                                <h2 class="text-2xl font-extrabold tracking-tight text-slate-800">HORIZON GLOBAL</h2>
+                                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Corporate Strategy Group</p>
+                            </div>
+                            <div class="text-right text-xs text-slate-500">
+                                <p class="font-bold">Confidential</p>
+                                <p>Report Ref: #Q3-2023-STRAT</p>
+                            </div>
+                        </div>
+
+                        <!-- PDF Page Contents with real readable text to look highly professional -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-bold text-slate-800">Executive Summary</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                As we conclude the third quarter, Horizon Global is pivoting its market priorities. Based on recent shifts in trade logistics and local infrastructure growth, we are redirecting 24% of our growth budgets away from European (EMEA) operations and aligning heavily towards the emerging Asia-Pacific (APAC) markets. 
+                            </p>
+
+                            <div class="grid grid-cols-2 gap-4 py-2">
+                                <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                    <span class="text-xs text-blue-600 font-bold tracking-wider uppercase block">APAC Target Growth</span>
+                                    <span class="text-2xl font-extrabold text-blue-900">+15% Projected</span>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                    <span class="text-xs text-slate-500 font-bold tracking-wider uppercase block">Budget Shift</span>
+                                    <span class="text-2xl font-extrabold text-slate-800">24% Redirected</span>
+                                </div>
+                            </div>
+
+                            <h3 class="text-lg font-bold text-slate-800">Supply Chain Restructuring</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                With the introduction of the new maritime trade tariffs, logistics routes out of traditional coastal hubs are projected to experience an immediate 4% rise in operational costs. To mitigate this margin degradation, our engineering and procurement teams have finalized details for the new logistics consolidation center in Vietnam. Transition timelines suggest the Vietnam node will be fully operational by Q4.
+                            </p>
+
+                            <blockquote class="border-l-4 border-primary pl-4 py-1 my-4 italic text-sm text-slate-700 bg-slate-50 rounded-r-md">
+                                "The restructuring of supply chains out of Vietnam is vital to maintain our 38% net margin targets. Any delays in the transition will result in a weekly cost exposure of approximately $45k."
+                            </blockquote>
+
+                            <h3 class="text-lg font-bold text-slate-800">Singapore Commercial Partnerships</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                Our commercial launch in Singapore will serve as the enterprise sales anchor for the wider SEA region. Local marketing spend will be shifting aggressively to digital channels starting next month to ensure maximum engagement for the partner ecosystem showcase.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- AI Recap Side Panel -->
+        <aside class="w-[420px] glass-panel h-full flex flex-col shadow-[-10px_0px_30px_rgba(15,23,42,0.03)] z-20 transition-transform duration-300 transform translate-x-0" id="ai-panel">
+            <!-- Panel Header -->
+            <div class="px-6 py-4 flex flex-col gap-3 border-b border-surface-variant/40 bg-surface-container-lowest/50 backdrop-blur-md">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center text-primary-container relative">
+                            <span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                            <!-- Subtle pulse effect -->
+                            <span class="absolute inset-0 rounded-full border border-primary-container/30 animate-ping opacity-20"></span>
+                        </div>
+                        <h2 class="text-headline-md font-headline-md text-on-surface ai-gradient-text">AI Assistant</h2>
+                    </div>
+                    <div class="flex gap-1">
+                        <button class="p-1.5 rounded-md hover:bg-surface-variant/50 text-on-surface-variant transition-colors" title="Settings">
+                            <span class="material-symbols-outlined text-[20px]" data-icon="tune">tune</span>
+                        </button>
+                        <button class="p-1.5 rounded-md hover:bg-surface-variant/50 text-on-surface-variant transition-colors" id="close-ai-panel" title="Close Panel">
+                            <span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs (Recap & Ask AI) -->
+                <div class="flex border-b border-surface-variant/30 text-label-sm font-label-sm font-semibold">
+                    <button class="flex-1 pb-2 border-b-2 border-primary text-primary text-center transition-all focus:outline-none" id="tab-recap">
+                        Document Recap
+                    </button>
+                    <button class="flex-1 pb-2 border-b-2 border-transparent text-on-surface-variant/70 hover:text-on-surface text-center transition-all focus:outline-none" id="tab-chat">
+                        Ask AI <span class="ml-1 bg-primary/10 text-primary-container px-1.5 py-0.5 rounded-full text-[10px]" id="chat-count">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Content - Recap Tab -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6" id="panel-recap-content">
+                <!-- Quick Summary -->
+                <section>
+                    <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="summarize">summarize</span>
+                        Executive Summary
+                    </h3>
+                    <div class="bg-surface-container-lowest rounded-xl p-4 shadow-[0px_4px_20px_rgba(15,23,42,0.03)] border border-surface-variant/30 leading-relaxed text-body-md font-body-md text-on-surface">
+                        This report outlines the Q3 pivot towards emerging APAC markets, projecting a 15% revenue increase. Key focus areas include expanding local partnerships in Singapore and restructuring the supply chain logistics out of Vietnam to mitigate upcoming tariff changes.
+                    </div>
+                </section>
+
+                <!-- Key Takeaways -->
+                <section>
+                    <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="key">key</span>
+                        Key Takeaways
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-surface-variant/20 hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer takeaway-item" data-question="Why is the APAC expansion prioritized over EMEA?">
+                            <div class="w-6 h-6 rounded bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-label-sm font-label-sm font-bold">1</span>
+                            </div>
+                            <p class="text-body-md font-body-md text-on-surface">APAC expansion is prioritized over EMEA for Q4 budget allocation.</p>
+                        </div>
+                        <div class="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-surface-variant/20 hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer takeaway-item" data-question="What are the details of the supply chain cost increases and the Vietnam facility?">
+                            <div class="w-6 h-6 rounded bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-label-sm font-label-sm font-bold">2</span>
+                            </div>
+                            <p class="text-body-md font-body-md text-on-surface">Supply chain costs expected to rise 4% before Vietnam facility is fully operational.</p>
+                        </div>
+                        <div class="flex gap-3 bg-surface-container-lowest p-3 rounded-lg border border-surface-variant/20 hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer takeaway-item" data-question="What is the marketing budget allocation strategy for target regions?">
+                            <div class="w-6 h-6 rounded bg-primary-container/10 text-primary-container flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-label-sm font-label-sm font-bold">3</span>
+                            </div>
+                            <p class="text-body-md font-body-md text-on-surface">Marketing spend shifting heavily towards digital channels in target regions.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Suggested Actions -->
+                <section>
+                    <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="task_alt">task_alt</span>
+                        Suggested Actions
+                    </h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low hover:bg-surface-variant/50 border border-transparent transition-colors text-left group action-button" data-question="How should we schedule the Q4 Budget Review based on the report?">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="calendar_add_on">calendar_add_on</span>
+                                <span class="text-body-md font-body-md text-on-surface">Schedule Q4 Budget Review</span>
+                            </div>
+                            <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="arrow_forward">arrow_forward</span>
+                        </button>
+                        <button class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low hover:bg-surface-variant/50 border border-transparent transition-colors text-left group action-button" data-question="Draft a professional briefing email to the logistics team regarding the Vietnam facility transition.">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" data-icon="mail">mail</span>
+                                <span class="text-body-md font-body-md text-on-surface">Draft email to Logistics Team</span>
+                            </div>
+                            <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="arrow_forward">arrow_forward</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Key Entities -->
+                <section>
+                    <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]" data-icon="sell">sell</span>
+                        Key Entities
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-1 bg-primary/10 text-primary-container text-label-sm font-label-sm rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors entity-chip" data-question="What does the report say about APAC?">APAC</button>
+                        <button class="px-3 py-1 bg-tertiary/10 text-tertiary text-label-sm font-label-sm rounded-lg border border-tertiary/20 hover:bg-tertiary/20 transition-colors entity-chip" data-question="What are the details of the Vietnam facility transition?">Vietnam</button>
+                        <button class="px-3 py-1 bg-secondary/10 text-secondary text-label-sm font-label-sm rounded-lg border border-secondary/20 hover:bg-secondary/20 transition-colors entity-chip" data-question="Explain the supply chain changes discussed in this document.">Supply Chain</button>
+                        <button class="px-3 py-1 bg-surface-variant text-on-surface-variant text-label-sm font-label-sm rounded-lg hover:bg-surface-variant/80 transition-colors entity-chip" data-question="What are the main outcomes and metrics from Q3?">Q3</button>
+                        <button class="px-3 py-1 bg-surface-variant text-on-surface-variant text-label-sm font-label-sm rounded-lg hover:bg-surface-variant/80 transition-colors entity-chip" data-question="What is our business strategy in Singapore?">Singapore</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Panel Content - Ask AI Chat Tab -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 hidden" id="panel-chat-content">
+                <!-- Welcome Assistant Message -->
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    </div>
+                    <div class="bg-surface-container-low rounded-xl p-3.5 text-body-md font-body-md text-on-surface max-w-[85%]">
+                        Hello Jessica! I've analyzed **Q3 Global Strategy Report.pdf**. Ask me any specific question about the supply chain pivot, the APAC budget allocations, or Singapore partnerships!
+                    </div>
+                </div>
+
+                <!-- Chat history will be appended here dynamically -->
+                <div class="space-y-4" id="chat-thread"></div>
+            </div>
+
+            <!-- Panel Footer - Prompt Input -->
+            <div class="p-4 border-t border-surface-variant/40 bg-surface-container-lowest/80 backdrop-blur-md">
+                <form id="chat-form" class="relative flex items-center">
+                    <input id="chat-input" class="w-full bg-surface-container-low border border-surface-variant/50 rounded-full py-3 pl-4 pr-12 text-body-md font-body-md text-on-surface placeholder-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Ask AI about this document..." type="text"/>
+                    <button type="submit" class="absolute right-2 p-2 rounded-full bg-primary-container text-on-primary hover:bg-primary-fixed-variant transition-colors flex items-center justify-center shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]" data-icon="send" style="font-variation-settings: 'FILL' 1;">send</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Toggle Button (Visible when panel is closed) -->
+        <button class="absolute right-0 top-24 bg-surface-container-lowest rounded-l-xl p-3 shadow-md border border-r-0 border-surface-variant text-primary-container hover:bg-surface-variant transition-colors hidden z-30 group" id="open-ai-panel">
+            <span class="material-symbols-outlined animate-pulse group-hover:animate-none" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const aiPanel = document.getElementById('ai-panel');
+            const closeBtn = document.getElementById('close-ai-panel');
+            const openBtn = document.getElementById('open-ai-panel');
+            const docPreview = document.getElementById('document-preview');
+
+            // Tab Switching Elements
+            const tabRecap = document.getElementById('tab-recap');
+            const tabChat = document.getElementById('tab-chat');
+            const panelRecapContent = document.getElementById('panel-recap-content');
+            const panelChatContent = document.getElementById('panel-chat-content');
+            const chatCount = document.getElementById('chat-count');
+
+            // Chat Engine Elements
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatThread = document.getElementById('chat-thread');
+
+            let messageCounter = 0;
+
+            // Simple state machine for mock answers based on document context
+            const documentKnowledge = [
+                {
+                    keywords: ["apac", "emea", "budget", "priorit", "prioritas"],
+                    response: "According to page 1 of the report, the **APAC expansion is prioritized over EMEA for Q4 budget allocations** due to recent tariff shifts and higher SEA regional margins. 24% of the operational growth budget has been redirected from Europe to East Asia."
+                },
+                {
+                    keywords: ["vietnam", "logistics", "supply chain", "facility", "consolidation", "tariff", "tarip"],
+                    response: "To mitigate the **4% maritime tariff cost increases**, procurement has established a new logistics consolidation facility in **Vietnam**. The transition timeline targets full operations by Q4. Delays pose an operational cost exposure of **$45,000 per week**."
+                },
+                {
+                    keywords: ["singapore", "partner", "marketing", "digital", "singapura"],
+                    response: "For **Singapore**, we are expanding local corporate partnerships as enterprise sales anchors. Local launch marketing spend will shift 100% to digital media channels next month to ensure maximum exposure for the ecosystem launch."
+                },
+                {
+                    keywords: ["q3", "metric", "result", "revenue", "revenue increase"],
+                    response: "The Q3 pivot is projecting a **15% net revenue increase** once APAC pipelines stabilize. The core metrics indicate our net margin target remains robust at **38%** if supply-chain consolidation concludes on-time."
+                },
+                {
+                    keywords: ["email", "draft", "logistics team", "briefing"],
+                    response: "Here is a professional email draft for the Logistics Team:\n\n**Subject:** Urgent Briefing: Vietnam Consolidation Transition & Tariff Mitigation\n\n*Dear Logistics & Supply Chain Teams,*\n\n*As finalized in our Q3 Global Strategy Report, please ensure all operational consolidation workflows for the new Vietnam facility are ready for full Q4 activation. As a reminder, any delays beyond the transition timeline expose us to tariffs costing $45k/week. Let's schedule an alignment stand-up tomorrow morning.*\n\n*Best regards,\nJessica*"
+                },
+                {
+                    keywords: ["schedule", "review", "budget review", "calendar"],
+                    response: "I've drafted a Calendar Invitation for your team:\n\n**Title:** Q3 Pivot - Q4 Budget Allocation Review\n**Duration:** 45 minutes (Recommended: Tomorrow, 2:00 PM SGT)\n**Agenda:** Reviewing the 24% growth budget redirection from EMEA to APAC (specifically Singapore partner marketing and Vietnam supply chain logistics operations)."
+                }
+            ];
+
+            // Sidebar Panel Toggles
+            closeBtn.addEventListener('click', () => {
+                aiPanel.classList.add('translate-x-full');
+                setTimeout(() => {
+                    aiPanel.classList.add('hidden');
+                    openBtn.classList.remove('hidden');
+                    docPreview.classList.remove('max-w-[850px]');
+                    docPreview.classList.add('max-w-5xl'); 
+                }, 300);
+            });
+
+            openBtn.addEventListener('click', () => {
+                aiPanel.classList.remove('hidden');
+                openBtn.classList.add('hidden');
+                docPreview.classList.remove('max-w-5xl');
+                docPreview.classList.add('max-w-[850px]');
+                requestAnimationFrame(() => {
+                    aiPanel.classList.remove('translate-x-full');
+                });
+            });
+
+            // Tabs Navigation Actions
+            function switchTab(target) {
+                if (target === 'recap') {
+                    tabRecap.classList.add('border-primary', 'text-primary');
+                    tabRecap.classList.remove('border-transparent', 'text-on-surface-variant/70');
+                    tabChat.classList.add('border-transparent', 'text-on-surface-variant/70');
+                    tabChat.classList.remove('border-primary', 'text-primary');
+
+                    panelRecapContent.classList.remove('hidden');
+                    panelChatContent.classList.add('hidden');
+                } else {
+                    tabChat.classList.add('border-primary', 'text-primary');
+                    tabChat.classList.remove('border-transparent', 'text-on-surface-variant/70');
+                    tabRecap.classList.add('border-transparent', 'text-on-surface-variant/70');
+                    tabRecap.classList.remove('border-primary', 'text-primary');
+
+                    panelChatContent.classList.remove('hidden');
+                    panelRecapContent.classList.add('hidden');
+                }
+            }
+
+            tabRecap.addEventListener('click', () => switchTab('recap'));
+            tabChat.addEventListener('click', () => switchTab('chat'));
+
+            // AI Reply Generator Engine
+            function getAiReply(question) {
+                const qLower = question.toLowerCase();
+                // Find matching keyword answer
+                for (const item of documentKnowledge) {
+                    if (item.keywords.some(kw => qLower.includes(kw))) {
+                        return item.response;
+                    }
+                }
+                // Fallback default response
+                return "I analyzed your question regarding: *\"" + question + "\"*. According to the Q3 Strategy PDF, our central focus is redirecting 24% of EMEA budgets directly to SEA markets (mainly Singapore and Vietnam nodes) to offset tariff charges and push APAC growth to 15%. Let me know if you need specific numbers on this!";
+            }
+
+            // Append messages in chat thread
+            function appendMessage(sender, text) {
+                const isUser = sender === 'user';
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex gap-3 ${isUser ? 'justify-end' : ''} transition-all duration-300 transform translate-y-2 opacity-0`;
+
+                const avatar = isUser ? `
+                    <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-sm font-bold shrink-0">
+                        J
+                    </div>
+                ` : `
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    </div>
+                `;
+
+                // Handle line breaks in formatting
+                const formattedText = text.replace(/\n/g, '<br/>');
+
+                const msgBubble = `
+                    <div class="${isUser ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface'} rounded-xl p-3.5 text-body-md font-body-md max-w-[85%] leading-relaxed shadow-sm">
+                        ${formattedText}
+                    </div>
+                `;
+
+                msgWrapper.innerHTML = isUser ? msgBubble + avatar : avatar + msgBubble;
+                chatThread.appendChild(msgWrapper);
+
+                // Auto-scroll chat panel to bottom
+                panelChatContent.scrollTop = panelChatContent.scrollHeight;
+
+                // Animate entry
+                requestAnimationFrame(() => {
+                    msgWrapper.classList.remove('translate-y-2', 'opacity-0');
+                });
+
+                if (isUser) {
+                    messageCounter++;
+                    chatCount.textContent = messageCounter;
+                }
+            }
+
+            function triggerAiConversation(questionText) {
+                // Switch to Chat tab
+                switchTab('chat');
+
+                // Append user message
+                appendMessage('user', questionText);
+
+                // Append Typing state indicators
+                const typingWrapper = document.createElement('div');
+                typingWrapper.className = "flex gap-3 items-center text-outline-variant";
+                typingWrapper.id = "typing-loader";
+                typingWrapper.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    </div>
+                    <div class="bg-surface-container-low rounded-xl py-3 px-4 text-xs italic flex items-center gap-1.5 shadow-sm">
+                        <span>AI Assistant is reading report</span>
+                        <span class="flex gap-1">
+                            <span class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                            <span class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                            <span class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+                        </span>
+                    </div>
+                `;
+                chatThread.appendChild(typingWrapper);
+                panelChatContent.scrollTop = panelChatContent.scrollHeight;
+
+                // Simulate reply delay
+                setTimeout(() => {
+                    // Remove Typing loader
+                    const loader = document.getElementById('typing-loader');
+                    if (loader) loader.remove();
+
+                    // Generate reply
+                    const responseText = getAiReply(questionText);
+                    appendMessage('ai', responseText);
+                }, 1000);
+            }
+
+            // Handle standard Form Submission
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const qText = chatInput.value.trim();
+                if (!qText) return;
+
+                chatInput.value = '';
+                triggerAiConversation(qText);
+            });
+
+            // Actionable Clicks: Suggested Actions, Takeaways & Entity Chips
+            document.querySelectorAll('.action-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const question = btn.getAttribute('data-question');
+                    triggerAiConversation(question);
+                });
+            });
+
+            document.querySelectorAll('.takeaway-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const question = item.getAttribute('data-question');
+                    triggerAiConversation(question);
+                });
+            });
+
+            document.querySelectorAll('.entity-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const question = chip.getAttribute('data-question');
+                    triggerAiConversation(question);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

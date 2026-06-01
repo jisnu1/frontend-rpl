@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Horizon Drive - Admin Overview</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#eaedff",
+                      "on-secondary-container": "#626567",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "secondary-fixed-dim": "#c4c7c9",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "surface": "#faf8ff",
+                      "on-primary-container": "#eeefff",
+                      "on-tertiary-container": "#e9f0ff",
+                      "inverse-primary": "#b4c5ff",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-secondary-fixed-variant": "#444749",
+                      "secondary-container": "#e0e3e5",
+                      "secondary-fixed": "#e0e3e5",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#dae2fd",
+                      "inverse-surface": "#283044",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "on-error-container": "#93000a",
+                      "background": "#faf8ff",
+                      "surface-container-highest": "#dae2fd",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#00174b",
+                      "inverse-on-surface": "#eef0ff",
+                      "on-surface": "#131b2e",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-fixed": "#191c1e",
+                      "primary": "#004ac6",
+                      "outline": "#737686",
+                      "primary-container": "#2563eb",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#5e6e85",
+                      "surface-container-high": "#e2e7ff",
+                      "secondary": "#5c5f61",
+                      "surface-bright": "#faf8ff",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "surface-tint": "#0053db",
+                      "primary-fixed": "#dbe1ff",
+                      "tertiary-fixed": "#d3e4fe",
+                      "surface-container-low": "#f2f3ff",
+                      "error": "#ba1a1a",
+                      "tertiary": "#46566c",
+                      "surface-dim": "#d2d9f4",
+                      "on-background": "#131b2e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter-grid": "1.5rem",
+                      "stack-sm": "0.5rem",
+                      "padding-card": "1.25rem",
+                      "margin-page": "2rem",
+                      "stack-md": "1rem",
+                      "stack-lg": "2rem"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "label-md": [
+                              "Manrope"
+                      ],
+                      "headline-lg": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ],
+                      "label-sm": [
+                              "Manrope"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ],
+                      "headline-lg-mobile": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+    <style>
+        body { font-family: 'Manrope', sans-serif; background-color: #f8fafc; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .shadow-level-1 {
+            box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
+        }
+        .shadow-level-2 {
+            box-shadow: 0px 10px 30px rgba(15, 23, 42, 0.1);
+        }
+        .hover-lift {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0px 12px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .ghost-row {
+            transition: background-color 0.2s ease;
+        }
+        .ghost-row:hover {
+            background-color: #F8FAFC;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-on-surface flex min-h-screen relative overflow-x-hidden">
+
+    <!-- SideNavBar (Desktop Drawer) -->
+    <nav class="hidden md:flex bg-primary dark:bg-primary-container h-screen w-[280px] rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-20 transition-all">
+        <!-- Brand -->
+        <div class="px-8 mb-8 flex items-center gap-3">
+            <span class="material-symbols-outlined icon-fill text-on-primary text-3xl">cloud_done</span>
+            <div class="flex flex-col">
+                <span class="text-headline-md font-headline-md font-extrabold text-on-primary dark:text-on-primary-container">Horizon Drive</span>
+                <span class="text-label-sm font-label-sm text-on-primary/70">Cloud Storage</span>
+            </div>
+        </div>
+        <!-- CTA -->
+        <div class="px-6 mb-8">
+            <button id="upload-btn" class="w-full bg-white text-primary text-label-md font-label-md py-3 px-4 rounded-full flex items-center justify-center gap-2 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <span class="material-symbols-outlined">add</span>
+                Upload New File
+            </button>
+        </div>
+        <!-- Main Nav -->
+        <div class="flex-1 px-4 flex flex-col gap-2">
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/10 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined">folder_open</span>
+                <span class="text-label-md font-label-md">My Drive</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-label-md font-label-md">Shared</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="text-label-md font-label-md">Recent</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined">delete</span>
+                <span class="text-label-md font-label-md">Trash</span>
+            </a>
+        </div>
+        <!-- Footer Nav -->
+        <div class="px-4 mt-auto border-t border-white/10 pt-6 flex flex-col gap-2">
+            <div class="px-4 mb-2">
+                <p class="text-label-sm font-label-sm text-white/50 uppercase tracking-wider mb-3">Storage Details</p>
+                <div class="flex items-center justify-between mb-2 text-white/90 text-label-md">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-white/70">cloud_queue</span>
+                        <span>Storage</span>
+                    </div>
+                    <span class="font-bold">60.8 GB / 1 TB</span>
+                </div>
+                <div class="w-full bg-white/20 h-1.5 rounded-full mb-4">
+                    <div class="bg-white h-1.5 rounded-full w-[6%]"></div>
+                </div>
+                <div class="flex items-center justify-between mb-2 text-white/90 text-label-md">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-white/70">photo_library</span>
+                        <span>Photos</span>
+                    </div>
+                    <span class="font-bold">10.3 GB / 1 TB</span>
+                </div>
+                <div class="w-full bg-white/20 h-1.5 rounded-full mb-1">
+                    <div class="bg-white h-1.5 rounded-full w-[1%]"></div>
+                </div>
+            </div>
+            <a class="flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all mt-2 text-center text-label-md shadow-sm" href="#">
+                <span class="material-symbols-outlined">trending_up</span>
+                <span>Upgrade Storage</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SideNavBar (Mobile Overlay Drawer) -->
+    <div id="mobile-sidebar" class="fixed inset-0 bg-slate-900/60 z-40 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden">
+        <nav id="mobile-drawer" class="bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform -translate-x-full shadow-2xl">
+            <!-- Brand -->
+            <div class="px-8 mb-8 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined icon-fill text-on-primary text-3xl">cloud_done</span>
+                    <span class="text-headline-md font-headline-md font-extrabold text-on-primary">Horizon Drive</span>
+                </div>
+                <button id="close-mobile-btn" class="text-white hover:opacity-80">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <!-- CTA -->
+            <div class="px-6 mb-8">
+                <button id="mobile-upload-btn" class="w-full bg-white text-primary text-label-md font-label-md py-3 px-4 rounded-full flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">add</span>
+                    Upload New File
+                </button>
+            </div>
+            <!-- Nav links -->
+            <div class="flex-1 px-4 flex flex-col gap-2">
+                <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white bg-white/10" href="#">
+                    <span class="material-symbols-outlined">folder_open</span>
+                    <span class="text-label-md font-label-md">My Drive</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70" href="#">
+                    <span class="material-symbols-outlined">group</span>
+                    <span class="text-label-md font-label-md">Shared</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70" href="#">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span class="text-label-md font-label-md">Recent</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/70" href="#">
+                    <span class="material-symbols-outlined">delete</span>
+                    <span class="text-label-md font-label-md">Trash</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 md:ml-[280px] flex flex-col w-full min-h-screen">
+        <!-- TopNavBar -->
+        <header class="bg-white flex justify-between items-center h-16 px-6 w-full sticky top-0 border-b border-slate-100 z-30">
+            <!-- Mobile Menu Trigger & Logo -->
+            <div class="md:hidden flex items-center gap-3">
+                <button id="open-mobile-btn" class="text-primary p-2 -ml-2 rounded-full hover:bg-slate-50 transition-colors">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <span class="text-headline-md font-headline-md font-bold text-primary">Horizon Drive</span>
+            </div>
+            <!-- Search -->
+            <div class="hidden md:flex flex-1 max-w-2xl">
+                <div class="relative w-full group">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                    <input class="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-body-md font-body-md focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none" placeholder="Search Admin..." type="text">
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="flex items-center gap-2 ml-auto">
+                <button class="p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+                </button>
+                <button class="hidden sm:block p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors">
+                    <span class="material-symbols-outlined">help</span>
+                </button>
+                <button class="hidden sm:block p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+                <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
+                <div class="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent cursor-pointer">
+                    <span class="text-label-md font-label-md text-slate-700 hidden md:block">Admin Jessica</span>
+                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-label-md font-bold">
+                        J
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stage Area -->
+        <div class="p-6 md:p-8 max-w-7xl mx-auto w-full space-y-8 flex-1">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-headline-lg font-headline-lg text-slate-900 flex items-center gap-3">
+                        Admin Overview
+                        <span class="material-symbols-outlined text-primary text-3xl">admin_panel_settings</span>
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-1">Real-time status updates and activity logs for storage services.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="p-2 rounded-lg border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined">download</span>
+                    </button>
+                    <button class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-label-md font-label-md text-slate-700 hover:bg-slate-50 transition-colors">
+                        <span class="material-symbols-outlined text-sm">calendar_month</span>
+                        Last 30 Days
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bento Grid Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Storage -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-level-1 hover-lift flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                        <span class="material-symbols-outlined text-8xl">database</span>
+                    </div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-primary/10 rounded-lg text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined">storage</span>
+                        </div>
+                        <h2 class="text-label-md font-label-md text-slate-500 uppercase tracking-wider">Total Storage</h2>
+                    </div>
+                    <div class="mt-auto">
+                        <div class="text-3xl font-extrabold text-slate-900 mb-1" id="metric-storage">845.2 TB</div>
+                        <div class="flex items-center gap-2 text-label-sm font-label-sm">
+                            <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[14px]">arrow_upward</span> 12%
+                            </span>
+                            <span class="text-slate-500">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Active Users -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-level-1 hover-lift flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                        <span class="material-symbols-outlined text-8xl">group</span>
+                    </div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined">group</span>
+                        </div>
+                        <h2 class="text-label-md font-label-md text-slate-500 uppercase tracking-wider">Active Users</h2>
+                    </div>
+                    <div class="mt-auto">
+                        <div class="text-3xl font-extrabold text-slate-900 mb-1" id="metric-users">12,405</div>
+                        <div class="flex items-center gap-2 text-label-sm font-label-sm">
+                            <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[14px]">arrow_upward</span> 4.3%
+                            </span>
+                            <span class="text-slate-500">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- System Health -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-level-1 hover-lift flex flex-col relative overflow-hidden border-l-4 border-emerald-500">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined">health_and_safety</span>
+                        </div>
+                        <h2 class="text-label-md font-label-md text-slate-500 uppercase tracking-wider">System Health</h2>
+                    </div>
+                    <div class="mt-auto">
+                        <div class="text-3xl font-extrabold text-slate-900 mb-1">99.99%</div>
+                        <div class="text-label-sm font-label-sm text-slate-500">Uptime across all nodes</div>
+                        <div class="mt-4 flex gap-1.5">
+                            <div class="h-1 flex-1 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <div class="h-1 flex-1 bg-emerald-500 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
+                            <div class="h-1 flex-1 bg-emerald-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="h-1 flex-1 bg-emerald-500 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                            <div class="h-1 flex-1 bg-emerald-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Storage Distribution -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-level-1 flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-headline-md font-headline-md text-slate-900 font-bold">Storage Distribution</h2>
+                        <button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">more_horiz</span></button>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center py-4">
+                        <div class="relative w-40 h-40 rounded-full mb-8 shadow-md" style="background: conic-gradient(#004ac6 0% 45%, #5e6e85 45% 75%, #00174b 75% 90%, #d2d9f4 90% 100%);">
+                            <div class="absolute inset-4 bg-white rounded-full flex items-center justify-center shadow-inner">
+                                <span class="text-label-md font-bold text-slate-800">845.2 TB</span>
+                            </div>
+                        </div>
+                        <div class="w-full space-y-3 px-2">
+                            <div class="flex items-center justify-between text-label-sm font-label-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-primary"></div>
+                                    <span class="text-slate-600">Documents</span>
+                                </div>
+                                <span class="font-extrabold text-slate-850">45%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-label-sm font-label-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-[#5e6e85]"></div>
+                                    <span class="text-slate-600">Media</span>
+                                </div>
+                                <span class="font-extrabold text-slate-850">30%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-label-sm font-label-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-[#00174b]"></div>
+                                    <span class="text-slate-600">Backups</span>
+                                </div>
+                                <span class="font-extrabold text-slate-850">15%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-label-sm font-label-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-[#d2d9f4]"></div>
+                                    <span class="text-slate-600">Other</span>
+                                </div>
+                                <span class="font-extrabold text-slate-850">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Activity Trend -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-level-1 lg:col-span-2 flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-headline-md font-headline-md text-slate-900 font-bold">User Activity Trends</h2>
+                        <div class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+                            <button id="chart-daily-btn" class="px-4 py-1 text-label-sm font-semibold rounded-md bg-white shadow-sm text-primary transition-all">Daily</button>
+                            <button id="chart-weekly-btn" class="px-4 py-1 text-label-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all">Weekly</button>
+                        </div>
+                    </div>
+                    <!-- Chart Graph Area -->
+                    <div class="flex-1 relative w-full mt-4 border-l border-b border-slate-200/60 pt-4 pr-2 pb-6 pl-6 flex items-end justify-between min-h-[220px]">
+                        <!-- Y-Axis Mock Labels -->
+                        <div class="absolute left-0 bottom-4 text-[10px] text-slate-400 flex flex-col justify-between h-full py-4 select-none">
+                            <span>15k</span>
+                            <span>10k</span>
+                            <span>5k</span>
+                            <span>0</span>
+                        </div>
+                        <!-- Daily SVG Path Graph -->
+                        <svg id="daily-svg" class="absolute inset-0 h-full w-full p-4 pl-6 pb-6" preserveAspectRatio="none" viewBox="0 0 100 100">
+                            <path d="M0,80 Q10,75 20,70 T40,65 T60,50 T80,35 T100,15" fill="none" stroke="#2563EB" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+                            <path d="M0,80 Q10,75 20,70 T40,65 T60,50 T80,35 T100,15 L100,100 L0,100 Z" fill="url(#gradDaily)" opacity="0.15"></path>
+                            <defs>
+                                <linearGradient id="gradDaily" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#2563EB;stop-opacity:0"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <!-- Weekly SVG Path Graph (Hidden initially) -->
+                        <svg id="weekly-svg" class="absolute inset-0 h-full w-full p-4 pl-6 pb-6 hidden" preserveAspectRatio="none" viewBox="0 0 100 100">
+                            <path d="M0,60 Q10,50 20,55 T40,40 T60,65 T80,45 T100,5" fill="none" stroke="#ba1a1a" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+                            <path d="M0,60 Q10,50 20,55 T40,40 T60,65 T80,45 T100,5 L100,100 L0,100 Z" fill="url(#gradWeekly)" opacity="0.15"></path>
+                            <defs>
+                                <linearGradient id="gradWeekly" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ba1a1a;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#ba1a1a;stop-opacity:0"></stop>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <!-- Days Labels matching daily layout -->
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <span class="text-[10px] text-slate-400 absolute -bottom-6">Mon</span>
+                        </div>
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <span class="text-[10px] text-slate-400 absolute -bottom-6">Tue</span>
+                        </div>
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <span class="text-[10px] text-slate-400 absolute -bottom-6">Wed</span>
+                        </div>
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <span class="text-[10px] text-slate-400 absolute -bottom-6">Thu</span>
+                        </div>
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <span class="text-[10px] text-slate-400 absolute -bottom-6">Fri</span>
+                        </div>
+                        <div class="z-10 flex flex-col items-center gap-2 group w-full relative">
+                            <div class="w-3 h-3 rounded-full bg-white border-2 border-primary absolute bottom-[85%] shadow-md animate-pulse"></div>
+                            <span class="text-[10px] text-primary absolute -bottom-6 font-bold">Today</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent System Activity List -->
+            <div class="bg-white rounded-2xl shadow-level-1 border border-slate-100 overflow-hidden">
+                <div class="p-6 border-b border-slate-150 flex justify-between items-center bg-slate-50/50">
+                    <h2 class="text-headline-md font-headline-md text-slate-900 font-bold">Recent Alerts &amp; Activity</h2>
+                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold">5 Tasks Auto-Monitored</span>
+                </div>
+                <div class="flex flex-col w-full overflow-x-auto">
+                    <!-- List Header -->
+                    <div class="grid grid-cols-12 gap-4 px-6 py-3 border-b border-slate-150 bg-slate-50/30 text-label-sm font-bold text-slate-400 uppercase tracking-wider min-w-[700px]">
+                        <div class="col-span-5">Event</div>
+                        <div class="col-span-3">User/System</div>
+                        <div class="col-span-2">Time</div>
+                        <div class="col-span-2 text-right">Status</div>
+                    </div>
+                    <!-- List Items -->
+                    <div class="min-w-[700px] divide-y divide-slate-100">
+                        <!-- Item 1 (Alert) -->
+                        <div class="grid grid-cols-12 gap-4 px-6 py-4.5 ghost-row items-center">
+                            <div class="col-span-5 flex items-center gap-3">
+                                <div class="p-2.5 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-[18px]">warning</span>
+                                </div>
+                                <span class="text-body-md font-semibold text-slate-800 truncate">Storage Node B approaching capacity limits</span>
+                            </div>
+                            <div class="col-span-3 text-body-md text-slate-500">System Auto-Monitor</div>
+                            <div class="col-span-2 text-body-md text-slate-400">10 mins ago</div>
+                            <div class="col-span-2 text-right">
+                                <span class="inline-block px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-[10px] font-extrabold uppercase">Critical</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 2 (AI File - Interactive Detail Link) -->
+                        <a href="recap.html" class="grid grid-cols-12 gap-4 px-6 py-4.5 ghost-row items-center border-l-4 border-primary hover:bg-blue-50/30 group">
+                            <div class="col-span-5 flex items-center gap-3">
+                                <div class="p-2.5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-115 transition-transform">
+                                    <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                                </div>
+                                <div class="flex flex-col truncate">
+                                    <span class="text-body-md font-bold text-primary group-hover:underline truncate flex items-center gap-1.5">
+                                        Q3 Global Strategy Report.pdf
+                                        <span class="material-symbols-outlined text-[16px] text-primary/50 group-hover:text-primary transition-colors">open_in_new</span>
+                                    </span>
+                                    <span class="text-[11px] text-slate-400 mt-0.5">AI Recap File Analysis Generated successfully</span>
+                                </div>
+                            </div>
+                            <div class="col-span-3 text-body-md text-slate-500">Jessica (Admin)</div>
+                            <div class="col-span-2 text-body-md text-slate-400">1 hour ago</div>
+                            <div class="col-span-2 text-right">
+                                <span class="inline-block px-2.5 py-1 rounded-full bg-blue-100 text-primary text-[10px] font-extrabold uppercase">AI Analysis</span>
+                            </div>
+                        </a>
+
+                        <!-- Item 3 -->
+                        <div class="grid grid-cols-12 gap-4 px-6 py-4.5 ghost-row items-center">
+                            <div class="col-span-5 flex items-center gap-3">
+                                <div class="p-2.5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-[18px]">person_add</span>
+                                </div>
+                                <span class="text-body-md font-semibold text-slate-800 truncate">Bulk Enterprise User Import Completed</span>
+                            </div>
+                            <div class="col-span-3 text-body-md text-slate-500">Jessica (Admin)</div>
+                            <div class="col-span-2 text-body-md text-slate-400">3 hours ago</div>
+                            <div class="col-span-2 text-right">
+                                <span class="inline-block px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase">Success</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 4 -->
+                        <div class="grid grid-cols-12 gap-4 px-6 py-4.5 ghost-row items-center">
+                            <div class="col-span-5 flex items-center gap-3">
+                                <div class="p-2.5 rounded-full bg-[#e0e3e5] text-slate-600 flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-outlined text-[18px]">settings_backup_restore</span>
+                                </div>
+                                <span class="text-body-md font-semibold text-slate-800 truncate">System database daily backup compression</span>
+                            </div>
+                            <div class="col-span-3 text-body-md text-slate-500">System Auto-Cron</div>
+                            <div class="col-span-2 text-body-md text-slate-400">5 hours ago</div>
+                            <div class="col-span-2 text-right">
+                                <span class="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-extrabold uppercase">Routine</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Modal Dialog (Glassmorphism Modal popup simulation) -->
+    <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-all duration-300 opacity-0">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-level-2 border border-slate-100 m-4 transform scale-95 transition-transform duration-300" id="modal-container">
+            <div class="flex items-center justify-between border-b pb-4 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-xl">cloud_upload</span>
+                    <h3 class="text-lg font-bold text-slate-900">Upload New File</h3>
+                </div>
+                <button id="modal-close" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div id="modal-body" class="space-y-4">
+                <!-- Simulation trigger state -->
+                <div class="border-2 border-dashed border-slate-200 hover:border-primary/60 rounded-xl p-8 text-center cursor-pointer transition-colors bg-slate-50/50" id="dropzone">
+                    <span class="material-symbols-outlined text-4xl text-slate-400 mb-2">upload_file</span>
+                    <p class="text-sm font-bold text-slate-850">Drag and drop file here</p>
+                    <p class="text-xs text-slate-400 mt-1">PDF, DOCX, PNG, or ZIP up to 50MB</p>
+                    <button class="mt-4 px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-all">Browse Files</button>
+                </div>
+
+                <!-- Simulation progress state (Hidden initially) -->
+                <div id="uploading-state" class="space-y-3 hidden">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm text-primary">description</span>
+                            Q4 Marketing Plan.pdf
+                        </span>
+                        <span class="font-semibold text-slate-500" id="upload-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div id="upload-bar" class="bg-primary h-full w-[0%] transition-all duration-300"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 italic">Processing metadata and security scan...</p>
+                </div>
+
+                <!-- Complete State (Hidden initially) -->
+                <div id="complete-state" class="text-center py-4 hidden space-y-2">
+                    <span class="material-symbols-outlined text-5xl text-emerald-500 icon-fill">check_circle</span>
+                    <h4 class="font-bold text-slate-900">Upload Complete!</h4>
+                    <p class="text-xs text-slate-500">File uploaded and cached safely.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script files for interactivity -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chart selector interaction
+            const chartDailyBtn = document.getElementById('chart-daily-btn');
+            const chartWeeklyBtn = document.getElementById('chart-weekly-btn');
+            const dailySvg = document.getElementById('daily-svg');
+            const weeklySvg = document.getElementById('weekly-svg');
+
+            chartDailyBtn.addEventListener('click', () => {
+                chartDailyBtn.className = "px-4 py-1 text-label-sm font-semibold rounded-md bg-white shadow-sm text-primary transition-all";
+                chartWeeklyBtn.className = "px-4 py-1 text-label-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all";
+                
+                dailySvg.classList.remove('hidden');
+                weeklySvg.classList.add('hidden');
+            });
+
+            chartWeeklyBtn.addEventListener('click', () => {
+                chartWeeklyBtn.className = "px-4 py-1 text-label-sm font-semibold rounded-md bg-white shadow-sm text-primary transition-all";
+                chartDailyBtn.className = "px-4 py-1 text-label-sm font-semibold rounded-md text-slate-500 hover:text-slate-800 transition-all";
+                
+                weeklySvg.classList.remove('hidden');
+                dailySvg.classList.add('hidden');
+            });
+
+            // Mobile Menu Open/Close
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileDrawer = document.getElementById('mobile-drawer');
+            const openMobileBtn = document.getElementById('open-mobile-btn');
+            const closeMobileBtn = document.getElementById('close-mobile-btn');
+
+            openMobileBtn.addEventListener('click', () => {
+                mobileSidebar.classList.remove('pointer-events-none', 'opacity-0');
+                mobileSidebar.classList.add('opacity-100');
+                mobileDrawer.classList.remove('-translate-x-full');
+            });
+
+            const closeSidebar = () => {
+                mobileSidebar.classList.add('pointer-events-none', 'opacity-0');
+                mobileSidebar.classList.remove('opacity-100');
+                mobileDrawer.classList.add('-translate-x-full');
+            };
+
+            closeMobileBtn.addEventListener('click', closeSidebar);
+            mobileSidebar.addEventListener('click', (e) => {
+                if (e.target === mobileSidebar) closeSidebar();
+            });
+
+            // Upload File Interactive simulation
+            const uploadBtn = document.getElementById('upload-btn');
+            const mobileUploadBtn = document.getElementById('mobile-upload-btn');
+            const uploadModal = document.getElementById('upload-modal');
+            const modalContainer = document.getElementById('modal-container');
+            const modalClose = document.getElementById('modal-close');
+            const dropzone = document.getElementById('dropzone');
+            const uploadingState = document.getElementById('uploading-state');
+            const uploadBar = document.getElementById('upload-bar');
+            const uploadPercent = document.getElementById('upload-percent');
+            const completeState = document.getElementById('complete-state');
+
+            const openUpload = () => {
+                uploadModal.classList.remove('hidden');
+                setTimeout(() => {
+                    uploadModal.classList.remove('opacity-0');
+                    modalContainer.classList.remove('scale-95');
+                }, 50);
+            };
+
+            uploadBtn.addEventListener('click', openUpload);
+            mobileUploadBtn.addEventListener('click', () => {
+                closeSidebar();
+                setTimeout(openUpload, 350);
+            });
+
+            const closeUploadModal = () => {
+                uploadModal.classList.add('opacity-0');
+                modalContainer.classList.add('scale-95');
+                setTimeout(() => {
+                    uploadModal.classList.add('hidden');
+                    // Reset modal states
+                    dropzone.classList.remove('hidden');
+                    uploadingState.classList.add('hidden');
+                    completeState.classList.add('hidden');
+                    uploadBar.style.width = '0%';
+                    uploadPercent.textContent = '0%';
+                }, 300);
+            };
+
+            modalClose.addEventListener('click', closeUploadModal);
+            uploadModal.addEventListener('click', (e) => {
+                if (e.target === uploadModal) closeUploadModal();
+            });
+
+            // Click Dropzone to trigger animation
+            dropzone.addEventListener('click', () => {
+                dropzone.classList.add('hidden');
+                uploadingState.classList.remove('hidden');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    uploadBar.style.width = `${progress}%`;
+                    uploadPercent.textContent = `${progress}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            uploadingState.classList.add('hidden');
+                            completeState.classList.remove('hidden');
+                            
+                            // Dynamically increment Total Storage Metric slightly!
+                            const metricStorage = document.getElementById('metric-storage');
+                            metricStorage.textContent = "845.3 TB";
+                            
+                            setTimeout(closeUploadModal, 1500);
+                        }, 500);
+                    }
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
