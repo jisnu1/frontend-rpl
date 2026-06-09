@@ -86,3 +86,9 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #c3c6d7;
 }
+
+.glass-header {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(250, 248, 255, 0.85);
+}
