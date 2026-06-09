@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 
 const FILE_TYPE_CONFIG = {
-  pdf: { icon: 'picture_as_pdf', bg: 'bg-red-50', color: 'text-red-500' },
-  docx: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-500' },
-  doc: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-500' },
-  pptx: { icon: 'slideshow', bg: 'bg-purple-50', color: 'text-purple-500' },
-  ppt: { icon: 'slideshow', bg: 'bg-purple-50', color: 'text-purple-500' },
-  jpg: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  jpeg: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  png: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  xlsx: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-500' },
-  xls: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-500' },
-  mp4: { icon: 'video_library', bg: 'bg-red-50', color: 'text-red-500' },
-  mov: { icon: 'video_library', bg: 'bg-red-50', color: 'text-red-500' },
-  zip: { icon: 'folder_zip', bg: 'bg-orange-50', color: 'text-orange-500' },
-  folder: { icon: 'folder', bg: 'bg-slate-100', color: 'text-slate-600' },
+  pdf: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-600' },
+  docx: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-600' },
+  doc: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-600' },
+  pptx: { icon: 'slideshow', bg: 'bg-purple-50', color: 'text-purple-600' },
+  ppt: { icon: 'slideshow', bg: 'bg-purple-50', color: 'text-purple-600' },
+  jpg: { icon: 'image', bg: 'bg-orange-50', color: 'text-orange-600' },
+  jpeg: { icon: 'image', bg: 'bg-orange-50', color: 'text-orange-600' },
+  png: { icon: 'image', bg: 'bg-orange-50', color: 'text-orange-600' },
+  xlsx: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-600' },
+  xls: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-600' },
+  mp4: { icon: 'video_library', bg: 'bg-red-50', color: 'text-red-600' },
+  mov: { icon: 'video_library', bg: 'bg-red-50', color: 'text-red-600' },
+  zip: { icon: 'image', bg: 'bg-orange-50', color: 'text-orange-600' },
+  folder: { icon: 'folder', bg: 'bg-surface-container', color: 'text-outline' },
 };
 
 function getFileTypeConfig(filename, type) {
   const ext = type || filename.split('.').pop()?.toLowerCase();
-  return FILE_TYPE_CONFIG[ext] || { icon: 'insert_drive_file', bg: 'bg-slate-50', color: 'text-slate-500' };
+  return FILE_TYPE_CONFIG[ext] || { icon: 'insert_drive_file', bg: 'bg-surface-container', color: 'text-outline' };
 }
 
 function FileCard({ file }) {
@@ -72,7 +72,7 @@ function FileCard({ file }) {
                   setMenuOpen(false);
                   console.log('Delete file:', file.name);
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-error hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-error hover:bg-error-container/20 transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]">delete</span>
                 Delete
@@ -122,7 +122,9 @@ export default function RecentFileGrid({ groupedFiles }) {
 
         return (
           <section key={group} className="w-full">
-            <h3 className="text-label-md font-bold text-primary flex items-center gap-2 mb-4">
+            <h3 className={`text-label-md font-bold flex items-center gap-2 mb-4 ${
+              group === 'Today' ? 'text-primary' : 'text-on-surface-variant'
+            }`}>
               <span className={`w-2 h-2 rounded-full ${group === 'Today' ? 'bg-primary' : 'bg-outline-variant'}`}></span>
               {group}
             </h3>

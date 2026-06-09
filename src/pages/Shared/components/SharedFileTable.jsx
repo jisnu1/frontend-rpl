@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 
 const FILE_TYPE_CONFIG = {
-  pdf: { icon: 'picture_as_pdf', bg: 'bg-red-50', color: 'text-red-500' },
-  docx: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-500' },
-  doc: { icon: 'description', bg: 'bg-blue-50', color: 'text-blue-500' },
-  jpg: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  jpeg: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  png: { icon: 'image', bg: 'bg-amber-50', color: 'text-amber-500' },
-  xlsx: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-500' },
-  xls: { icon: 'table_chart', bg: 'bg-green-50', color: 'text-green-500' },
-  mp4: { icon: 'video_library', bg: 'bg-purple-50', color: 'text-purple-500' },
-  mov: { icon: 'video_library', bg: 'bg-purple-50', color: 'text-purple-500' },
-  fig: { icon: 'draw', bg: 'bg-indigo-50', color: 'text-indigo-500' },
-  zip: { icon: 'folder_zip', bg: 'bg-slate-50', color: 'text-slate-500' },
+  pdf: { icon: 'picture_as_pdf', bg: 'bg-error-container/30', color: 'text-error' },
+  docx: { icon: 'description', bg: 'bg-surface-container', color: 'text-tertiary' },
+  doc: { icon: 'description', bg: 'bg-surface-container', color: 'text-tertiary' },
+  jpg: { icon: 'image', bg: 'bg-surface-container', color: 'text-primary' },
+  jpeg: { icon: 'image', bg: 'bg-surface-container', color: 'text-primary' },
+  png: { icon: 'image', bg: 'bg-surface-container', color: 'text-primary' },
+  xlsx: { icon: 'table_chart', bg: 'bg-surface-container', color: 'text-on-surface-variant' },
+  xls: { icon: 'table_chart', bg: 'bg-surface-container', color: 'text-on-surface-variant' },
+  mp4: { icon: 'video_library', bg: 'bg-surface-container', color: 'text-primary' },
+  mov: { icon: 'video_library', bg: 'bg-surface-container', color: 'text-primary' },
+  fig: { icon: 'draw', bg: 'bg-surface-container', color: 'text-primary' },
+  zip: { icon: 'folder_zip', bg: 'bg-surface-container', color: 'text-primary' },
 };
 
 function getFileTypeConfig(filename) {
   const ext = filename.split('.').pop()?.toLowerCase();
-  return FILE_TYPE_CONFIG[ext] || { icon: 'insert_drive_file', bg: 'bg-slate-50', color: 'text-slate-500' };
+  return FILE_TYPE_CONFIG[ext] || { icon: 'insert_drive_file', bg: 'bg-surface-container', color: 'text-outline' };
 }
 
 // ─── Row (List View) ─────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ function FileRow({ file }) {
             <div className="border-t border-outline-variant/20 my-1" />
             <button
               onClick={() => setMenuOpen(false)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error-container/20 transition-colors"
             >
               <span className="material-symbols-outlined text-[18px]">remove_circle</span>
               Remove Access
@@ -156,21 +156,21 @@ function TableSkeleton() {
         <tr key={i}>
           <td className="px-8 py-5">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 animate-pulse" />
+              <div className="w-10 h-10 rounded-lg bg-surface-container animate-pulse" />
               <div className="space-y-2">
-                <div className="h-3 w-40 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-24 bg-slate-100 rounded animate-pulse" />
+                <div className="h-3 w-40 bg-surface-container rounded animate-pulse" />
+                <div className="h-2.5 w-24 bg-surface-container-low rounded animate-pulse" />
               </div>
             </div>
           </td>
           <td className="px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
-              <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
+              <div className="w-8 h-8 rounded-full bg-surface-container animate-pulse" />
+              <div className="h-3 w-24 bg-surface-container rounded animate-pulse" />
             </div>
           </td>
-          <td className="px-6 py-5"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
-          <td className="px-6 py-5"><div className="h-3 w-12 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5"><div className="h-3 w-20 bg-surface-container rounded animate-pulse" /></td>
+          <td className="px-6 py-5"><div className="h-3 w-12 bg-surface-container rounded animate-pulse" /></td>
           <td className="px-8 py-5" />
         </tr>
       ))}
@@ -227,11 +227,11 @@ export default function SharedFileTable({ files, isLoading, viewMode, searchQuer
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-slate-50 rounded-2xl p-5 space-y-4 animate-pulse">
-                  <div className="w-12 h-12 rounded-xl bg-slate-200" />
+                <div key={i} className="bg-white rounded-2xl border border-outline-variant/10 p-5 space-y-4 animate-pulse">
+                  <div className="w-12 h-12 rounded-xl bg-surface-container" />
                   <div className="space-y-2">
-                    <div className="h-3 bg-slate-200 rounded w-3/4" />
-                    <div className="h-2.5 bg-slate-200 rounded w-1/2" />
+                    <div className="h-3 bg-surface-container rounded w-3/4" />
+                    <div className="h-2.5 bg-surface-container-low rounded w-1/2" />
                   </div>
                 </div>
               ))}
