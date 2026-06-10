@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Header({ onMenuClick }) {
+export default function Header({ onMenuClick, searchPlaceholder = "Search Drive...", searchValue = "", onSearchChange }) {
   return (
     <header className="bg-white flex justify-between items-center h-16 px-6 w-full sticky top-0 border-b border-slate-100 z-30">
       {/* Mobile Menu Trigger & Logo */}
@@ -26,8 +26,10 @@ export default function Header({ onMenuClick }) {
           </span>
           <input
             className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
-            placeholder="Search Drive..."
+            placeholder={searchPlaceholder}
             type="text"
+            value={searchValue}
+            onChange={onSearchChange}
           />
         </div>
       </div>
