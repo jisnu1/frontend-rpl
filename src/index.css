@@ -92,3 +92,80 @@
   -webkit-backdrop-filter: blur(8px);
   background-color: rgba(250, 248, 255, 0.85);
 }
+
+/* Gemini Waveform Glowing Animation */
+@keyframes wave-pulse {
+  0%, 100% {
+    height: 8px;
+    transform: translateY(0);
+  }
+  50% {
+    height: 28px;
+    transform: translateY(-4px);
+  }
+}
+
+.gemini-wave-bar {
+  width: 4px;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899);
+  animation: wave-pulse 1.2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+}
+
+.gemini-wave-bar:nth-child(2) {
+  animation-delay: 0.15s;
+  background: linear-gradient(to top, #8b5cf6, #ec4899, #f43f5e);
+}
+.gemini-wave-bar:nth-child(3) {
+  animation-delay: 0.3s;
+  background: linear-gradient(to top, #ec4899, #f43f5e, #3b82f6);
+}
+.gemini-wave-bar:nth-child(4) {
+  animation-delay: 0.45s;
+  background: linear-gradient(to top, #f43f5e, #3b82f6, #8b5cf6);
+}
+.gemini-wave-bar:nth-child(5) {
+  animation-delay: 0.6s;
+  background: linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899);
+}
+
+/* AI Large Waveform Animation for Recap */
+@keyframes wave-pulse-large {
+  0%, 100% {
+    height: 12px;
+    transform: translateY(0);
+  }
+  50% {
+    height: 48px;
+    transform: translateY(-8px);
+  }
+}
+
+.ai-wave-bar-large {
+  width: 6px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899);
+  animation: wave-pulse-large 1.2s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.ai-wave-bar-large:nth-child(2) {
+  animation-delay: 0.15s;
+  background: linear-gradient(to top, #8b5cf6, #ec4899, #f43f5e);
+}
+.ai-wave-bar-large:nth-child(3) {
+  animation-delay: 0.3s;
+  background: linear-gradient(to top, #ec4899, #f43f5e, #3b82f6);
+}
+.ai-wave-bar-large:nth-child(4) {
+  animation-delay: 0.45s;
+  background: linear-gradient(to top, #f43f5e, #3b82f6, #8b5cf6);
+}
+.ai-wave-bar-large:nth-child(5) {
+  animation-delay: 0.6s;
+  background: linear-gradient(to top, #3b82f6, #8b5cf6, #ec4899);
+}
+
