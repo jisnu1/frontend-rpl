@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { Lock, User, Mail, Cloud } from 'lucide-react';
+import { Lock, User, Mail } from 'lucide-react';
+import logoUrl from '../../assets/horizon.png';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -55,9 +56,7 @@ export default function Register() {
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8 gap-2">
-          <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/25">
-            <Cloud className="w-8 h-8" />
-          </div>
+          <img src={logoUrl} className="w-48 h-auto object-contain" alt="Horizon Drive Logo" />
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Horizon Drive</h1>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Cloud Personal Storage</p>
         </div>

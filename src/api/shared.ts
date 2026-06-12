@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { API_BASE_URL } from './apiClient';
 
 export interface SharedFileDto {
   id: string;
@@ -74,7 +74,7 @@ export async function fetchPublicFileInfo(shareToken: string, provider: string):
 }
 
 export function getPublicDownloadUrl(shareToken: string, provider: string, download = false): string {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+  const baseUrl = API_BASE_URL;
   const path = provider === 'google'
     ? `/google-drive/share/public/download/${shareToken}`
     : `/files/share/public/download/${shareToken}`;
@@ -85,7 +85,7 @@ export function getPublicDownloadUrl(shareToken: string, provider: string, downl
  * URL preview inline untuk file publik via share token (endpoint preview standalone)
  */
 export function getPublicPreviewUrl(shareToken: string, provider: string): string {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+  const baseUrl = API_BASE_URL;
   const prov = provider === 'google' || provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local';
   return `${baseUrl}/preview/public/${prov}/${shareToken}`;
 }

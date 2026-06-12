@@ -14,6 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { useActivity } from '../context/ActivityContext';
+import logoUrl from '../assets/horizon.png';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -45,7 +46,7 @@ export default function Header({
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="text-lg font-extrabold text-primary flex items-center gap-1.5">
-          <Cloud className="w-5 h-5" />
+          <img src={logoUrl} className="w-6 h-6 object-contain" alt="Horizon Drive Logo" />
           <span>Horizon Drive</span>
         </Link>
       </div>
