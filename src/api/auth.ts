@@ -16,6 +16,10 @@ export async function registerUser(data: RegisterRequest): Promise<void> {
   await apiClient.post('/auth/register', data);
 }
 
+export async function verifyRegistration(data: { email: string; otp: string }): Promise<void> {
+  await apiClient.post('/auth/verify-registration', data);
+}
+
 export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
   const response = await apiClient.post<LoginResponse>('/auth/login', data);
   return response.data;
