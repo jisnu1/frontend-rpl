@@ -87,6 +87,12 @@ export default function Login() {
               disabled={isSubmitting}
             />
 
+            <div className="flex justify-end text-xs font-semibold">
+              <Link to="/forgot-password" className="text-primary hover:underline font-bold">
+                Lupa Password?
+              </Link>
+            </div>
+
             <Button
               type="submit"
               className="w-full mt-2"

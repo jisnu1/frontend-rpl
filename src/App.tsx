@@ -9,6 +9,8 @@ import Shared from './pages/Shared/Shared';
 import Settings from './pages/Settings/Settings';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import VerifyRegistration from './pages/Auth/VerifyRegistration';
+import ForgotPassword from './pages/Auth/ForgotPassword';
 import PublicSharePage from './pages/Shared/PublicSharePage';
 import { useAuth } from './context/AuthContext';
 import { Construction } from 'lucide-react';
@@ -64,7 +66,7 @@ export default function App() {
     return 'Search Drive...';
   };
 
-  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/verify-registration' || location.pathname === '/forgot-password';
   const isPublicShareRoute = location.pathname.startsWith('/shared/public/');
 
   if (isLoading) {
@@ -93,6 +95,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-registration" element={<VerifyRegistration />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
