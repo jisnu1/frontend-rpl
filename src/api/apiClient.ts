@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8090/api',
+  baseURL: API_BASE_URL,
   timeout: 0, // Disable client-side timeout to support large file transfers (upload/download) and long AI recap processing
   withCredentials: true,
   headers: {

@@ -15,6 +15,7 @@ import {
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
 import { fetchExternalAccounts, fetchGoogleDriveStorage, ExternalAccountDto, GoogleDriveStorageDto } from '../api/externalAccounts';
+import logoUrl from '../assets/horizon.png';
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -88,9 +89,7 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, up
       {/* Brand */}
       <div className="px-8 mb-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-white/10 rounded-xl text-white">
-            <Cloud className="w-6 h-6" />
-          </div>
+          <img src={logoUrl} className="w-10 h-10 object-contain" alt="Horizon Drive Logo" />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-white">Horizon Drive</span>
             <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Cloud Storage</span>

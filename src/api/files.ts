@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient, { API_BASE_URL } from './apiClient';
 
 export interface FileResponse {
   id: string;
@@ -32,7 +32,7 @@ export async function deleteFile(id: string, provider?: string): Promise<void> {
  * Mendapatkan URL streaming unduhan riil
  */
 export function getDownloadUrl(fileId: string, provider: string): string {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+  const baseUrl = API_BASE_URL;
   if (provider?.toUpperCase() === 'GOOGLE_DRIVE') {
     return `${baseUrl}/google-drive/download/${fileId}/stream`;
   }
@@ -43,6 +43,6 @@ export function getDownloadUrl(fileId: string, provider: string): string {
  * Mendapatkan URL preview inline untuk file pribadi (browser render langsung)
  */
 export function getPreviewUrl(fileId: string): string {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8090/api';
+  const baseUrl = API_BASE_URL;
   return `${baseUrl}/preview/${fileId}`;
 }
