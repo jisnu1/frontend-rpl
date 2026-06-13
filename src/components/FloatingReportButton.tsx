@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquareWarning, Send, CheckCircle } from 'lucide-react';
+import { submitBugReport } from '../api/reports';
 
 export default function FloatingReportButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,14 +43,19 @@ export default function FloatingReportButton() {
     e.preventDefault();
     if (!description.trim()) return;
     setIsSubmitting(true);
-    // Simulate network delay
-    await new Promise((res) => setTimeout(res, 900));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    // Auto-close after showing success state
-    setTimeout(() => {
-      handleClose();
-    }, 2200);
+    try {
+      await submitBugReport(description);
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      // Auto-close after showing success state
+      setTimeout(() => {
+        handleClose();
+      }, 2200);
+    } catch (err) {
+      console.error(err);
+      setIsSubmitting(false);
+      alert('Gagal mengirimkan laporan bug. Silakan coba lagi.');
+    }
   };
 
   const canSubmit = description.trim().length >= 5;

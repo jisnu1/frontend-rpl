@@ -32,6 +32,7 @@ import {
 } from '../../api/externalAccounts';
 import { fetchUserStorage, UserStorageResponse } from '../../api/storage';
 import { updateProfile, updatePassword } from '../../api/auth';
+import { submitBugReport } from '../../api/reports';
 
 declare global {
   interface Window {
@@ -82,13 +83,13 @@ export default function Settings() {
     
     setIsSubmittingReport(true);
     try {
-      // Simulate network request
-      await new Promise((res) => setTimeout(res, 1000));
+      await submitBugReport(reportDescription);
       setIsReportSubmitted(true);
       toastSuccess('Laporan bug berhasil dikirim. Terima kasih!');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toastError('Gagal mengirimkan laporan bug.');
+      const msg = err.response?.data?.message || err.message || 'Gagal mengirimkan laporan bug.';
+      toastError(msg);
     } finally {
       setIsSubmittingReport(false);
     }
