@@ -375,9 +375,8 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                             {formatSize(file.size)}
                           </td>
 
-                          {/* Aksi */}
-                          <td className="px-8 py-5 w-[280px] min-w-[280px]" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-2 shrink-0">
+                          <td className="pl-2 pr-6 py-5 w-[280px] min-w-[280px]" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end gap-2 shrink-0 relative z-10">
                               {isPdf && (
                                 <Button
                                   variant="ghost"

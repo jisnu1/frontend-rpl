@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const requestInterceptor = apiClient.interceptors.request.use(
       (config) => {
-        if (accessToken) {
+        if (accessToken && !config.headers.Authorization) {
           config.headers.Authorization = `Bearer ${accessToken}`;
         }
         return config;
@@ -101,7 +101,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(res.accessToken);
     const profile = await fetchUserProfile(res.accessToken);
     setUser(profile);
-    localStorage.setItem('hasSession', 'true');
   };
 
   const register = async (data: RegisterRequest) => {
@@ -111,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setAccessToken(null);
     setUser(null);
-    localStorage.removeItem('hasSession');
     // Call backend logout or clear cookie if any
   };
 

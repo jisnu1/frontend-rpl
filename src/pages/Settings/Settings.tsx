@@ -16,7 +16,9 @@ import {
   Key,
   Phone,
   UserCheck,
-  CheckCircle
+  CheckCircle,
+  MessageSquareWarning,
+  Send
 } from 'lucide-react';
 import {
   fetchExternalAccounts,
@@ -42,7 +44,7 @@ export default function Settings() {
   const { error: toastError, success: toastSuccess } = useToast();
 
   // Tab Control
-  const [activeTab, setActiveTab] = useState<'profile' | 'cloud'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'cloud' | 'report'>('profile');
 
   // Google Accounts & Storage Info
   const [accounts, setAccounts] = useState<ExternalAccountDto[]>([]);
@@ -68,6 +70,29 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+
+  // Report Bug Form States
+  const [reportDescription, setReportDescription] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [isReportSubmitted, setIsReportSubmitted] = useState(false);
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reportDescription.trim().length < 5) return;
+    
+    setIsSubmittingReport(true);
+    try {
+      // Simulate network request
+      await new Promise((res) => setTimeout(res, 1000));
+      setIsReportSubmitted(true);
+      toastSuccess('Laporan bug berhasil dikirim. Terima kasih!');
+    } catch (err) {
+      console.error(err);
+      toastError('Gagal mengirimkan laporan bug.');
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
 
   // Preset Avatars using Dicebear
   const avatarPresets = [
@@ -340,6 +365,17 @@ export default function Settings() {
         >
           <Cloud className="w-4 h-4" />
           Integrasi Cloud
+        </button>
+        <button
+          onClick={() => setActiveTab('report')}
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider ${
+            activeTab === 'report'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <MessageSquareWarning className="w-4 h-4" />
+          Laporkan Masalah
         </button>
       </div>
 
@@ -651,6 +687,82 @@ export default function Settings() {
                 </p>
               </div>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === 'report' && (
+        <div className="space-y-6">
+          <Card hoverLift={false} className="p-6 md:p-8">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-5">
+              <MessageSquareWarning className="text-primary w-5 h-5" />
+              <h2 className="text-base font-bold text-slate-800">Laporkan Masalah / Bug</h2>
+            </div>
+
+            <p className="text-xs text-slate-450 font-semibold mb-6 leading-relaxed">
+              Ceritakan kendala atau masalah yang Anda temukan saat menggunakan Horizon Drive. Deskripsi yang jelas membantu kami mengidentifikasi dan memperbaiki bug dengan lebih cepat.
+            </p>
+
+            {isReportSubmitted ? (
+              <div className="flex flex-col items-center justify-center py-10 gap-4 animate-fadeIn">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <CheckCircle className="w-10 h-10 text-emerald-500" />
+                </div>
+                <div className="text-center max-w-sm">
+                  <h4 className="font-bold text-slate-800 text-sm">Laporan Berhasil Terkirim!</h4>
+                  <p className="text-slate-500 text-xs mt-2 leading-relaxed font-semibold">
+                    Terima kasih atas kontribusi Anda. Tim developer Horizon Cloud akan segera meninjau dan menindaklanjuti kendala ini.
+                  </p>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => {
+                    setIsReportSubmitted(false);
+                    setReportDescription('');
+                  }}
+                  className="mt-2"
+                >
+                  Kirim Laporan Baru
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleReportSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Deskripsi Kendala
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value.substring(0, 500))}
+                    placeholder="Ceritakan secara singkat kendala apa yang terjadi, langkah untuk mereproduksi masalah, dan hasil yang diharapkan..."
+                    className="w-full resize-none border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-700 placeholder-slate-350 bg-slate-50/35 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all leading-relaxed"
+                    required
+                  />
+                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                    <span>Minimal 5 karakter</span>
+                    <span className={reportDescription.length < 5 && reportDescription.length > 0 ? 'text-rose-500' : ''}>
+                      {reportDescription.length} / 500
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2 border-t border-slate-50">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={reportDescription.trim().length < 5 || isSubmittingReport}
+                    isLoading={isSubmittingReport}
+                    className="px-6 rounded-full font-bold shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Kirim Laporan
+                  </Button>
+                </div>
+              </form>
+            )}
           </Card>
         </div>
       )}

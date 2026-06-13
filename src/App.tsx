@@ -148,9 +148,6 @@ export default function App() {
       {/* Global state-driven Interactive Upload Modal */}
       <UploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUploadSuccess={handleUploadSuccess} />
 
-      {/* Floating Bug Report Button */}
-      <FloatingReportButton />
-
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
     </div>
