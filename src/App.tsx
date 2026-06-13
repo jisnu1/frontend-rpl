@@ -145,32 +145,39 @@ function SharedPage() {
   return <Shared searchQuery={searchQuery} />;
 }
 
+import ReportButton from './components/ReportButton';
+
 export default function App() {
   return (
-    <Routes>
-      {/* ── Public Routes ─────────────────────────────────────────────────── */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-registration" element={<VerifyRegistration />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/shared/public/:provider/:shareToken" element={<PublicSharePage />} />
-      <Route path="/shared/public/:shareToken" element={<PublicSharePage />} />
+    <>
+      <Routes>
+        {/* ── Public Routes ─────────────────────────────────────────────────── */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-registration" element={<VerifyRegistration />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/shared/public/:provider/:shareToken" element={<PublicSharePage />} />
+        <Route path="/shared/public/:shareToken" element={<PublicSharePage />} />
 
-      {/* ── Protected Routes ──────────────────────────────────────────────── */}
-      <Route element={<ProtectedLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/recap" element={<RecapPage />} />
-        <Route path="/shared" element={<SharedPage />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/admin" element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        } />
+        {/* ── Protected Routes ──────────────────────────────────────────────── */}
+        <Route element={<ProtectedLayout />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/recap" element={<RecapPage />} />
+          <Route path="/shared" element={<SharedPage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
 
-        {/* Catch-all: Mengarahkan semua rute tak dikenal langsung ke home (/) */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+          {/* Catch-all: Mengarahkan semua rute tak dikenal langsung ke home (/) */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+      
+      {/* Global Antigravity Floating Action Button */}
+      <ReportButton />
+    </>
   );
 }
