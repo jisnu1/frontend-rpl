@@ -284,14 +284,14 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           {/* ── LIST VIEW ─────────────────────────────── */}
           {viewMode === 'list' && (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse table-fixed">
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
                     <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Penyedia</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Tanggal Ditambahkan</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Ukuran</th>
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right min-w-[280px]">Aksi</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[140px] min-w-[140px]">Penyedia</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[220px] min-w-[220px]">Tanggal Ditambahkan</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[120px] min-w-[120px]">Ukuran</th>
+                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right w-[280px] min-w-[280px]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -376,7 +376,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-8 py-5 min-w-[280px]" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-8 py-5 w-[280px] min-w-[280px]" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
