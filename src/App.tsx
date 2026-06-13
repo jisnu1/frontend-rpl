@@ -14,8 +14,8 @@ import ForgotPassword from './pages/Auth/ForgotPassword';
 import NotFound from './pages/NotFound';
 import PublicSharePage from './pages/Shared/PublicSharePage';
 import { useAuth } from './context/AuthContext';
-
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
+import AdminDashboard from './pages/Admin/AdminDashboard';
 
 // Reusable Route Protection Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,27 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Reusable Route Protection Wrapper for Admin
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
+        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user?.roles?.includes('ADMIN')) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 export default function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -111,6 +131,7 @@ export default function App() {
           searchPlaceholder={getSearchPlaceholder()}
           searchValue={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
+          showSearch={location.pathname !== '/admin'}
         />
         
         <main className="flex-1 overflow-y-auto min-h-0">
@@ -119,6 +140,7 @@ export default function App() {
             <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

@@ -15,6 +15,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ export default function Register() {
         <div className="flex flex-col items-center mb-8 gap-2">
           <img src={logoUrl} className="w-48 h-auto object-contain" alt="Horizon Drive Logo" />
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Horizon Drive</h1>
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Cloud Personal Storage</p>
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Personal Multistorage Management</p>
         </div>
 
         {/* Card Form */}
@@ -119,11 +120,44 @@ export default function Register() {
               disabled={isSubmitting || success}
             />
 
+            {/* Terms and Privacy Policy Checkbox */}
+            <div className="flex items-start gap-2.5 my-4 text-left">
+              <input
+                type="checkbox"
+                id="agree-terms"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 accent-primary cursor-pointer shrink-0"
+                disabled={isSubmitting || success}
+              />
+              <label htmlFor="agree-terms" className="text-xs text-slate-500 font-semibold leading-relaxed cursor-pointer select-none">
+                Saya setuju dengan{' '}
+                <a 
+                  href="/terms-of-service.txt" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-primary hover:underline font-bold"
+                >
+                  Ketentuan Layanan
+                </a>{' '}
+                dan{' '}
+                <a 
+                  href="/privacy-policy.txt" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-primary hover:underline font-bold"
+                >
+                  Kebijakan Privasi
+                </a>{' '}
+                Horizon Drive.
+              </label>
+            </div>
+
             <Button
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
-              disabled={success}
+              disabled={!agreed || success}
             >
               Sign Up
             </Button>

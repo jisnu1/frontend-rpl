@@ -92,7 +92,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const isEmpty = !isLoading && filteredFiles.length === 0;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full flex-1 space-y-6 sm:space-y-8 flex flex-col relative">
       
       {/* Modal Konfirmasi Hapus Berkas */}
       <Modal
@@ -136,7 +136,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             <FolderOpen className="w-8 h-8 text-primary" />
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Kelola seluruh berkas penyimpanan pribadi Anda di server Horizon Cloud.
+            Kelola seluruh berkas penyimpanan pribadi Anda di Horizon Personal Multistorage Management.
           </p>
         </div>
 
@@ -177,11 +177,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Penyedia</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Tanggal Ditambahkan</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Ukuran</th>
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Penyedia</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Tanggal Ditambahkan</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Ukuran</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -194,13 +194,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                             <div className="w-10 h-10 rounded-xl bg-slate-100 animate-pulse" />
                             <div className="space-y-2">
                               <div className="h-3.5 w-40 bg-slate-100 rounded animate-pulse" />
-                              <div className="h-2.5 w-16 bg-slate-100 rounded animate-pulse" />
+                              <div className="h-2.5 w-16 bg-slate-50 rounded animate-pulse sm:hidden" />
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5"><div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
-                        <td className="px-6 py-5"><div className="h-3.5 w-24 bg-slate-100 rounded animate-pulse" /></td>
-                        <td className="px-6 py-5"><div className="h-3.5 w-12 bg-slate-100 rounded animate-pulse" /></td>
+                        <td className="px-6 py-5 hidden sm:table-cell"><div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
+                        <td className="px-6 py-5 hidden md:table-cell"><div className="h-3.5 w-24 bg-slate-100 rounded animate-pulse" /></td>
+                        <td className="px-6 py-5 hidden sm:table-cell"><div className="h-3.5 w-12 bg-slate-100 rounded animate-pulse" /></td>
                         <td className="px-8 py-5" />
                       </tr>
                     ))
@@ -227,19 +227,22 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           className="group hover:bg-slate-50/40 transition-colors cursor-pointer"
                         >
                           {/* Nama */}
-                          <td className="px-8 py-5">
+                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
                             <div className="flex items-center gap-4">
                               <FileIcon type={ext} className="w-5 h-5 shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 truncate max-w-[280px]" title={file.originalFileName}>
+                                <p className="text-sm font-bold text-slate-800 truncate max-w-[160px] sm:max-w-[280px]" title={file.originalFileName}>
                                   {file.originalFileName}
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden font-medium">
+                                  {formatSize(file.size)} • {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
                                 </p>
                               </div>
                             </div>
                           </td>
                           
                           {/* Penyedia */}
-                          <td className="px-6 py-5">
+                          <td className="px-6 py-5 hidden sm:table-cell">
                             <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
                               file.provider?.toUpperCase() === 'GOOGLE_DRIVE' 
                                 ? 'bg-amber-50 border-amber-100 text-amber-600' 
@@ -250,17 +253,17 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Tanggal */}
-                          <td className="px-6 py-5 text-xs font-semibold text-slate-450">
+                          <td className="px-6 py-5 text-xs font-semibold text-slate-450 hidden md:table-cell">
                             {file.createdAt ? new Date(file.createdAt).toLocaleString() : '-'}
                           </td>
 
                           {/* Ukuran */}
-                          <td className="px-6 py-5 text-xs font-bold text-slate-500">
+                          <td className="px-6 py-5 text-xs font-bold text-slate-500 hidden sm:table-cell">
                             {formatSize(file.size)}
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-8 py-5">
+                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
@@ -271,10 +274,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                     e.stopPropagation();
                                     navigate(`/recap?fileId=${file.id}`);
                                   }}
-                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50"
+                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50 p-2 sm:py-1.5 sm:px-3 rounded-lg sm:rounded-full border border-transparent hover:border-slate-100 sm:border-none"
                                   title="Analisis AI Recap"
                                 >
-                                  AI Recap
+                                  <span className="hidden sm:inline">AI Recap</span>
                                 </Button>
                               )}
                               <button

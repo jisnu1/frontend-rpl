@@ -65,20 +65,23 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       className={`group hover:bg-slate-50/50 transition-colors cursor-pointer relative animate-fadeIn ${menuOpen ? 'z-30' : ''}`}
     >
       {/* File Name */}
-      <td className="px-8 py-5">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5">
         <div className="flex items-center gap-4">
           <FileIcon type={ext} className="w-5 h-5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-800 truncate max-w-[240px]">{file.originalFileName}</p>
-            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">
+            <p className="text-sm font-bold text-slate-800 truncate max-w-[160px] sm:max-w-[240px]">{file.originalFileName}</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider hidden sm:block">
               {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden font-medium">
+              {formatSize(file.size)} • {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'} • Oleh {file.ownerEmail || 'Shared Owner'}
             </p>
           </div>
         </div>
       </td>
 
       {/* Owner */}
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 hidden sm:table-cell">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold uppercase">
             {file.ownerEmail ? file.ownerEmail.charAt(0) : 'S'}
@@ -88,7 +91,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       </td>
 
       {/* Shared Date */}
-      <td className="px-6 py-5 text-xs font-bold text-slate-450">
+      <td className="px-6 py-5 text-xs font-bold text-slate-450 hidden md:table-cell">
         {file.createdAt ? new Date(file.createdAt).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'short',
@@ -97,10 +100,10 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       </td>
 
       {/* File Size */}
-      <td className="px-6 py-5 text-xs font-bold text-slate-450">{formatSize(file.size)}</td>
+      <td className="px-6 py-5 text-xs font-bold text-slate-450 hidden sm:table-cell">{formatSize(file.size)}</td>
 
       {/* Actions */}
-      <td className="px-8 py-5 text-right relative">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5 text-right relative">
         <div ref={menuRef} className="relative inline-block text-left">
           <div className="flex items-center justify-end gap-2">
             {isPdf && (
@@ -313,18 +316,18 @@ function TableSkeleton() {
               <div className="w-10 h-10 rounded-lg bg-slate-100 animate-pulse" />
               <div className="space-y-2">
                 <div className="h-3 w-40 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-24 bg-slate-50 rounded animate-pulse" />
+                <div className="h-2.5 w-24 bg-slate-50 rounded animate-pulse sm:hidden" />
               </div>
             </div>
           </td>
-          <td className="px-6 py-5">
+          <td className="px-6 py-5 hidden sm:table-cell">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
               <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
             </div>
           </td>
-          <td className="px-6 py-5"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
-          <td className="px-6 py-5"><div className="h-3 w-12 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5 hidden md:table-cell"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5 hidden sm:table-cell"><div className="h-3 w-12 bg-slate-100 rounded animate-pulse" /></td>
           <td className="px-8 py-5" />
         </tr>
       ))}
@@ -382,11 +385,11 @@ export default function SharedFileTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Owner</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Shared Date</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Size</th>
-                <th className="px-8 py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Owner</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Shared Date</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">File Size</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

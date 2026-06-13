@@ -99,7 +99,7 @@ export default function AiAssistantPanel({
 
   return (
     <div
-      className="fixed bottom-24 right-6 w-[420px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-8rem)] bg-white rounded-3xl border border-slate-150 shadow-2xl z-50 flex flex-col overflow-hidden transition-all duration-300 animate-slideUp pointer-events-auto"
+      className="fixed bottom-0 sm:bottom-24 right-0 sm:right-6 left-0 sm:left-auto w-full sm:w-[420px] h-[90vh] sm:h-[600px] bg-white rounded-t-3xl sm:rounded-3xl border-t border-x sm:border border-slate-150 shadow-2xl z-50 flex flex-col overflow-hidden transition-all duration-300 animate-slideUp pointer-events-auto"
     >
       {/* Panel Header */}
       <div className="px-6 py-4 flex flex-col gap-3 border-b border-slate-100 bg-white">

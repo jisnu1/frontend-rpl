@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Mail, AlertCircle, CheckCircle2, Copy, Clock, Globe, User, Check } from 'lucide-react';
+import { Share2, Mail, AlertCircle, CheckCircle2, Copy, Clock, Globe, User, Check, ChevronDown } from 'lucide-react';
 import { shareFile } from '../api/shared';
 import { useToast } from '../context/ToastContext';
 import Button from './ui/Button';
@@ -16,12 +16,21 @@ interface ShareModalProps {
 type ShareTab = 'private' | 'public';
 type ExpiryOption = 'infinite' | '1h' | '1d' | '7d' | 'custom';
 
+const expiryOptions = [
+  { value: 'infinite', label: 'Tanpa Batas Waktu', desc: 'Akses berlaku selamanya' },
+  { value: '1h', label: '1 Jam', desc: 'Masa aktif selama 60 menit' },
+  { value: '1d', label: '1 Hari', desc: 'Kadaluarsa setelah 24 jam' },
+  { value: '7d', label: '7 Hari', desc: 'Kadaluarsa setelah 7 hari' },
+  { value: 'custom', label: 'Kustom...', desc: 'Tentukan batas waktu sendiri' },
+];
+
 export default function ShareModal({ isOpen, onClose, fileId, fileName, provider }: ShareModalProps) {
   const [activeTab, setActiveTab] = useState<ShareTab>('private');
   const [email, setEmail] = useState('');
   const [expiryOption, setExpiryOption] = useState<ExpiryOption>('infinite');
   const [customDays, setCustomDays] = useState<number>(0);
   const [customHours, setCustomHours] = useState<number>(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [isSharing, setIsSharing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -43,6 +52,7 @@ export default function ShareModal({ isOpen, onClose, fileId, fileName, provider
       setGeneratedLink('');
       setIsCopied(false);
       setActiveTab('private');
+      setIsDropdownOpen(false);
     }
   }, [isOpen]);
 
@@ -218,20 +228,56 @@ export default function ShareModal({ isOpen, onClose, fileId, fileName, provider
                   Masa Kadaluarsa Akses
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Clock className="w-4 h-4" />
-                  </span>
-                  <select
-                    value={expiryOption}
-                    onChange={(e) => setExpiryOption(e.target.value as ExpiryOption)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 pl-10 pr-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 px-4 flex items-center justify-between text-xs font-semibold text-slate-700 hover:bg-slate-100/50 hover:border-slate-350 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                   >
-                    <option value="infinite">Tanpa Batas Waktu</option>
-                    <option value="1h">1 Jam</option>
-                    <option value="1d">1 Hari</option>
-                    <option value="7d">7 Hari</option>
-                    <option value="custom">Kustom...</option>
-                  </select>
+                    <div className="flex items-center gap-2.5">
+                      <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span>{expiryOptions.find(opt => opt.value === expiryOption)?.label}</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-[0px_10px_25px_rgba(15,23,42,0.08)] p-1.5 z-20 animate-fadeIn space-y-0.5">
+                        {expiryOptions.map((opt) => {
+                          const isSelected = opt.value === expiryOption;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                setExpiryOption(opt.value as ExpiryOption);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between text-left p-2.5 rounded-xl transition-all ${
+                                isSelected 
+                                  ? 'bg-primary/5 text-primary' 
+                                  : 'hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex flex-col gap-0.5">
+                                <span className={`text-xs ${isSelected ? 'font-bold' : 'font-semibold'}`}>
+                                  {opt.label}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  {opt.desc}
+                                </span>
+                              </div>
+                              {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -299,7 +299,7 @@ export default function Settings() {
   const localPercent = calculatePercent(localUsed, localTotal);
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto w-full space-y-8 flex-1 animate-fadeIn">
+    <div className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto w-full space-y-6 sm:space-y-8 flex-1 animate-fadeIn">
       {/* Title */}
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
@@ -517,13 +517,13 @@ export default function Settings() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold text-slate-800">Horizon Local Storage</h3>
                 <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                  Penyimpanan personal cloud yang di-host langsung pada server Horizon VPS lokal Anda.
+                  Penyimpanan Personal Multistorage Management yang di-host langsung pada server Horizon VPS lokal Anda.
                 </p>
 
                 {personalStorage && (
                   <div className="mt-4 max-w-md">
                     <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 mb-1.5">
-                      <span>Pemakaian Personal Storage</span>
+                      <span>Pemakaian Personal Multistorage Management</span>
                       <span>
                         {formatSize(localUsed)} / {formatSize(localTotal)}
                       </span>
@@ -612,13 +612,14 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                    <div className="flex items-center gap-2 self-stretch sm:self-center w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
                       <Button
                         variant="secondary"
                         size="sm"
                         icon={RefreshCw}
                         isLoading={isSyncing[googleAccount.id]}
                         onClick={() => handleSync(googleAccount.id)}
+                        className="flex-1 sm:flex-initial justify-center"
                       >
                         Sync Files
                       </Button>
@@ -628,6 +629,7 @@ export default function Settings() {
                         icon={Trash2}
                         isLoading={isDisconnecting[googleAccount.id]}
                         onClick={() => handleDisconnect(googleAccount.id)}
+                        className="flex-1 sm:flex-initial justify-center"
                       >
                         Disconnect
                       </Button>

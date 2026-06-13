@@ -56,20 +56,39 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       className={`group hover:bg-slate-50/50 transition-colors cursor-pointer relative animate-fadeIn ${menuOpen ? 'z-30' : ''}`}
     >
       {/* File Name */}
-      <td className="px-8 py-5">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5">
         <div className="flex items-center gap-4">
           <FileIcon type={ext} className="w-5 h-5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-800 truncate max-w-[240px]">{file.originalFileName}</p>
-            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">
+            <p className="text-sm font-bold text-slate-800 truncate max-w-[160px] sm:max-w-[240px]">{file.originalFileName}</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider hidden sm:block">
               {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden font-medium flex flex-wrap gap-x-1 items-center">
+              <span>{formatSize(file.size)}</span>
+              <span>•</span>
+              <span>{file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}</span>
+              <span>•</span>
+              {file.isPublic ? (
+                <span className="text-emerald-600 font-bold">Publik</span>
+              ) : (
+                <span className="text-blue-600 font-bold truncate max-w-[120px]">{file.sharedWithEmail}</span>
+              )}
+              {file.expiresAt && (
+                <>
+                  <span>•</span>
+                  <span className={new Date(file.expiresAt) < new Date() ? "text-red-500 font-semibold" : "text-amber-600 font-semibold"}>
+                    {new Date(file.expiresAt) < new Date() ? 'Kadaluarsa' : new Date(file.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
       </td>
 
       {/* Shared To */}
-      <td className="px-6 py-5">
+      <td className="px-6 py-5 hidden sm:table-cell">
         {file.isPublic ? (
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1 w-max">
             <Globe className="w-3.5 h-3.5" />
@@ -84,7 +103,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       </td>
 
       {/* Expiration */}
-      <td className="px-6 py-5 text-xs font-bold">
+      <td className="px-6 py-5 text-xs font-bold hidden sm:table-cell">
         {file.expiresAt ? (
           new Date(file.expiresAt) < new Date() ? (
             <span className="text-red-500 inline-flex items-center gap-1">
@@ -103,7 +122,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       </td>
 
       {/* Shared Date */}
-      <td className="px-6 py-5 text-xs font-bold text-slate-450">
+      <td className="px-6 py-5 text-xs font-bold text-slate-450 hidden md:table-cell">
         {file.createdAt ? new Date(file.createdAt).toLocaleDateString('id-ID', {
           day: 'numeric',
           month: 'short',
@@ -112,10 +131,10 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       </td>
 
       {/* File Size */}
-      <td className="px-6 py-5 text-xs font-bold text-slate-450">{formatSize(file.size)}</td>
+      <td className="px-6 py-5 text-xs font-bold text-slate-450 hidden sm:table-cell">{formatSize(file.size)}</td>
 
       {/* Actions */}
-      <td className="px-8 py-5 text-right relative">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5 text-right relative">
         <div className="flex items-center justify-end gap-2">
           {file.isPublic && file.shareLink && (
             <button
@@ -310,16 +329,16 @@ function TableSkeleton() {
               <div className="w-10 h-10 rounded-lg bg-slate-100 animate-pulse" />
               <div className="space-y-2">
                 <div className="h-3 w-40 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-24 bg-slate-50 rounded animate-pulse" />
+                <div className="h-2.5 w-24 bg-slate-55 rounded animate-pulse sm:hidden" />
               </div>
             </div>
           </td>
-          <td className="px-6 py-5">
+          <td className="px-6 py-5 hidden sm:table-cell">
             <div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" />
           </td>
-          <td className="px-6 py-5"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
-          <td className="px-6 py-5"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
-          <td className="px-6 py-5"><div className="h-3 w-12 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5 hidden sm:table-cell"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5 hidden md:table-cell"><div className="h-3 w-20 bg-slate-100 rounded animate-pulse" /></td>
+          <td className="px-6 py-5 hidden sm:table-cell"><div className="h-3 w-12 bg-slate-100 rounded animate-pulse" /></td>
           <td className="px-8 py-5" />
         </tr>
       ))}
@@ -377,12 +396,12 @@ export default function SharedByMeTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bagikan Ke</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Kadaluarsa</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tanggal Share</th>
-                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Size</th>
-                <th className="px-8 py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Bagikan Ke</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Kadaluarsa</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Tanggal Share</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">File Size</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
