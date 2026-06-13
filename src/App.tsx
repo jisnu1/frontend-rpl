@@ -146,6 +146,7 @@ export default function App() {
           searchPlaceholder={getSearchPlaceholder()}
           searchValue={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
+          showSearch={location.pathname !== '/admin'}
         />
         
         <main className="flex-1 overflow-y-auto min-h-0">

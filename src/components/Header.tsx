@@ -23,13 +23,15 @@ interface HeaderProps {
   searchPlaceholder?: string;
   searchValue?: string;
   onSearchChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  showSearch?: boolean;
 }
 
 export default function Header({ 
   onMenuClick, 
   searchPlaceholder = "Search Drive...", 
   searchValue = "", 
-  onSearchChange 
+  onSearchChange,
+  showSearch = true
 }: HeaderProps) {
   const { user } = useAuth();
   const { activities, notifications, unreadCount, cancelActivity, markAllNotificationsAsRead, clearNotifications } = useActivity();
@@ -101,32 +103,36 @@ export default function Header({
       </div>
 
       {/* Search Bar - Desktop Only */}
-      <div className="hidden md:flex flex-1 max-w-2xl">
-        <div className="relative w-full group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-            <Search className="w-4 h-4" />
-          </span>
-          <input
-            className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
-            placeholder={searchPlaceholder}
-            type="text"
-            value={searchValue}
-            onChange={onSearchChange}
-          />
+      {showSearch && (
+        <div className="hidden md:flex flex-1 max-w-2xl">
+          <div className="relative w-full group">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <Search className="w-4 h-4" />
+            </span>
+            <input
+              className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
+              placeholder={searchPlaceholder}
+              type="text"
+              value={searchValue}
+              onChange={onSearchChange}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Actions */}
       <div className="flex items-center gap-2 ml-auto">
         {/* Mobile Search Toggle Trigger */}
-        <button
-          type="button"
-          onClick={() => setIsMobileSearchOpen(true)}
-          className="md:hidden p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors"
-          title="Search"
-        >
-          <Search className="w-5 h-5" />
-        </button>
+        {showSearch && (
+          <button
+            type="button"
+            onClick={() => setIsMobileSearchOpen(true)}
+            className="md:hidden p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors"
+            title="Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+        )}
 
         <div className="relative">
           <button
