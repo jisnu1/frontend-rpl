@@ -333,7 +333,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                       return (
                         <tr 
                           key={file.id} 
-                          onClick={() => setActivePreviewFile(file)}
+                          onClick={(e) => {
+                            const target = e.target as HTMLElement;
+                            if (target.closest('button') || target.closest('a')) {
+                              return;
+                            }
+                            setActivePreviewFile(file);
+                          }}
                           className="group hover:bg-slate-50/40 transition-colors cursor-pointer"
                         >
                           {/* Nama */}
@@ -460,7 +466,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                     return (
                       <Card 
                         key={file.id} 
-                        onClick={() => setActivePreviewFile(file)}
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (target.closest('button') || target.closest('a')) {
+                            return;
+                          }
+                          setActivePreviewFile(file);
+                        }}
                         className="p-5 flex flex-col gap-4 group cursor-pointer hover:shadow-md hover:border-slate-350 transition-all active:scale-[0.98]"
                       >
                         
