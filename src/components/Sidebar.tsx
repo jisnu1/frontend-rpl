@@ -10,7 +10,8 @@ import {
   TrendingUp,
   LogOut,
   Settings,
-  HardDrive
+  HardDrive,
+  Shield
 } from 'lucide-react';
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
@@ -31,7 +32,7 @@ interface GoogleDriveStorageInfo {
 
 export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, uploadTrigger }: SidebarProps) {
   const location = useLocation();
-  const { logout, accessToken } = useAuth();
+  const { logout, accessToken, user } = useAuth();
   const [storage, setStorage] = useState<UserStorageResponse | null>(null);
   const [gdriveStorages, setGdriveStorages] = useState<GoogleDriveStorageInfo[]>([]);
 
@@ -83,6 +84,10 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, up
     { name: 'Shared', path: '/shared', icon: Users },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
+
+  if (user?.roles?.includes('ADMIN')) {
+    navLinks.push({ name: 'Admin Dashboard', path: '/admin', icon: Shield });
+  }
 
   const sidebarContent = (isMobile = false) => (
     <>
