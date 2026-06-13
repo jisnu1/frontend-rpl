@@ -11,9 +11,11 @@ import {
   Trash2,
   FileUp,
   FileDown,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import { useActivity } from '../context/ActivityContext';
+import { useToast } from '../context/ToastContext';
 import logoUrl from '../assets/horizon.png';
 
 interface HeaderProps {
@@ -32,11 +34,58 @@ export default function Header({
   const { user } = useAuth();
   const { activities, notifications, unreadCount, cancelActivity, markAllNotificationsAsRead, clearNotifications } = useActivity();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const activeDownloads = activities.filter(act => act.type === 'download' && act.status === 'running');
 
   return (
-    <header className="bg-white flex justify-between items-center h-16 px-6 w-full sticky top-0 border-b border-slate-100 z-30">
+    <header className="relative bg-white flex justify-between items-center h-16 px-6 w-full sticky top-0 border-b border-slate-100 z-30">
+      {/* Mobile Search Overlay */}
+      {isMobileSearchOpen && (
+        <div className="absolute inset-0 bg-white px-4 flex items-center gap-2.5 z-50 animate-fadeIn">
+          <button
+            type="button"
+            onClick={() => {
+              setIsMobileSearchOpen(false);
+              if (onSearchChange) {
+                const e = { target: { value: '' } } as React.ChangeEvent<HTMLInputElement>;
+                onSearchChange(e);
+              }
+            }}
+            className="p-2 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-50 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="relative flex-1">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <Search className="w-4 h-4" />
+            </span>
+            <input
+              autoFocus
+              className="w-full bg-[#F1F5F9] border-none rounded-full py-2.5 pl-11 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
+              placeholder={searchPlaceholder}
+              type="text"
+              value={searchValue}
+              onChange={onSearchChange}
+            />
+          </div>
+          {searchValue && (
+            <button
+              type="button"
+              onClick={() => {
+                if (onSearchChange) {
+                  const e = { target: { value: '' } } as React.ChangeEvent<HTMLInputElement>;
+                  onSearchChange(e);
+                }
+              }}
+              className="p-2 text-slate-400 hover:text-slate-650 rounded-full hover:bg-slate-50 transition-colors"
+            >
+              <X className="w-4.5 h-4.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Mobile Menu Trigger & Logo */}
       <div className="md:hidden flex items-center gap-3">
         <button
@@ -69,6 +118,16 @@ export default function Header({
 
       {/* Actions */}
       <div className="flex items-center gap-2 ml-auto">
+        {/* Mobile Search Toggle Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsMobileSearchOpen(true)}
+          className="md:hidden p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors"
+          title="Search"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+
         <div className="relative">
           <button
             onClick={() => {

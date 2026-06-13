@@ -52,9 +52,9 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
   );
 
   return (
-    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 animate-fadeIn">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full flex-1 space-y-6 sm:space-y-8 animate-fadeIn">
       {/* Page Header & Filters */}
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end flex-wrap gap-4">
         <div>
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-slate-400 mb-1 font-semibold">

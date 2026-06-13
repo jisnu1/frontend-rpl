@@ -207,7 +207,7 @@ export default function FilePreviewModal({
         </div>
 
         {/* Right Side: File Info & Download Section */}
-        <div className="md:w-2/5 p-6 md:p-8 flex flex-col justify-between bg-white text-slate-800">
+        <div className="md:w-2/5 p-6 md:p-8 flex flex-col justify-between bg-white text-slate-800 overflow-y-auto max-h-[45vh] md:max-h-none shrink-0">
           <div className="space-y-6">
             
             {/* Header / Title */}
