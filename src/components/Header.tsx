@@ -96,9 +96,9 @@ export default function Header({
         >
           <Menu className="w-5 h-5" />
         </button>
-        <Link to="/" className="text-lg font-extrabold text-primary flex items-center gap-1.5">
-          <img src={logoUrl} className="w-6 h-6 object-contain" alt="Horizon Drive Logo" />
-          <span>Horizon Drive</span>
+        <Link to="/" className="text-lg font-extrabold text-primary flex items-center gap-2">
+          <img src={logoUrl} className="w-8 h-8 object-contain" alt="Horizon Cloud Logo" />
+          <span>Horizon Cloud</span>
         </Link>
       </div>
 

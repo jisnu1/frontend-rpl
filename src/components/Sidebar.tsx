@@ -92,12 +92,16 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, up
   const sidebarContent = (isMobile = false) => (
     <>
       {/* Brand */}
-      <div className="px-8 mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src={logoUrl} className="w-10 h-10 object-contain" alt="Horizon Drive Logo" />
+      <div className="px-6 mb-8 flex items-center justify-between">
+        <div className="flex items-center gap-3.5 group cursor-pointer">
+          <img 
+            src={logoUrl} 
+            className="w-14 h-14 object-contain transition-transform duration-500 group-hover:scale-105" 
+            alt="Horizon Cloud Logo" 
+          />
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-white">Horizon Drive</span>
-            <span className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">Personal Multistorage Management</span>
+            <span className="text-xl font-extrabold tracking-tight text-white transition-colors group-hover:text-blue-200">Horizon Cloud</span>
+            <span className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage Management</span>
           </div>
         </div>
         {isMobile && (

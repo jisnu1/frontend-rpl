@@ -57,9 +57,9 @@ export default function Register() {
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="flex flex-col items-center mb-8 gap-2">
-          <img src={logoUrl} className="w-48 h-auto object-contain" alt="Horizon Drive Logo" />
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Horizon Drive</h1>
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Personal Multistorage Management</p>
+          <img src={logoUrl} className="w-56 h-auto object-contain" alt="Horizon Cloud Logo" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Horizon Cloud</h1>
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Multi Storage Management</p>
         </div>
 
         {/* Card Form */}
@@ -149,7 +149,7 @@ export default function Register() {
                 >
                   Kebijakan Privasi
                 </a>{' '}
-                Horizon Drive.
+                Horizon Cloud.
               </label>
             </div>
 
