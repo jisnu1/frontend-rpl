@@ -56,7 +56,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       className={`group hover:bg-slate-50/50 transition-colors cursor-pointer relative animate-fadeIn ${menuOpen ? 'z-30' : ''}`}
     >
       {/* File Name */}
-      <td className="px-8 py-5">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5">
         <div className="flex items-center gap-4">
           <FileIcon type={ext} className="w-5 h-5 shrink-0" />
           <div className="min-w-0">
@@ -134,7 +134,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
       <td className="px-6 py-5 text-xs font-bold text-slate-450 hidden sm:table-cell">{formatSize(file.size)}</td>
 
       {/* Actions */}
-      <td className="px-8 py-5 text-right relative">
+      <td className="px-4 sm:px-8 py-3.5 sm:py-5 text-right relative">
         <div className="flex items-center justify-end gap-2">
           {file.isPublic && file.shareLink && (
             <button
@@ -396,12 +396,12 @@ export default function SharedByMeTable({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Bagikan Ke</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Kadaluarsa</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Tanggal Share</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">File Size</th>
-                <th className="px-8 py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

@@ -177,11 +177,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Penyedia</th>
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Tanggal Ditambahkan</th>
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Ukuran</th>
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
+                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -227,7 +227,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           className="group hover:bg-slate-50/40 transition-colors cursor-pointer"
                         >
                           {/* Nama */}
-                          <td className="px-8 py-5">
+                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
                             <div className="flex items-center gap-4">
                               <FileIcon type={ext} className="w-5 h-5 shrink-0" />
                               <div className="min-w-0">
@@ -263,7 +263,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-8 py-5">
+                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
@@ -274,10 +274,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                     e.stopPropagation();
                                     navigate(`/recap?fileId=${file.id}`);
                                   }}
-                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50"
+                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50 p-2 sm:py-1.5 sm:px-3 rounded-lg sm:rounded-full border border-transparent hover:border-slate-100 sm:border-none"
                                   title="Analisis AI Recap"
                                 >
-                                  AI Recap
+                                  <span className="hidden sm:inline">AI Recap</span>
                                 </Button>
                               )}
                               <button
