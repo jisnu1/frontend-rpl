@@ -20,6 +20,14 @@ export async function verifyRegistration(data: { email: string; otp: string }): 
   await apiClient.post('/auth/verify-registration', data);
 }
 
+export async function requestForgotPassword(email: string): Promise<void> {
+  await apiClient.post('/auth/forgot-password/request', { email });
+}
+
+export async function resetPassword(data: { email: string; otp: string; newPassword: string }): Promise<void> {
+  await apiClient.post('/auth/forgot-password/reset', data);
+}
+
 export async function loginUser(data: LoginRequest): Promise<LoginResponse> {
   const response = await apiClient.post<LoginResponse>('/auth/login', data);
   return response.data;
