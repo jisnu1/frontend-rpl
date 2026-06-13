@@ -10,10 +10,7 @@ import {
   TrendingUp,
   LogOut,
   Settings,
-  HardDrive,
-  Shield,
-  ChevronLeft,
-  ChevronRight
+  HardDrive
 } from 'lucide-react';
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
@@ -25,8 +22,8 @@ interface SidebarProps {
   onCloseMobile: () => void;
   onUploadClick: () => void;
   uploadTrigger?: number;
-  isCollapsed?: boolean;
-  onToggleCollapse?: () => void;
+  isMinimized?: boolean;
+  onToggleMinimize?: () => void;
 }
 
 interface GoogleDriveStorageInfo {
@@ -39,13 +36,14 @@ export default function Sidebar({
   onCloseMobile, 
   onUploadClick, 
   uploadTrigger,
-  isCollapsed = false,
-  onToggleCollapse
+  isMinimized = false,
+  onToggleMinimize
 }: SidebarProps) {
   const location = useLocation();
-  const { logout, accessToken, user } = useAuth();
+  const { logout, accessToken } = useAuth();
   const [storage, setStorage] = useState<UserStorageResponse | null>(null);
   const [gdriveStorages, setGdriveStorages] = useState<GoogleDriveStorageInfo[]>([]);
+  const [isStorageCollapsed, setIsStorageCollapsed] = useState(false);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -96,185 +94,212 @@ export default function Sidebar({
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
-  if (user?.roles?.includes('ADMIN')) {
-    navLinks.push({ name: 'Admin Dashboard', path: '/admin', icon: Shield });
-  }
+  const sidebarContent = (isMobile = false) => {
+    const isMinimizedState = !isMobile && isMinimized;
+    
+    return (
+      <>
+        {/* Brand */}
+        <div className={`mb-8 flex items-center justify-between transition-all duration-300 ${
+          isMinimizedState ? 'px-4 flex-col gap-4' : 'px-8'
+        }`}>
+          <div className="flex items-center gap-3">
+            <img src={logoUrl} className="w-10 h-10 object-contain shrink-0" alt="Horizon Drive Logo" />
+            {!isMinimizedState && (
+              <div className="flex flex-col animate-fadeIn">
+                <span className="text-lg font-bold tracking-tight text-white">Horizon Cloud</span>
+                <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage</span>
+              </div>
+            )}
+          </div>
 
-  const sidebarContent = (isMobile = false, isCollapsedState = false) => (
-    <>
-      {/* Brand Header */}
-      <div className={`mb-8 flex items-center justify-between transition-all ${
-        isCollapsedState ? 'px-4 flex-col gap-3' : 'px-6'
-      }`}>
-        <div className={`flex items-center group cursor-pointer ${isCollapsedState ? 'justify-center' : 'gap-3.5'}`}>
-          <img 
-            src={logoUrl} 
-            className={`object-contain transition-all duration-300 group-hover:scale-105 ${
-              isCollapsedState ? 'w-10 h-10' : 'w-12 h-12'
-            }`} 
-            alt="Horizon Cloud Logo" 
-          />
-          {!isCollapsedState && (
-            <div className="flex flex-col animate-fade-in">
-              <span className="text-xl font-extrabold tracking-tight text-white transition-colors group-hover:text-blue-200">Horizon Cloud</span>
-              <span className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage Management</span>
-            </div>
+          {/* Toggle Button for desktop minimize/maximize */}
+          {!isMobile && onToggleMinimize && (
+            <button 
+              onClick={onToggleMinimize} 
+              className={`hidden md:flex p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer select-none ${
+                isMinimizedState ? 'mt-2' : ''
+              }`}
+              title={isMinimizedState ? "Maximize Sidebar" : "Minimize Sidebar"}
+            >
+              <svg 
+                className={`w-4 h-4 transition-transform duration-300 ${isMinimizedState ? 'rotate-180' : ''}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {isMobile && (
+            <button onClick={onCloseMobile} className="text-white hover:opacity-80 md:hidden p-1 rounded-full hover:bg-white/5">
+              <X className="w-5 h-5" />
+            </button>
           )}
         </div>
 
-        {/* Toggle Collapse Button (Desktop Only) */}
-        {!isMobile && onToggleCollapse && (
-          <button 
-            onClick={onToggleCollapse} 
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 shrink-0"
-            title={isCollapsedState ? "Expand Sidebar" : "Collapse Sidebar"}
-          >
-            {isCollapsedState ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        )}
-
-        {/* Close Mobile Menu Button */}
-        {isMobile && (
-          <button onClick={onCloseMobile} className="text-white hover:opacity-80 md:hidden p-1 rounded-full hover:bg-white/5">
-            <X className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-
-      {/* CTA Button */}
-      <div className={`mb-8 transition-all ${isCollapsedState ? 'px-4' : 'px-6'}`}>
-        {isCollapsedState ? (
-          <button
-            onClick={() => onUploadClick()}
-            className="w-12 h-12 mx-auto rounded-full bg-white text-primary hover:shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200"
-            title="Upload New File"
-          >
-            <Plus className="w-5 h-5 shrink-0" />
-          </button>
-        ) : (
+        {/* CTA */}
+        <div className={`mb-8 transition-all duration-300 ${isMinimizedState ? 'px-4' : 'px-6'}`}>
           <Button
             variant="secondary"
-            className="w-full bg-white text-primary hover:shadow-lg font-bold hover:scale-[1.02] transition-all"
+            className={`bg-white text-primary hover:shadow-lg font-bold hover:scale-[1.02] transition-all duration-300 flex items-center justify-center ${
+              isMinimizedState ? 'w-12 h-12 p-0 rounded-full mx-auto' : 'w-full'
+            }`}
             icon={Plus}
             onClick={() => {
               onUploadClick();
               if (isMobile) onCloseMobile();
             }}
           >
-            Upload New File
+            {!isMinimizedState && <span>Upload New File</span>}
           </Button>
-        )}
-      </div>
+        </div>
 
-      {/* Main Navigation links */}
-      <div className={`flex-1 flex flex-col gap-1.5 ${isCollapsedState ? 'px-2' : 'px-4'}`}>
-        {navLinks.map((link) => {
-          const isActive = location.pathname === link.path;
-          const LinkIcon = link.icon;
-          return (
-            <Link
-              key={link.name}
-              to={link.path}
-              onClick={isMobile ? onCloseMobile : undefined}
-              className={`flex items-center rounded-xl transition-all duration-200 text-xs font-bold ${
-                isCollapsedState ? 'justify-center p-3.5' : 'gap-3 px-4 py-3'
-              } ${
-                isActive
-                  ? 'text-white bg-white/10 shadow-sm'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
-              }`}
-              title={isCollapsedState ? link.name : undefined}
-            >
-              <LinkIcon className="w-4.5 h-4.5 shrink-0" />
-              {!isCollapsedState && <span className="animate-fade-in">{link.name}</span>}
-            </Link>
-          );
-        })}
-      </div>
+        {/* Main Nav */}
+        <div className={`flex-1 flex flex-col gap-1.5 transition-all duration-300 ${
+          isMinimizedState ? 'px-2 items-center' : 'px-4'
+        }`}>
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path;
+            const LinkIcon = link.icon;
+            return (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={isMobile ? onCloseMobile : undefined}
+                className={`flex items-center rounded-xl font-bold transition-all duration-250 ${
+                  isMinimizedState ? 'p-3 justify-center w-12 h-12' : 'gap-3 px-4 py-3 text-xs w-full'
+                } ${
+                  isActive
+                    ? 'text-white bg-white/10 shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
+                }`}
+                title={isMinimizedState ? link.name : undefined}
+              >
+                <LinkIcon className="w-5 h-5 shrink-0" />
+                {!isMinimizedState && <span className="text-xs">{link.name}</span>}
+              </Link>
+            );
+          })}
+        </div>
 
-      {/* Footer Nav */}
-      <div className={`mt-auto border-t border-white/10 pt-6 flex flex-col gap-2 ${isCollapsedState ? 'px-2' : 'px-4'}`}>
-        
-        {/* Storage Details Section - Hide when collapsed */}
-        {!isCollapsedState && (
-          <div className="px-4 mb-2 animate-fade-in">
-            <p className="text-[10px] font-bold text-white/55 uppercase tracking-wider mb-3">Storage Details</p>
-            
-            {/* Personal Storage */}
-            <div className="flex items-center justify-between mb-2 text-white/95 text-xs">
-              <div className="flex items-center gap-2.5">
-                <Cloud className="text-white/60 w-4 h-4" />
-                <span>Personal Storage</span>
+        {/* Footer Nav */}
+        <div className={`mt-auto border-t border-white/10 pt-6 flex flex-col gap-2 transition-all duration-300 ${
+          isMinimizedState ? 'px-2 items-center pb-4' : 'px-4 pb-6'
+        }`}>
+          {!isMinimizedState ? (
+            <div className="px-4 mb-2">
+              {/* Storage Details Header with collapse toggle */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold text-white/55 uppercase tracking-wider">Storage Details</p>
+                <button 
+                  onClick={() => setIsStorageCollapsed(!isStorageCollapsed)}
+                  className="text-white/60 hover:text-white p-1 rounded-md hover:bg-white/5 transition-all cursor-pointer select-none"
+                  title={isStorageCollapsed ? "Expand Storage Details" : "Collapse Storage Details"}
+                >
+                  <svg 
+                    className={`w-3.5 h-3.5 transition-transform duration-300 ${isStorageCollapsed ? '' : 'rotate-90'}`} 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              <span className="font-bold">{formatSize(usedBytes)} / {formatSize(quotaBytes)}</span>
-            </div>
-            <div className="w-full bg-white/20 h-1 rounded-full mb-4">
-              <div 
-                className="bg-white h-1 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(percentage, 100)}%` }}
-              ></div>
-            </div>
-
-            {/* Google Drive Storage */}
-            {gdriveStorages.map((gd, idx) => {
-              const gPercent = gd.storage.totalBytes > 0
-                ? (gd.storage.usedBytes / gd.storage.totalBytes) * 100
-                : 0;
-              return (
-                <div key={idx}>
-                  <div className="flex items-center justify-between mb-1 text-white/95 text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <HardDrive className="text-emerald-400 w-4 h-4 shrink-0" />
-                      <span className="truncate" title={gd.email}>Google Drive</span>
+              
+              {/* Storage Details Content List */}
+              <div className={`space-y-3 transition-all duration-300 overflow-hidden ${
+                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[300px] opacity-100 mb-4'
+              }`}>
+                {/* Personal Storage */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-white/95 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <Cloud className="text-white/60 w-4 h-4" />
+                      <span>Personal Storage</span>
                     </div>
-                    <span className="font-bold shrink-0 ml-2">{formatSize(gd.storage.usedBytes)} / {formatSize(gd.storage.totalBytes)}</span>
+                    <span className="font-bold">{formatSize(usedBytes)} / {formatSize(quotaBytes)}</span>
                   </div>
-                  <p className="text-[9px] text-white/40 font-semibold mb-1.5 pl-[26px] truncate">{gd.email}</p>
-                  <div className="w-full bg-white/20 h-1 rounded-full mb-4">
+                  <div className="w-full bg-white/20 h-1 rounded-full">
                     <div 
-                      className="bg-emerald-400 h-1 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(gPercent, 100)}%` }}
+                      className="bg-white h-1 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
                     ></div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-        
-        {/* Upgrade Storage Button - Hide when collapsed */}
-        {!isCollapsedState && (
-          <a
-            href="#"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition-all text-xs shadow-sm hover:scale-[1.01] animate-fade-in"
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span>Upgrade Storage</span>
-          </a>
-        )}
 
-        {/* Log Out Button */}
-        <button
-          onClick={logout}
-          className={`flex items-center justify-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold transition-all text-xs border border-white/5 ${
-            isCollapsedState ? 'p-3.5 mx-auto w-12 h-12' : 'px-4 py-2.5 mt-1'
-          }`}
-          title={isCollapsedState ? "Log Out" : undefined}
-        >
-          <LogOut className="w-4 h-4 shrink-0" />
-          {!isCollapsedState && <span className="animate-fade-in">Log Out</span>}
-        </button>
-      </div>
-    </>
-  );
+                {/* Google Drive Storages */}
+                {gdriveStorages.map((gd, idx) => {
+                  const gPercent = gd.storage.totalBytes > 0
+                    ? (gd.storage.usedBytes / gd.storage.totalBytes) * 100
+                    : 0;
+                  return (
+                    <div key={idx} className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-white/95 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <HardDrive className="text-emerald-400 w-4 h-4 shrink-0" />
+                          <span className="truncate" title={gd.email}>Google Drive</span>
+                        </div>
+                        <span className="font-bold shrink-0 ml-2">{formatSize(gd.storage.usedBytes)} / {formatSize(gd.storage.totalBytes)}</span>
+                      </div>
+                      <p className="text-[9px] text-white/40 font-semibold pl-[26px] truncate">{gd.email}</p>
+                      <div className="w-full bg-white/20 h-1 rounded-full">
+                        <div 
+                          className="bg-emerald-400 h-1 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(gPercent, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+          
+          {!isMinimizedState ? (
+            <a
+              href="#"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition-all text-xs shadow-sm hover:scale-[1.01]"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Upgrade Storage</span>
+            </a>
+          ) : (
+            <a
+              href="#"
+              className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition-all shadow-sm hover:scale-[1.05]"
+              title="Upgrade Storage"
+            >
+              <TrendingUp className="w-5 h-5" />
+            </a>
+          )}
+
+          {/* Log Out Button */}
+          <button
+            onClick={logout}
+            className={`flex items-center justify-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold transition-all border border-white/5 ${
+              isMinimizedState ? 'w-12 h-12 p-0' : 'px-4 py-2.5 text-xs mt-1'
+            }`}
+            title={isMinimizedState ? "Log Out" : undefined}
+          >
+            <LogOut className="w-4 h-4" />
+            {!isMinimizedState && <span>Log Out</span>}
+          </button>
+        </div>
+      </>
+    );
+  };
 
   return (
     <>
       {/* Desktop Drawer Navigation */}
       <nav className={`hidden md:flex bg-primary h-screen rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-40 transition-all duration-300 ${
-        isCollapsed ? 'w-20' : 'w-[280px]'
+        isMinimized ? 'w-20' : 'w-[280px]'
       }`}>
-        {sidebarContent(false, isCollapsed)}
+        {sidebarContent(false)}
       </nav>
 
       {/* Mobile Drawer Navigation (Overlay) */}
@@ -285,11 +310,12 @@ export default function Sidebar({
         onClick={onCloseMobile}
       >
         <nav
-          className="bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl"
-          style={{ transform: isMobileOpen ? 'translateX(0)' : 'translateX(-100%)' }}
+          className={`bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl ${
+            isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
-          {sidebarContent(true, false)}
+          {sidebarContent(true)}
         </nav>
       </div>
     </>
