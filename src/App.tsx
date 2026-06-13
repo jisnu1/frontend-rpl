@@ -11,7 +11,6 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import VerifyRegistration from './pages/Auth/VerifyRegistration';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-import NotFound from './pages/NotFound';
 import PublicSharePage from './pages/Shared/PublicSharePage';
 import { useAuth } from './context/AuthContext';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
@@ -49,9 +48,7 @@ function LoadingScreen() {
  *
  * SECURITY FIX: Sidebar dan Header HANYA dirender setelah
  * `isAuthenticated === true` dikonfirmasi. Seluruh rute anak
- * (termasuk 404) dijamin sudah melewati auth check ini.
- *
- * Sebelumnya: layout dirender tanpa guard → data user bocor di rute 404.
+ * dijamin sudah melewati auth check ini.
  */
 function ProtectedLayout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -65,7 +62,6 @@ function ProtectedLayout() {
 
   // ── Auth Guard ───────────────────────────────────────────────────────────
   // Jika belum login, redirect ke /login — Sidebar & Header TIDAK akan dirender.
-  // Ini mencegah data user bocor pada rute apapun termasuk 404 (/sigin, dll).
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -153,7 +149,6 @@ export default function App() {
   return (
     <Routes>
       {/* ── Public Routes ─────────────────────────────────────────────────── */}
-      {/* Tidak memiliki layout — tidak ada Sidebar/Header/data user          */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-registration" element={<VerifyRegistration />} />
@@ -162,9 +157,6 @@ export default function App() {
       <Route path="/shared/public/:shareToken" element={<PublicSharePage />} />
 
       {/* ── Protected Routes ──────────────────────────────────────────────── */}
-      {/* Semua rute di bawah ini melewati ProtectedLayout terlebih dahulu.   */}
-      {/* ProtectedLayout menjalankan auth check sebelum merender komponen.   */}
-      {/* Termasuk rute 404 — user yang belum login diredirect ke /login.     */}
       <Route element={<ProtectedLayout />}>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/recap" element={<RecapPage />} />
@@ -176,10 +168,8 @@ export default function App() {
           </AdminRoute>
         } />
 
-        {/* Catch-all 404 — di dalam protected layout.                        */}
-        {/* Jika user belum login & akses /sigin → ProtectedLayout redirect   */}
-        {/* ke /login sebelum NotFound sempat dirender.                        */}
-        <Route path="*" element={<NotFound />} />
+        {/* Catch-all: Mengarahkan semua rute tak dikenal langsung ke home (/) */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );
