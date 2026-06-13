@@ -57,6 +57,7 @@ function ProtectedLayout() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadTrigger, setUploadTrigger] = useState(0);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   if (isLoading) return <LoadingScreen />;
 
@@ -84,10 +85,14 @@ function ProtectedLayout() {
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         onUploadClick={() => setIsUploadOpen(true)}
         uploadTrigger={uploadTrigger}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
       {/* Main Content Pane */}
-      <div className="flex-1 md:pl-[280px] flex flex-col h-screen w-full overflow-hidden">
+      <div className={`flex-1 flex flex-col h-screen w-full overflow-hidden transition-all duration-300 ${
+        isSidebarCollapsed ? 'md:pl-20' : 'md:pl-[280px]'
+      }`}>
         {/* Header — hanya dirender setelah auth terkonfirmasi */}
         <Header
           onMenuClick={() => setIsMobileSidebarOpen(true)}
