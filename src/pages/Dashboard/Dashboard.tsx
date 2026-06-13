@@ -387,7 +387,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                     e.stopPropagation();
                                     navigate(`/recap?fileId=${file.id}`);
                                   }}
-                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50"
+                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
                                   title="Analisis AI Recap"
                                 >
                                   AI Recap
@@ -398,7 +398,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   downloadFile(file.id, file.originalFileName, file.provider, file.size);
                                 }}
-                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100"
+                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100 cursor-pointer"
                                 title="Unduh Berkas"
                               >
                                 <Download className="w-4 h-4" />
@@ -408,7 +408,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   setActiveShareFile(file);
                                 }}
-                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100"
+                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100 cursor-pointer"
                                 title="Bagikan Akses Berkas"
                               >
                                 <Share2 className="w-4 h-4" />
@@ -418,7 +418,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   setConfirmDeleteFile(file);
                                 }}
-                                className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-55 transition-all"
+                                className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-55 transition-all cursor-pointer"
                                 title="Hapus Berkas"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -511,7 +511,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   navigate(`/recap?fileId=${file.id}`);
                                 }}
-                                className="p-1.5 rounded-lg text-primary hover:bg-indigo-50/50 transition-colors"
+                                className="p-1.5 rounded-lg text-primary hover:bg-indigo-50/50 transition-colors cursor-pointer"
                                 title="AI Recap"
                               >
                                 <Sparkles className="w-4 h-4" />
@@ -522,7 +522,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                  e.stopPropagation();
                                  downloadFile(file.id, file.originalFileName, file.provider, file.size);
                                }}
-                               className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100"
+                               className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer"
                                title="Download"
                              >
                                <Download className="w-4 h-4" />
@@ -532,7 +532,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                  e.stopPropagation();
                                  setActiveShareFile(file);
                                }}
-                               className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100"
+                               className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer"
                                title="Bagikan"
                              >
                                <Share2 className="w-4 h-4" />
@@ -542,7 +542,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                  e.stopPropagation();
                                  setConfirmDeleteFile(file);
                                }}
-                               className="p-1.5 rounded-lg text-red-500 hover:bg-red-55 transition-colors"
+                               className="p-1.5 rounded-lg text-red-500 hover:bg-red-55 transition-colors cursor-pointer"
                                title="Hapus"
                              >
                                <Trash2 className="w-4 h-4" />
