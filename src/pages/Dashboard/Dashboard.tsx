@@ -136,7 +136,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             <FolderOpen className="w-8 h-8 text-primary" />
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Kelola seluruh berkas penyimpanan pribadi Anda di server Horizon Cloud.
+            Kelola seluruh berkas penyimpanan pribadi Anda di Horizon Personal Multistorage Management.
           </p>
         </div>
 

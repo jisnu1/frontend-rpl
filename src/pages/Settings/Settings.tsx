@@ -517,13 +517,13 @@ export default function Settings() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold text-slate-800">Horizon Local Storage</h3>
                 <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                  Penyimpanan personal cloud yang di-host langsung pada server Horizon VPS lokal Anda.
+                  Penyimpanan Personal Multistorage Management yang di-host langsung pada server Horizon VPS lokal Anda.
                 </p>
 
                 {personalStorage && (
                   <div className="mt-4 max-w-md">
                     <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 mb-1.5">
-                      <span>Pemakaian Personal Storage</span>
+                      <span>Pemakaian Personal Multistorage Management</span>
                       <span>
                         {formatSize(localUsed)} / {formatSize(localTotal)}
                       </span>

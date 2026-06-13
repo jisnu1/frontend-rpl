@@ -59,7 +59,7 @@ export default function Register() {
         <div className="flex flex-col items-center mb-8 gap-2">
           <img src={logoUrl} className="w-48 h-auto object-contain" alt="Horizon Drive Logo" />
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Horizon Drive</h1>
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Cloud Personal Storage</p>
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Personal Multistorage Management</p>
         </div>
 
         {/* Card Form */}

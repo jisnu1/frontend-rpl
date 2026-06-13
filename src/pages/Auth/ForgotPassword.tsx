@@ -92,7 +92,7 @@ export default function ForgotPassword() {
             <Cloud className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Horizon Drive</h1>
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Cloud Personal Storage</p>
+          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Personal Multistorage Management</p>
         </div>
 
         {/* Card Form */}

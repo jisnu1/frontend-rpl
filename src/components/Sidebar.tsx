@@ -92,7 +92,7 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, up
           <img src={logoUrl} className="w-10 h-10 object-contain" alt="Horizon Drive Logo" />
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight text-white">Horizon Drive</span>
-            <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Cloud Storage</span>
+            <span className="text-[9px] text-white/60 font-semibold uppercase tracking-wider">Personal Multistorage Management</span>
           </div>
         </div>
         {isMobile && (
@@ -149,7 +149,7 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, onUploadClick, up
           <div className="flex items-center justify-between mb-2 text-white/95 text-xs">
             <div className="flex items-center gap-2.5">
               <Cloud className="text-white/60 w-4 h-4" />
-              <span>Personal Storage</span>
+              <span>Personal Multistorage Management</span>
             </div>
             <span className="font-bold">{formatSize(usedBytes)} / {formatSize(quotaBytes)}</span>
           </div>

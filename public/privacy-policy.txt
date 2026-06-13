@@ -28,7 +28,7 @@ Technical Information
 
 2. HOW WE USE YOUR INFORMATION
 We use collected information to:
-- Provide, maintain, and operate the personal cloud storage service
+- Provide, maintain, and operate the Personal Multistorage Management service
 - Authenticate users and verify registration status via OTP codes
 - Manage, upload, download, and delete files on your behalf across Local Storage Nodes or connected Google Drive accounts
 - Process documents using artificial intelligence to generate summaries and chat insights
