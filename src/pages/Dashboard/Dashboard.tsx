@@ -376,7 +376,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-8 py-5">
+                          <td className="px-8 py-5" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
@@ -499,7 +499,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                         </div>
 
                         {/* Footer & Aksi */}
-                        <div className="border-t border-slate-100 pt-3 flex justify-between items-center mt-auto">
+                        <div 
+                          className="border-t border-slate-100 pt-3 flex justify-between items-center mt-auto"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <span className="text-xs font-bold text-slate-500">{formatSize(file.size)}</span>
                           <div className="flex gap-1">
                             {isPdf && (
