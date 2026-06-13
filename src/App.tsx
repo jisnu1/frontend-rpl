@@ -94,13 +94,16 @@ export default function App() {
 
   if (isAuthRoute) {
     return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-registration" element={<VerifyRegistration />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-registration" element={<VerifyRegistration />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <FloatingReportButton />
+      </>
     );
   }
 
