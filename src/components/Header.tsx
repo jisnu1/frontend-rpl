@@ -5,7 +5,6 @@ import {
   Menu, 
   Search, 
   Bell, 
-  HelpCircle, 
   Settings, 
   Cloud,
   Trash2,
@@ -252,9 +251,6 @@ export default function Header({
             </>
           )}
         </div>
-        <button className="hidden sm:block p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors">
-          <HelpCircle className="w-5 h-5" />
-        </button>
         <Link 
           to="/settings" 
           className="hidden sm:block p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors"
