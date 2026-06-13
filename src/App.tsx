@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate, Outlet, useOutletContext } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import UploadModal from './components/UploadModal';
@@ -17,98 +17,64 @@ import { useAuth } from './context/AuthContext';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 
-// Reusable Route Protection Wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+// Tipe context yang diteruskan dari ProtectedLayout ke child routes
+type LayoutContext = {
+  uploadTrigger: number;
+  searchQuery: string;
+};
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
-        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+// Hook helper untuk child routes mengambil context dari layout
+export function useLayoutContext() {
+  return useOutletContext<LayoutContext>();
 }
 
-// Reusable Route Protection Wrapper for Admin
-function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
-        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !user?.roles?.includes('ADMIN')) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
+// Loading spinner terpusat
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
+      <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        />
+      </svg>
+    </div>
+  );
 }
 
-export default function App() {
+/**
+ * ProtectedLayout — Layout shell yang terproteksi.
+ *
+ * SECURITY FIX: Sidebar dan Header HANYA dirender setelah
+ * `isAuthenticated === true` dikonfirmasi. Seluruh rute anak
+ * (termasuk 404) dijamin sudah melewati auth check ini.
+ *
+ * Sebelumnya: layout dirender tanpa guard → data user bocor di rute 404.
+ */
+function ProtectedLayout() {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadTrigger, setUploadTrigger] = useState(0);
-  const location = useLocation();
+
+  if (isLoading) return <LoadingScreen />;
+
+  // ── Auth Guard ───────────────────────────────────────────────────────────
+  // Jika belum login, redirect ke /login — Sidebar & Header TIDAK akan dirender.
+  // Ini mencegah data user bocor pada rute apapun termasuk 404 (/sigin, dll).
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   const getSearchPlaceholder = () => {
     if (location.pathname === '/shared') return 'Search shared files...';
     return 'Search Drive...';
   };
-
-  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/verify-registration' || location.pathname === '/forgot-password';
-  const isPublicShareRoute = location.pathname.startsWith('/shared/public/');
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#F8FAFC]">
-        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      </div>
-    );
-  }
-
-  if (isPublicShareRoute) {
-    return (
-      <Routes>
-        <Route path="/shared/public/:provider/:shareToken" element={<PublicSharePage />} />
-        <Route path="/shared/public/:shareToken" element={<PublicSharePage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
-
-  if (isAuthRoute) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-registration" element={<VerifyRegistration />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
 
   const handleUploadSuccess = () => {
     setUploadTrigger(prev => prev + 1);
@@ -116,7 +82,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-full relative overflow-hidden bg-[#F8FAFC]">
-      {/* Sidebar Navigation */}
+      {/* Sidebar — hanya dirender setelah auth terkonfirmasi */}
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
@@ -126,6 +92,7 @@ export default function App() {
 
       {/* Main Content Pane */}
       <div className="flex-1 md:pl-[280px] flex flex-col h-screen w-full overflow-hidden">
+        {/* Header — hanya dirender setelah auth terkonfirmasi */}
         <Header
           onMenuClick={() => setIsMobileSidebarOpen(true)}
           searchPlaceholder={getSearchPlaceholder()}
@@ -133,24 +100,87 @@ export default function App() {
           onSearchChange={(e) => setSearchQuery(e.target.value)}
           showSearch={location.pathname !== '/admin'}
         />
-        
+
         <main className="flex-1 overflow-y-auto min-h-0">
-          <Routes>
-            <Route path="/" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
-            <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
-            <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          {/* Child routes dirender di sini, menerima context dari layout */}
+          <Outlet context={{ uploadTrigger, searchQuery } satisfies LayoutContext} />
         </main>
       </div>
 
-      {/* Global state-driven Interactive Upload Modal */}
-      <UploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUploadSuccess={handleUploadSuccess} />
+      {/* Global Upload Modal */}
+      <UploadModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+      />
 
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
     </div>
+  );
+}
+
+// Admin route guard — hanya untuk user dengan role ADMIN
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return <LoadingScreen />;
+
+  if (!isAuthenticated || !user?.roles?.includes('ADMIN')) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// Page wrappers yang mengambil state dari ProtectedLayout via Outlet context
+function DashboardPage() {
+  const { uploadTrigger, searchQuery } = useLayoutContext();
+  return <Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} />;
+}
+
+function RecapPage() {
+  const { uploadTrigger, searchQuery } = useLayoutContext();
+  return <Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} />;
+}
+
+function SharedPage() {
+  const { searchQuery } = useLayoutContext();
+  return <Shared searchQuery={searchQuery} />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      {/* ── Public Routes ─────────────────────────────────────────────────── */}
+      {/* Tidak memiliki layout — tidak ada Sidebar/Header/data user          */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/verify-registration" element={<VerifyRegistration />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/shared/public/:provider/:shareToken" element={<PublicSharePage />} />
+      <Route path="/shared/public/:shareToken" element={<PublicSharePage />} />
+
+      {/* ── Protected Routes ──────────────────────────────────────────────── */}
+      {/* Semua rute di bawah ini melewati ProtectedLayout terlebih dahulu.   */}
+      {/* ProtectedLayout menjalankan auth check sebelum merender komponen.   */}
+      {/* Termasuk rute 404 — user yang belum login diredirect ke /login.     */}
+      <Route element={<ProtectedLayout />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/recap" element={<RecapPage />} />
+        <Route path="/shared" element={<SharedPage />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        } />
+
+        {/* Catch-all 404 — di dalam protected layout.                        */}
+        {/* Jika user belum login & akses /sigin → ProtectedLayout redirect   */}
+        {/* ke /login sebelum NotFound sempat dirender.                        */}
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 }
