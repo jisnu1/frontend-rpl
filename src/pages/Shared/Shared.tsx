@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react';
 import SharedFileTable from './components/SharedFileTable';
 import SharedByMeTable from './components/SharedByMeTable';
 import { fetchSharedWithMe, fetchSharedByMe, SharedFileDto, SharedByMeDto } from '../../api/shared';
-import { Filter, List, Grid, ChevronRight } from 'lucide-react';
+import { 
+  Filter, 
+  List, 
+  Grid, 
+  ChevronRight,
+  Files,
+  FileText,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Table as TableIcon
+} from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
 interface SharedProps {
@@ -16,6 +26,30 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
   const [withMeFiles, setWithMeFiles] = useState<SharedFileDto[]>([]);
   const [byMeFiles, setByMeFiles] = useState<SharedByMeDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+
+  const getFileExtension = (filename: string) => {
+    return filename.split('.').pop() || '';
+  };
+
+  const filterCategories = [
+    { id: 'all', label: 'Semua', icon: Files, extensions: [] as string[] },
+    { id: 'document', label: 'Dokumen (PDF/Word)', icon: FileText, extensions: ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'ppt', 'pptx'] },
+    { id: 'image', label: 'Gambar', icon: ImageIcon, extensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'] },
+    { id: 'video', label: 'Video', icon: VideoIcon, extensions: ['mp4', 'mkv', 'avi', 'mov', 'flv', 'wmv', 'webm'] },
+    { id: 'spreadsheet', label: 'Spreadsheet', icon: TableIcon, extensions: ['xls', 'xlsx', 'csv', 'ods'] },
+  ];
+
+  const currentFilesList = activeTab === 'with-me' ? withMeFiles : byMeFiles;
+
+  const getCategoryCount = (category: typeof filterCategories[0]) => {
+    if (category.id === 'all') return currentFilesList.length;
+    return currentFilesList.filter(f => {
+      const ext = getFileExtension(f.originalFileName).toLowerCase();
+      return category.extensions.includes(ext);
+    }).length;
+  };
   const { error: toastError } = useToast();
 
   const loadData = async () => {
@@ -40,21 +74,33 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
     loadData();
   }, [activeTab]);
 
-  // Filter lists based on search query
-  const filteredWithMe = withMeFiles.filter((f) =>
-    f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (f.ownerEmail || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter lists based on search query and category
+  const filteredWithMe = withMeFiles.filter((f) => {
+    const matchesSearch = f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.ownerEmail || '').toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
 
-  const filteredByMe = byMeFiles.filter((f) =>
-    f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (f.sharedWithEmail || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    if (activeFilter === 'all') return true;
+    const ext = getFileExtension(f.originalFileName).toLowerCase();
+    const category = filterCategories.find(c => c.id === activeFilter);
+    return category ? category.extensions.includes(ext) : true;
+  });
+
+  const filteredByMe = byMeFiles.filter((f) => {
+    const matchesSearch = f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (f.sharedWithEmail || '').toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    if (activeFilter === 'all') return true;
+    const ext = getFileExtension(f.originalFileName).toLowerCase();
+    const category = filterCategories.find(c => c.id === activeFilter);
+    return category ? category.extensions.includes(ext) : true;
+  });
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full flex-1 space-y-6 sm:space-y-8 animate-fadeIn">
+    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 animate-fadeIn">
       {/* Page Header & Filters */}
-      <div className="flex justify-between items-end flex-wrap gap-4">
+      <div className="flex justify-between items-end">
         <div>
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-slate-400 mb-1 font-semibold">
@@ -112,11 +158,83 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
         </div>
 
         {/* Action Controls */}
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
-            <Filter className="w-4 h-4 text-slate-500" />
-            Filter
-          </button>
+        <div className="flex gap-3 relative">
+          {/* Tombol Filter dengan Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
+                activeFilter !== 'all'
+                  ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
+              <span>
+                {activeFilter === 'all'
+                  ? 'Filter'
+                  : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
+              </span>
+              <svg
+                className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
+                  isFilterDropdownOpen ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {isFilterDropdownOpen && (
+              <>
+                {/* Backdrop to handle clicks outside the dropdown */}
+                <div className="fixed inset-0 z-20" onClick={() => setIsFilterDropdownOpen(false)} />
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-100 shadow-[0px_10px_30px_rgba(15,23,42,0.1)] py-2 z-30 animate-fadeIn">
+                  <div className="px-4 py-2 border-b border-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Pilih Jenis Berkas
+                  </div>
+                  {filterCategories.map((category) => {
+                    const IconComponent = category.icon;
+                    const isActive = activeFilter === category.id;
+                    const count = getCategoryCount(category);
+
+                    return (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setActiveFilter(category.id);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
+                          isActive
+                            ? 'text-[#0052cc] bg-[#0052cc]/5'
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded-lg transition-colors ${
+                            isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
+                          }`}>
+                            <IconComponent className="w-4 h-4" />
+                          </div>
+                          <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
+                        </div>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                          isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
           
           {/* View Mode Toggle */}
           <div className="bg-slate-100 p-1 rounded-xl flex gap-1">

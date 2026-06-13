@@ -10,7 +10,13 @@ import {
   SearchX, 
   AlertTriangle,
   ChevronRight,
-  Share2
+  Share2,
+  Filter,
+  Files,
+  FileText,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Table as TableIcon
 } from 'lucide-react';
 import { fetchMyFiles, deleteFile, getDownloadUrl, FileResponse } from '../../api/files';
 import Button from '../../components/ui/Button';
@@ -36,6 +42,28 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeShareFile, setActiveShareFile] = useState<FileResponse | null>(null);
   const [activePreviewFile, setActivePreviewFile] = useState<FileResponse | null>(null);
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+
+  const getFileExtension = (filename: string) => {
+    return filename.split('.').pop() || '';
+  };
+
+  const filterCategories = [
+    { id: 'all', label: 'Semua', icon: Files, extensions: [] as string[] },
+    { id: 'document', label: 'Dokumen (PDF/Word)', icon: FileText, extensions: ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'ppt', 'pptx'] },
+    { id: 'image', label: 'Gambar', icon: ImageIcon, extensions: ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'] },
+    { id: 'video', label: 'Video', icon: VideoIcon, extensions: ['mp4', 'mkv', 'avi', 'mov', 'flv', 'wmv', 'webm'] },
+    { id: 'spreadsheet', label: 'Spreadsheet', icon: TableIcon, extensions: ['xls', 'xlsx', 'csv', 'ods'] },
+  ];
+
+  const getCategoryCount = (category: typeof filterCategories[0]) => {
+    if (category.id === 'all') return files.length;
+    return files.filter(f => {
+      const ext = getFileExtension(f.originalFileName).toLowerCase();
+      return category.extensions.includes(ext);
+    }).length;
+  };
 
   const { error: toastError, success: toastSuccess } = useToast();
   const { downloadFile } = useActivity();
@@ -81,18 +109,20 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const filteredFiles = files.filter((f) =>
-    f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const getFileExtension = (filename: string) => {
-    return filename.split('.').pop() || '';
-  };
+  const filteredFiles = files.filter((f) => {
+    const matchesSearch = f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    if (activeFilter === 'all') return true;
+    const ext = getFileExtension(f.originalFileName).toLowerCase();
+    const category = filterCategories.find(c => c.id === activeFilter);
+    return category ? category.extensions.includes(ext) : true;
+  });
 
   const isEmpty = !isLoading && filteredFiles.length === 0;
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full flex-1 space-y-6 sm:space-y-8 flex flex-col relative">
+    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
       
       {/* Modal Konfirmasi Hapus Berkas */}
       <Modal
@@ -136,34 +166,114 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             <FolderOpen className="w-8 h-8 text-primary" />
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Kelola seluruh berkas penyimpanan pribadi Anda di Horizon Personal Multistorage Management.
+            Kelola seluruh berkas penyimpanan pribadi Anda di server Horizon Cloud.
           </p>
         </div>
 
-        {/* Kontrol Tampilan Grid / List */}
-        <div className="bg-slate-100 p-1 rounded-xl flex gap-1 border border-slate-200/50">
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'list'
-                ? 'bg-white shadow-sm text-primary'
-                : 'text-slate-400 hover:text-slate-650'
-            }`}
-            title="List View"
-          >
-            <List className="w-4.5 h-4.5" />
-          </button>
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'grid'
-                ? 'bg-white shadow-sm text-primary'
-                : 'text-slate-400 hover:text-slate-650'
-            }`}
-            title="Grid View"
-          >
-            <Grid className="w-4.5 h-4.5" />
-          </button>
+        {/* Controls Container */}
+        <div className="flex items-center gap-3 relative">
+          {/* Tombol Filter dengan Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
+                activeFilter !== 'all'
+                  ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
+              <span>
+                {activeFilter === 'all'
+                  ? 'Filter'
+                  : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
+              </span>
+              <svg
+                className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
+                  isFilterDropdownOpen ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {isFilterDropdownOpen && (
+              <>
+                {/* Backdrop to handle clicks outside the dropdown */}
+                <div className="fixed inset-0 z-20" onClick={() => setIsFilterDropdownOpen(false)} />
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-100 shadow-[0px_10px_30px_rgba(15,23,42,0.1)] py-2 z-30 animate-fadeIn">
+                  <div className="px-4 py-2 border-b border-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Pilih Jenis Berkas
+                  </div>
+                  {filterCategories.map((category) => {
+                    const IconComponent = category.icon;
+                    const isActive = activeFilter === category.id;
+                    const count = getCategoryCount(category);
+
+                    return (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          setActiveFilter(category.id);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
+                          isActive
+                            ? 'text-[#0052cc] bg-[#0052cc]/5'
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded-lg transition-colors ${
+                            isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
+                          }`}>
+                            <IconComponent className="w-4 h-4" />
+                          </div>
+                          <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
+                        </div>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                          isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Kontrol Tampilan Grid / List */}
+          <div className="bg-slate-100 p-1 rounded-xl flex gap-1 border border-slate-200/50">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white shadow-sm text-primary'
+                  : 'text-slate-400 hover:text-slate-650'
+              }`}
+              title="List View"
+            >
+              <List className="w-4.5 h-4.5" />
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded-lg transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white shadow-sm text-primary'
+                  : 'text-slate-400 hover:text-slate-650'
+              }`}
+              title="Grid View"
+            >
+              <Grid className="w-4.5 h-4.5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -177,11 +287,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
-                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Penyedia</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Tanggal Ditambahkan</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Ukuran</th>
-                    <th className="px-4 sm:px-8 py-4 sm:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
+                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Penyedia</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Tanggal Ditambahkan</th>
+                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Ukuran</th>
+                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -194,13 +304,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                             <div className="w-10 h-10 rounded-xl bg-slate-100 animate-pulse" />
                             <div className="space-y-2">
                               <div className="h-3.5 w-40 bg-slate-100 rounded animate-pulse" />
-                              <div className="h-2.5 w-16 bg-slate-50 rounded animate-pulse sm:hidden" />
+                              <div className="h-2.5 w-16 bg-slate-100 rounded animate-pulse" />
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-5 hidden sm:table-cell"><div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
-                        <td className="px-6 py-5 hidden md:table-cell"><div className="h-3.5 w-24 bg-slate-100 rounded animate-pulse" /></td>
-                        <td className="px-6 py-5 hidden sm:table-cell"><div className="h-3.5 w-12 bg-slate-100 rounded animate-pulse" /></td>
+                        <td className="px-6 py-5"><div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
+                        <td className="px-6 py-5"><div className="h-3.5 w-24 bg-slate-100 rounded animate-pulse" /></td>
+                        <td className="px-6 py-5"><div className="h-3.5 w-12 bg-slate-100 rounded animate-pulse" /></td>
                         <td className="px-8 py-5" />
                       </tr>
                     ))
@@ -227,22 +337,19 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           className="group hover:bg-slate-50/40 transition-colors cursor-pointer"
                         >
                           {/* Nama */}
-                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
+                          <td className="px-8 py-5">
                             <div className="flex items-center gap-4">
                               <FileIcon type={ext} className="w-5 h-5 shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 truncate max-w-[160px] sm:max-w-[280px]" title={file.originalFileName}>
+                                <p className="text-sm font-bold text-slate-800 truncate max-w-[280px]" title={file.originalFileName}>
                                   {file.originalFileName}
-                                </p>
-                                <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden font-medium">
-                                  {formatSize(file.size)} • {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
                                 </p>
                               </div>
                             </div>
                           </td>
                           
                           {/* Penyedia */}
-                          <td className="px-6 py-5 hidden sm:table-cell">
+                          <td className="px-6 py-5">
                             <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
                               file.provider?.toUpperCase() === 'GOOGLE_DRIVE' 
                                 ? 'bg-amber-50 border-amber-100 text-amber-600' 
@@ -253,17 +360,17 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Tanggal */}
-                          <td className="px-6 py-5 text-xs font-semibold text-slate-450 hidden md:table-cell">
+                          <td className="px-6 py-5 text-xs font-semibold text-slate-450">
                             {file.createdAt ? new Date(file.createdAt).toLocaleString() : '-'}
                           </td>
 
                           {/* Ukuran */}
-                          <td className="px-6 py-5 text-xs font-bold text-slate-500 hidden sm:table-cell">
+                          <td className="px-6 py-5 text-xs font-bold text-slate-500">
                             {formatSize(file.size)}
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-4 sm:px-8 py-3.5 sm:py-5">
+                          <td className="px-8 py-5">
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
@@ -274,10 +381,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                     e.stopPropagation();
                                     navigate(`/recap?fileId=${file.id}`);
                                   }}
-                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50 p-2 sm:py-1.5 sm:px-3 rounded-lg sm:rounded-full border border-transparent hover:border-slate-100 sm:border-none"
+                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50"
                                   title="Analisis AI Recap"
                                 >
-                                  <span className="hidden sm:inline">AI Recap</span>
+                                  AI Recap
                                 </Button>
                               )}
                               <button
