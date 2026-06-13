@@ -291,7 +291,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Penyedia</th>
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Tanggal Ditambahkan</th>
                     <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Ukuran</th>
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right">Aksi</th>
+                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right w-[260px]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -376,7 +376,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
 
                           {/* Aksi */}
-                          <td className="px-8 py-5" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-8 py-5 w-[260px]" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-end gap-2 shrink-0">
                               {isPdf && (
                                 <Button
