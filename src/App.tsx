@@ -15,6 +15,7 @@ import PublicSharePage from './pages/Shared/PublicSharePage';
 import { useAuth } from './context/AuthContext';
 import { Construction } from 'lucide-react';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
+import FloatingReportButton from './components/FloatingReportButton';
 
 // Reusable Route Protection Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -143,6 +144,9 @@ export default function App() {
 
       {/* Global state-driven Interactive Upload Modal */}
       <UploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUploadSuccess={handleUploadSuccess} />
+
+      {/* Floating Bug Report Button */}
+      <FloatingReportButton />
 
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
