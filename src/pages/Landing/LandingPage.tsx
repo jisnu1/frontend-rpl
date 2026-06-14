@@ -399,11 +399,23 @@ export default function LandingPage() {
             <span className="text-white font-bold tracking-tight text-sm">Horizon Cloud</span>
           </div>
 
-          <p className="text-xs text-slate-500 font-semibold">
-            &copy; {new Date().getFullYear()} Horizon Cloud Team. Seluruh hak cipta dilindungi undang-undang.
-          </p>
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <a 
+              href="/privacy-policy.txt" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </a>
+            <span className="text-slate-700">|</span>
+            <p className="text-slate-500">
+              &copy; {new Date().getFullYear()} Horizon Cloud Team. Seluruh hak cipta dilindungi undang-undang.
+            </p>
+          </div>
         </div>
       </footer>
+
 
       {/* Embedded Bug Report Modal */}
       {isBugModalOpen && (
