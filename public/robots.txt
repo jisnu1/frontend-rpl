@@ -1,2 +1,5 @@
 User-agent: *
-Disallow: /admin
+Allow: /
+
+# Sitemaps
+Sitemap: https://horizoncloud.my.id/sitemap.xml
