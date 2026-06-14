@@ -1,20 +1,32 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { verifyRegistration } from '../../api/auth';
+import { verifyRegistration, resendRegistrationOtp } from '../../api/auth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { Mail, ShieldCheck, Cloud } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export default function VerifyRegistration() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { success: toastSuccess, error: toastError } = useToast();
   
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   useEffect(() => {
     // Ambil email dari state router jika ditransfer dari halaman Register
@@ -59,6 +71,24 @@ export default function VerifyRegistration() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!email) return;
+    setError('');
+    setIsResending(true);
+    try {
+      await resendRegistrationOtp(email);
+      setResendCountdown(60);
+      toastSuccess('Kode OTP baru berhasil dikirim ke email Anda.');
+    } catch (err: any) {
+      console.error(err);
+      const msg = err.response?.data?.message || 'Gagal mengirim ulang kode OTP. Silakan coba lagi.';
+      setError(msg);
+      toastError(msg);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -125,6 +155,18 @@ export default function VerifyRegistration() {
               Verifikasi
             </Button>
           </form>
+
+          <div className="mt-4 text-center text-xs">
+            <span className="text-slate-500 font-semibold">Tidak menerima kode? </span>
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={isResending || resendCountdown > 0 || !email}
+              className="text-primary hover:underline font-bold disabled:text-slate-400 disabled:no-underline cursor-pointer disabled:cursor-not-allowed bg-transparent border-none p-0 inline"
+            >
+              {resendCountdown > 0 ? `Kirim Ulang (${resendCountdown}s)` : 'Kirim Ulang OTP'}
+            </button>
+          </div>
 
           {/* Links */}
           <div className="mt-6 text-center text-xs font-semibold text-slate-500 flex justify-between">

@@ -20,6 +20,10 @@ export async function verifyRegistration(data: { email: string; otp: string }): 
   await apiClient.post('/auth/verify-registration', data);
 }
 
+export async function resendRegistrationOtp(email: string): Promise<void> {
+  await apiClient.post('/auth/register/resend-otp', null, { params: { email } });
+}
+
 export async function requestForgotPassword(email: string): Promise<void> {
   await apiClient.post('/auth/forgot-password/request', { email });
 }
