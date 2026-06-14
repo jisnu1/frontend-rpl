@@ -490,7 +490,7 @@
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important; /* Firefox */
     -ms-overflow-style: none !important; /* IE 10+ */
-    gap: 0.25rem !important;
+    gap: 0.5rem !important; /* Consistent spacing */
     border-bottom: 1px solid #f1f5f9 !important;
     padding-bottom: 0px !important;
   }
@@ -501,9 +501,23 @@
   
   .migration-tabs-container button {
     flex-shrink: 0 !important;
-    padding: 0.65rem 0.85rem !important;
+    padding: 0.65rem 0.5rem !important;
     font-size: 11px !important;
     border-bottom-width: 2px !important;
+    width: 155px !important; /* Uniform width on mobile */
+    height: 42px !important; /* Uniform height on mobile */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important; /* Centered content */
+    gap: 0.375rem !important;
+  }
+  
+  .migration-tabs-container button span {
+    max-width: 105px !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
   }
 
   /* 7. SEARCH INPUT & CONTENT BOX WIDTH FIX */
