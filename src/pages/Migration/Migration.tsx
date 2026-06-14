@@ -593,6 +593,7 @@ export default function Migration() {
             <span className="max-w-[220px] leading-relaxed text-[11px] md:text-xs">Belum ada berkas di dalam penyimpanan ini.</span>
           </div>
         ) : (
+          <>
           {/* Desktop table view - hidden on mobile */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -717,6 +718,7 @@ export default function Migration() {
               );
             })}
           </div>
+          </>
         )}
       </div>
 
