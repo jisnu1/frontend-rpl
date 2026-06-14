@@ -26,6 +26,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const accessTokenRef = useRef<string | null>(accessToken);
   accessTokenRef.current = accessToken;
 
+  // Queue parallel API requests while token is refreshing to prevent multiple /refresh calls
+  const isRefreshingRef = useRef(false);
+  const failedQueueRef = useRef<{ resolve: (token: string | null) => void; reject: (error: any) => void }[]>([]);
+
+  const processQueue = (error: any, token: string | null = null) => {
+    failedQueueRef.current.forEach((prom) => {
+      if (error) {
+        prom.reject(error);
+      } else {
+        prom.resolve(token);
+      }
+    });
+    failedQueueRef.current = [];
+  };
+
   // Configure Axios Interceptor for injecting JWT — register ONCE
   useEffect(() => {
     const requestInterceptor = apiClient.interceptors.request.use(
@@ -54,22 +69,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
           originalRequest._retry = true;
+
+          // If already refreshing, queue this request until refresh is done
+          if (isRefreshingRef.current) {
+            return new Promise((resolve, reject) => {
+              failedQueueRef.current.push({ resolve, reject });
+            })
+              .then((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return apiClient(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
+          }
+
+          isRefreshingRef.current = true;
+
           try {
             const data = await refreshToken();
             if (data && data.accessToken) {
               setAccessToken(data.accessToken);
+              localStorage.setItem('accessToken', data.accessToken);
               const profile = await fetchUserProfile(data.accessToken);
               setUser(profile);
+              
+              processQueue(null, data.accessToken);
               originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
               return apiClient(originalRequest);
             } else {
               logout();
+              processQueue(new Error('Refresh failed'));
               return Promise.reject(error);
             }
           } catch (refreshError) {
             // Refresh token failed -> clear session and logout
             logout();
+            processQueue(refreshError);
             return Promise.reject(refreshError);
+          } finally {
+            isRefreshingRef.current = false;
           }
         }
         return Promise.reject(error);
@@ -84,10 +123,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Try checking session on initial load
   useEffect(() => {
     async function checkSession() {
+      const storedToken = localStorage.getItem('accessToken');
+      if (storedToken) {
+        try {
+          // Attempt to fetch profile using stored access token
+          setAccessToken(storedToken);
+          const profile = await fetchUserProfile(storedToken);
+          setUser(profile);
+          setIsLoading(false);
+          return;
+        } catch (err) {
+          console.warn('Stored access token invalid or expired, trying refresh token...', err);
+        }
+      }
+
+      // Fallback to refresh token cookie if no access token or it expired
       try {
         const data = await refreshToken();
         if (data && data.accessToken) {
           setAccessToken(data.accessToken);
+          localStorage.setItem('accessToken', data.accessToken);
           const profile = await fetchUserProfile(data.accessToken);
           setUser(profile);
         } else {
@@ -105,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginRequest) => {
     const res = await loginUser(data);
     setAccessToken(res.accessToken);
+    localStorage.setItem('accessToken', res.accessToken);
     const profile = await fetchUserProfile(res.accessToken);
     setUser(profile);
   };
@@ -121,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setAccessToken(null);
       setUser(null);
+      localStorage.removeItem('accessToken');
     }
   };
 
