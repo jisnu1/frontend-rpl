@@ -484,30 +484,30 @@ export default function Migration() {
       
       {/* Title & Top Description Banner */}
       <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-4 md:p-6 shadow-md border border-primary/10 flex flex-col gap-4 md:flex-row md:justify-between md:items-center relative overflow-hidden">
-        <div className="space-y-1 z-10">
-          <h2 className="text-lg md:text-xl font-black tracking-tight flex items-center gap-2">
+        <div className="space-y-1 z-10 w-full">
+          <h2 className="text-base md:text-xl font-black tracking-tight flex items-center gap-2">
             One-Click Multi-Cloud Migration
           </h2>
-          <p className="text-xs text-white/80 font-semibold max-w-xl">
+          <p className="text-[10px] md:text-xs text-white/80 font-semibold max-w-xl">
             Pindahkan atau salin berkas Anda secara massal antarsumber penyimpanan dengan aman.
           </p>
         </div>
         
         {/* Dynamic statistics block */}
-        <div className="flex gap-4 z-10 flex-wrap">
-          <div className="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
+          <div className="w-full md:w-auto bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian hari ini</span>
-            <span className="text-xs font-black">{config.todayTasksCount} / {config.maxDailyLimit} migrated</span>
+            <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit} migrated</span>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+          <div className="w-full md:w-auto bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maksimal Ukuran File</span>
-            <span className="text-xs font-black">{formatSize(config.maxFileSizeBytes)}</span>
+            <span className="text-xs md:text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
           </div>
         </div>
       </div>
 
       {/* Tabs list */}
-      <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto custom-scrollbar">
+      <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
         {tabs.map(tab => {
           const isActive = activeTab === tab.id;
           const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
@@ -530,8 +530,8 @@ export default function Migration() {
       </div>
 
       {/* Search Input Container */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full max-w-md group">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full">
+        <div className="relative w-full md:max-w-md group">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
             <Search className="w-4 h-4" />
           </span>
@@ -586,9 +586,9 @@ export default function Migration() {
             <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
           </div>
         ) : filteredTabFiles.length === 0 ? (
-          <div className="py-24 text-center text-slate-400 font-bold text-xs flex flex-col items-center gap-2 select-none">
+          <div className="py-24 px-4 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-2 select-none">
             <Sliders className="w-12 h-12 text-slate-200" />
-            Belum ada berkas di dalam penyimpanan ini.
+            <span>Belum ada berkas di dalam penyimpanan ini.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
