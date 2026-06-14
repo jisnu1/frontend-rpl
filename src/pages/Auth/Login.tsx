@@ -26,7 +26,7 @@ export default function Login() {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate('/my-drive', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 

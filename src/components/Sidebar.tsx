@@ -93,7 +93,7 @@ export default function Sidebar({
   const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('ROLE_ADMIN') || user?.username === 'admin';
 
   const navLinks = [
-    { name: 'My Drive', path: '/', icon: FolderOpen },
+    { name: 'My Drive', path: '/my-drive', icon: FolderOpen },
     { name: 'Shared', path: '/shared', icon: Users },
     { name: 'Migration', path: '/migration', icon: RefreshCw },
     { name: 'Settings', path: '/settings', icon: Settings },

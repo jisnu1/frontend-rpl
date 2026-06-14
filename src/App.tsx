@@ -150,13 +150,14 @@ export default function App() {
         
         <main className="flex-1 overflow-y-auto min-h-0">
           <Routes>
-            <Route path="/" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
+            <Route path="/" element={<Navigate to="/my-drive" replace />} />
+            <Route path="/my-drive" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/migration" element={<ProtectedRoute><Migration /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/landing" element={<Navigate to="/my-drive" replace />} />
             <Route path="*" element={<PlaceholderPage title="Not Found" />} />
           </Routes>
         </main>
