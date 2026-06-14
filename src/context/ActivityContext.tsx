@@ -301,6 +301,25 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
 
   // Cancel Activity Implementation
   const cancelActivity = useCallback(async (actId: string) => {
+    if (actId.startsWith('migration_')) {
+      const parts = actId.split('_');
+      if (parts.length === 3) {
+        const fileId = parts[1];
+        const batchId = parts[2];
+        try {
+          await apiClient.post(`/migrations/tasks/cancel`, null, {
+            params: { batchId, fileId }
+          });
+          toastSuccess('Migrasi berhasil dibatalkan.');
+        } catch (e: any) {
+          console.error('Failed to notify backend of migration cancellation', e);
+          toastError(e.response?.data?.message || 'Gagal membatalkan migrasi.');
+        }
+      }
+      updateActivityStatus(actId, 'error', 'Dibatalkan oleh pengguna.');
+      return;
+    }
+
     const task = activeTasksRef.current.get(actId);
     if (!task) return;
 
@@ -336,7 +355,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     // Clean up refs
     abortControllersRef.current.delete(actId);
     activeTasksRef.current.delete(actId);
-  }, [updateActivityStatus, addNotification]);
+  }, [updateActivityStatus, addNotification, toastSuccess, toastError]);
 
   const startPollingForBatch = useCallback((batchId: string, fileNamesMap?: Record<string, string>) => {
     if (activePollsRef.current.has(batchId)) return;

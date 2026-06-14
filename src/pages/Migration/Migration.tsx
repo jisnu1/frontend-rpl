@@ -22,6 +22,7 @@ import {
   fetchMigrationConfig, 
   updateMigrationConfig, 
   fetchMigrationTasks, 
+  cancelMigrationTask,
   MigrationConfig, 
   MigrationTaskDto 
 } from '../../api/migrations';
@@ -49,7 +50,7 @@ export default function Migration() {
 
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [externalAccounts, setExternalAccounts] = useState<ExternalAccountDto[]>([]);
-  const [config, setConfig] = useState<MigrationConfig>({ maxFileSizeBytes: 268435456, maxDailyLimit: 3 });
+  const [config, setConfig] = useState<MigrationConfig>({ maxFileSizeBytes: 268435456, maxDailyLimit: 3, todayTasksCount: 0 });
   const [todayTasksCount, setTodayTasksCount] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -252,6 +253,20 @@ export default function Migration() {
     }
   };
 
+  const handleCancelMigration = async (taskId: string) => {
+    try {
+      await cancelMigrationTask(taskId);
+      toastSuccess('Migrasi berhasil dibatalkan.');
+      if (activeBatchId) {
+        const tasks = await fetchMigrationTasks(activeBatchId);
+        setBatchTasks(tasks);
+      }
+    } catch (err: any) {
+      console.error('Failed to cancel migration', err);
+      toastError(err.response?.data?.message || 'Gagal membatalkan migrasi.');
+    }
+  };
+
   const selectedFilesList = Object.values(selectedFiles);
   const selectedCount = selectedFilesList.length;
   const selectedSize = selectedFilesList.reduce((acc, f) => acc + f.size, 0);
@@ -259,7 +274,19 @@ export default function Migration() {
   // Check if any selected files exceed config limit
   const hasTooLargeFiles = selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
 
-  const isDailyLimitReached = todayTasksCount >= config.maxDailyL  // Render Progress Dashboard Screen
+  const isDailyLimitReached = todayTasksCount >= config.maxDailyLimit;
+
+  // Add a full-page loading spinner if isLoading is true
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] w-full gap-3 bg-background animate-fadeIn">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <p className="text-xs font-bold text-on-surface-variant">Memuat data migrasi...</p>
+      </div>
+    );
+  }
+
+  // Render Progress Dashboard Screen
   if (activeBatchId) {
     const completedCount = batchTasks.filter(t => t.status === 'SUCCESS').length;
     const failedCount = batchTasks.filter(t => t.status === 'FAILED').length;
@@ -271,8 +298,8 @@ export default function Migration() {
 
     const getProviderIcon = (provider: string) => {
       if (provider === 'GOOGLE_DRIVE') return <HardDrive className="w-3.5 h-3.5 text-sky-500 shrink-0" />;
-      if (provider === 'STORAGE_NODE') return <Database className="w-3.5 h-3.5 text-indigo-650 shrink-0" />;
-      return <File className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+      if (provider === 'STORAGE_NODE') return <Database className="w-3.5 h-3.5 text-primary shrink-0" />;
+      return <File className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />;
     };
 
     return (
@@ -325,12 +352,12 @@ export default function Migration() {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-650 animate-pulse">
+            <div className="p-2.5 rounded-xl bg-surface-container-low text-primary animate-pulse">
               <RefreshCw className="w-6 h-6 animate-spin" style={{ animationDuration: '4s' }} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-850">Dashboard Progress Migrasi</h2>
-              <p className="text-xs font-semibold text-slate-400">Batch ID: {activeBatchId}</p>
+              <h2 className="text-xl font-bold text-on-surface">Dashboard Progress Migrasi</h2>
+              <p className="text-xs font-semibold text-on-surface-variant">Batch ID: {activeBatchId}</p>
             </div>
           </div>
         </div>
@@ -348,17 +375,17 @@ export default function Migration() {
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <div className="flex gap-4 text-[10px] font-bold text-slate-400 pt-1">
+            <div className="flex gap-4 text-[10px] font-bold text-on-surface-variant pt-1">
               <span>Berhasil: {completedCount}/{totalCount}</span>
-              {runningCount > 0 && <span className="animate-pulse text-indigo-600">Berjalan: {runningCount}</span>}
-              {failedCount > 0 && <span className="text-red-500">Gagal: {failedCount}</span>}
+              {runningCount > 0 && <span className="animate-pulse text-primary">Berjalan: {runningCount}</span>}
+              {failedCount > 0 && <span className="text-error">Gagal: {failedCount}</span>}
             </div>
           </div>
         </div>
 
         {/* List of files in progress */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Berkas Migrasi</h3>
+          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Daftar Berkas Migrasi</h3>
           <div className="grid gap-4">
             {batchTasks.map(task => {
               const isSuccess = task.status === 'SUCCESS';
@@ -367,9 +394,7 @@ export default function Migration() {
 
               let statusText = 'Menunggu antrean...';
               if (isRunning) {
-                statusText = task.progress < 50 
-                  ? `Mengunduh berkas dari sumber (${Math.round(task.progress * 2)}%)`
-                  : `Mengunggah berkas ke target (${Math.round((task.progress - 50) * 2)}%)`;
+                statusText = `Memindahkan berkas (${Math.round(task.progress || 0)}%)`;
               } else if (isSuccess) {
                 statusText = 'Migrasi Selesai';
               } else if (isFailed) {
@@ -382,23 +407,33 @@ export default function Migration() {
                   {/* File Name Header */}
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <File className="w-5 h-5 text-indigo-650 shrink-0" />
-                      <span className="text-xs font-black text-slate-800 truncate" title={task.fileName || task.fileId}>
+                      <File className="w-5 h-5 text-primary shrink-0" />
+                      <span className="text-xs font-black text-on-surface truncate" title={task.fileName || task.fileId}>
                         {task.fileName || task.fileId}
                       </span>
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shrink-0 ${
-                      isSuccess ? 'bg-emerald-100 text-emerald-700' :
-                      isFailed ? 'bg-red-100 text-red-700' :
-                      isRunning ? 'bg-indigo-50 text-indigo-650 animate-pulse' :
-                      'bg-slate-100 text-slate-500'
-                    }`}>
-                      {task.status}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full ${
+                        isSuccess ? 'bg-emerald-100 text-emerald-700' :
+                        isFailed ? 'bg-red-100 text-red-700' :
+                        isRunning ? 'bg-primary/10 text-primary animate-pulse' :
+                        'bg-slate-100 text-slate-500'
+                      }`}>
+                        {task.status}
+                      </span>
+                      {(task.status === 'PENDING' || task.status === 'RUNNING') && (
+                        <button 
+                          onClick={() => handleCancelMigration(task.id)} 
+                          className="text-[10px] font-bold text-error hover:bg-error-container/20 px-2 py-1 rounded-lg border border-error/20 transition-colors"
+                        >
+                          Batal
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Provider Direction Visual flow */}
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs font-semibold text-slate-655 w-fit">
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs font-semibold text-on-surface-variant w-fit">
                     <div className="flex items-center gap-1.5">
                       {getProviderIcon(task.sourceProvider)}
                       <span>{getProviderName(task.sourceProvider)}</span>
@@ -412,14 +447,14 @@ export default function Migration() {
 
                   {/* Progress Info & Bar */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-500">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-on-surface-variant">
                       <span>{statusText}</span>
-                      <span className="font-black text-slate-700">{Math.round(task.progress || 0)}%</span>
+                      <span className="font-black text-on-surface">{Math.round(task.progress || 0)}%</span>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full transition-all duration-300 ${isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-primary'}`}
+                          className={`h-full transition-all duration-300 ${isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-error' : 'bg-primary'}`}
                           style={{ width: `${task.progress || 0}%` }}
                         />
                       </div>
@@ -428,7 +463,7 @@ export default function Migration() {
 
                   {/* Error Message if Failed */}
                   {isFailed && task.errorMessage && (
-                    <div className="text-[10px] font-bold text-red-600 bg-red-50/50 border border-red-100 p-3 rounded-2xl leading-relaxed">
+                    <div className="text-[10px] font-bold text-error bg-error-container/20 border border-error/10 p-3 rounded-2xl leading-relaxed">
                       Error: {task.errorMessage}
                     </div>
                   )}
@@ -597,7 +632,7 @@ export default function Migration() {
                           <File className="w-4.5 h-4.5 text-slate-400 shrink-0" />
                           <span className="truncate" title={file.originalFileName}>{file.originalFileName}</span>
                           {isTooLarge && (
-                            <span className="text-[8px] font-black bg-red-100 text-red-650 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                            <span className="text-[8px] font-black bg-error-container text-error px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                               <ShieldAlert className="w-2.5 h-2.5" />
                               Premium limit exceeded ({formatSize(config.maxFileSizeBytes)})
                             </span>
@@ -605,7 +640,7 @@ export default function Migration() {
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-slate-500">{formatSize(file.size)}</td>
-                      <td className="py-3.5 px-4 text-slate-450 uppercase font-black">{file.provider}</td>
+                      <td className="py-3.5 px-4 text-on-surface-variant uppercase font-black">{file.provider}</td>
                       <td className="py-3.5 px-4 text-slate-400">
                         {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : '-'}
                       </td>
@@ -625,13 +660,13 @@ export default function Migration() {
         <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
           <div className="space-y-1.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Catatan & Ketentuan Premium</span>
-            <div className="space-y-2 text-xs font-semibold text-slate-555 leading-relaxed">
+            <div className="space-y-2 text-xs font-semibold text-on-surface-variant leading-relaxed">
               <div className="flex gap-2.5 items-start">
-                <Clock className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <span>Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
               </div>
               <div className="flex gap-2.5 items-start">
-                <ShieldAlert className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <span>Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
               </div>
             </div>

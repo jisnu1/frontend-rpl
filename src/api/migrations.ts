@@ -3,6 +3,7 @@ import apiClient from './apiClient';
 export interface MigrationConfig {
   maxFileSizeBytes: number;
   maxDailyLimit: number;
+  todayTasksCount: number;
 }
 
 export interface MigrationTaskDto {
@@ -53,3 +54,9 @@ export async function fetchMigrationTasks(batchId?: string): Promise<MigrationTa
   });
   return response.data;
 }
+
+export async function cancelMigrationTask(taskId: string): Promise<{ success: boolean }> {
+  const response = await apiClient.post<{ success: boolean }>(`/migrations/tasks/${taskId}/cancel`);
+  return response.data;
+}
+

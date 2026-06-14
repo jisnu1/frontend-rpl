@@ -37,6 +37,8 @@ export default function LogsTable({
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                       : act.activityType.startsWith('DELETE')
                       ? 'bg-rose-50 text-rose-800 border-rose-200'
+                      : act.activityType.startsWith('MIGRATION')
+                      ? 'bg-purple-50 text-purple-800 border-purple-200'
                       : 'bg-slate-50 text-slate-800 border-slate-200'
                   }`}
                 >

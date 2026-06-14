@@ -177,14 +177,14 @@ export default function Header({
                   {/* Aktivitas Berjalan */}
                   {runningActivities.length > 0 && (
                     <div className="px-4 py-2 flex flex-col gap-2 bg-indigo-50/40 border-b border-slate-100">
-                      <span className="text-[10px] font-black text-indigo-650 uppercase tracking-wider block">Aktivitas Berjalan ({runningActivities.length})</span>
+                      <span className="text-[10px] font-black text-primary uppercase tracking-wider block">Aktivitas Berjalan ({runningActivities.length})</span>
                       <div className="flex flex-col gap-2">
                         {runningActivities.map((act) => (
                           <div key={act.id} className="flex flex-col gap-1.5 p-2 bg-white rounded-xl border border-indigo-100/50 shadow-sm">
                             <div className="flex justify-between items-center gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 {act.type === 'migration' ? (
-                                  <RefreshCw className="w-3.5 h-3.5 text-indigo-655 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                                  <RefreshCw className="w-3.5 h-3.5 text-primary shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
                                 ) : (
                                   <FileDown className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                                 )}
@@ -193,19 +193,17 @@ export default function Header({
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
-                                <span className="text-[10px] font-black text-indigo-655">{act.progress}%</span>
-                                {act.type !== 'migration' && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      cancelActivity(act.id);
-                                    }}
-                                    className="text-slate-400 hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-slate-100"
-                                    title="Batalkan Unduhan"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                )}
+                                <span className="text-[10px] font-black text-primary">{act.progress}%</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    cancelActivity(act.id);
+                                  }}
+                                  className="text-slate-400 hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-slate-100"
+                                  title={act.type === 'migration' ? 'Batalkan Migrasi' : 'Batalkan Unduhan'}
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
                               </div>
                             </div>
                             <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
