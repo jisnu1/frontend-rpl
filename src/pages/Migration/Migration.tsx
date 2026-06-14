@@ -483,9 +483,9 @@ export default function Migration() {
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
       
       {/* Title & Top Description Banner */}
-      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-4 md:p-6 shadow-md border border-primary/10 flex flex-col gap-4 md:flex-row md:justify-between md:items-center relative overflow-hidden">
-        <div className="space-y-1 z-10 w-full">
-          <h2 className="text-base md:text-xl font-black tracking-tight flex items-center gap-2">
+      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-md border border-primary/10 flex flex-col gap-3 md:flex-row md:justify-between md:items-center relative overflow-hidden">
+        <div className="space-y-0.5 z-10 w-full">
+          <h2 className="text-sm md:text-xl font-black tracking-tight flex items-center gap-2">
             One-Click Multi-Cloud Migration
           </h2>
           <p className="text-[10px] md:text-xs text-white/80 font-semibold max-w-xl">
@@ -494,21 +494,21 @@ export default function Migration() {
         </div>
         
         {/* Dynamic statistics block */}
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto items-start md:items-center">
-          <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 space-y-0.5 w-auto">
-            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian hari ini</span>
-            <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit} migrated</span>
+        <div className="grid grid-cols-2 md:flex md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
+          <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian</span>
+            <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit}</span>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 space-y-0.5 w-auto">
-            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maksimal Ukuran File</span>
+          <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maks. Ukuran</span>
             <span className="text-xs md:text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
           </div>
         </div>
       </div>
 
       {/* Tabs list */}
-      <div className="w-full max-w-full overflow-hidden">
-        <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+      <div className="w-full" style={{minWidth: 0}}>
+        <div className="border-b border-slate-100 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth -mx-4 md:mx-0 px-4 md:px-0">
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
@@ -516,15 +516,15 @@ export default function Migration() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 md:px-4 py-2.5 md:py-3 border-b-2 font-bold text-[11px] md:text-xs transition-all whitespace-nowrap shrink-0 ${
                   isActive
                     ? 'border-primary text-primary bg-primary/5'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
                 }`}
               >
-                <TabIcon className="w-4 h-4 shrink-0" />
-                <span>{tab.name}</span>
-                {tab.email && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
+                <TabIcon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+                <span className="max-w-[80px] md:max-w-none truncate">{tab.name}</span>
+                {tab.email && <span className="hidden md:inline text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
               </button>
             );
           })}
@@ -588,12 +588,13 @@ export default function Migration() {
             <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
           </div>
         ) : filteredTabFiles.length === 0 ? (
-          <div className="py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
-            <Sliders className="w-12 h-12 text-slate-200" />
-            <span className="max-w-[250px] leading-relaxed">Belum ada berkas di dalam penyimpanan ini.</span>
+          <div className="py-12 md:py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
+            <Sliders className="w-10 h-10 md:w-12 md:h-12 text-slate-200" />
+            <span className="max-w-[220px] leading-relaxed text-[11px] md:text-xs">Belum ada berkas di dalam penyimpanan ini.</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          {/* Desktop table view - hidden on mobile */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/60 border-b border-slate-100 text-slate-400 font-black tracking-wider uppercase">
@@ -654,6 +655,67 @@ export default function Migration() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile card view - shown only on mobile */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {/* Select all row for mobile */}
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50/60">
+              <input
+                type="checkbox"
+                checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])}
+                onChange={handleToggleSelectAll}
+                className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
+              />
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pilih Semua</span>
+            </div>
+            {filteredTabFiles.map(file => {
+              const isChecked = !!selectedFiles[file.id];
+              const isTooLarge = file.size > config.maxFileSizeBytes;
+              return (
+                <div
+                  key={file.id}
+                  onClick={() => handleToggleFile(file)}
+                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                    isChecked ? 'bg-primary/5' : 'hover:bg-slate-50'
+                  }`}
+                >
+                  <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleToggleFile(file)}
+                      className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <File className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="text-xs font-bold text-slate-800 truncate">{file.originalFileName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 pl-6">
+                      <span className="text-[10px] font-semibold text-slate-400">{formatSize(file.size)}</span>
+                      <span className="text-slate-200">•</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">{file.provider}</span>
+                      {file.createdAt && (
+                        <>
+                          <span className="text-slate-200">•</span>
+                          <span className="text-[10px] text-slate-400">{new Date(file.createdAt).toLocaleDateString()}</span>
+                        </>
+                      )}
+                    </div>
+                    {isTooLarge && (
+                      <div className="mt-1 pl-6">
+                        <span className="text-[9px] font-black bg-red-50 text-red-500 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <ShieldAlert className="w-2.5 h-2.5" />
+                          Melebihi batas ukuran ({formatSize(config.maxFileSizeBytes)})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
