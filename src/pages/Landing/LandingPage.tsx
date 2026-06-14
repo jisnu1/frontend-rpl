@@ -27,6 +27,10 @@ export default function LandingPage() {
   const [isSubmittingBug, setIsSubmittingBug] = useState(false);
   const [isBugSubmitted, setIsBugSubmitted] = useState(false);
 
+  // Privacy Policy and Terms of Service modal states
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
@@ -399,16 +403,26 @@ export default function LandingPage() {
             <span className="text-white font-bold tracking-tight text-sm">Horizon Cloud</span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <a 
-              href="/privacy-policy.txt" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="hover:text-white transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <span className="text-slate-700">|</span>
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-xs font-semibold">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsPrivacyModalOpen(true)}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Privacy Policy
+              </button>
+              <span className="text-slate-700">|</span>
+              <button 
+                onClick={() => setIsTermsModalOpen(true)}
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Terms of Service
+              </button>
+              {/* Fallback standard links for SEO / Bot discovery */}
+              <a href="/privacy-policy.txt" target="_blank" rel="noopener noreferrer" className="sr-only">Privacy Policy</a>
+              <a href="/terms-of-service.txt" target="_blank" rel="noopener noreferrer" className="sr-only">Terms of Service</a>
+            </div>
+            <span className="hidden md:inline text-slate-700">|</span>
             <p className="text-slate-500">
               &copy; {new Date().getFullYear()} Horizon Cloud Team. Seluruh hak cipta dilindungi undang-undang.
             </p>
@@ -511,6 +525,149 @@ export default function LandingPage() {
                   </div>
                 </form>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Policy Modal */}
+      {isPrivacyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            onClick={() => setIsPrivacyModalOpen(false)}
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity" 
+          />
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.18)] border border-slate-100 overflow-hidden animate-scaleUp z-10 max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary to-[#0053db] px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-white" />
+                <span className="text-white font-bold text-sm">Kebijakan Privasi (Privacy Policy)</span>
+              </div>
+              <button 
+                onClick={() => setIsPrivacyModalOpen(false)}
+                className="text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto space-y-4 text-slate-600 text-xs font-semibold leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900">Kebijakan Privasi Horizon Cloud</h3>
+              <p className="text-slate-400">Terakhir diperbarui: 13 Juni 2026</p>
+              
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">1. Informasi Yang Kami Kumpulkan</h4>
+              <p className="font-bold text-slate-700 mt-2">Data Profil Akun:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Nama Lengkap, alamat email, dan nomor telepon.</li>
+                <li>Password terenkripsi (hashed credentials).</li>
+                <li>Foto profil (Avatar URL - opsional).</li>
+              </ul>
+              
+              <p className="font-bold text-slate-700 mt-2">Data Pihak Ketiga (Google Drive):</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Token autentikasi Google OAuth (Access Token, Refresh Token, Expiry Time) saat Anda menghubungkan Google Drive.</li>
+              </ul>
+
+              <p className="font-bold text-slate-700 mt-2">Data Aktivitas & Penggunaan:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Metadata berkas (nama berkas, ukuran, penyedia penyimpanan, ID berkas eksternal, dan status berbagi).</li>
+                <li>Penggunaan kuota penyimpanan dan log aktivitas autentikasi.</li>
+              </ul>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">2. Cara Penggunaan Informasi</h4>
+              <p>Kami menggunakan informasi yang dikumpulkan untuk:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Menyediakan, memelihara, dan mengoperasikan layanan multi-penyimpanan Horizon Cloud.</li>
+                <li>Memverifikasi registrasi dan memulihkan kata sandi dengan kode OTP melalui email.</li>
+                <li>Mengelola transfer file server-to-server langsung antara VPS Storage Node dan Google Drive.</li>
+                <li>Memproses dokumen melalui model AI (seperti Gemini) untuk meringkas dan chat dengan dokumen secara privat.</li>
+                <li>Menjaga keamanan akun Anda dari serangan brute force dan akses tidak sah.</li>
+              </ul>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">3. Keamanan Data</h4>
+              <p>Kami menerapkan enkripsi SSL/TLS untuk semua transmisi data (Web API, transfer file gRPC, dan komunikasi API Google). Kata sandi disimpan dengan enkripsi searah (BCrypt), dan hak akses data dibatasi menggunakan sistem otorisasi JWT.</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">4. Layanan Pihak Ketiga</h4>
+              <p>Aplikasi ini berintegrasi secara aman dengan Google Drive API, Brevo Email Service (untuk pengiriman OTP), dan Gemini AI API. Setiap layanan beroperasi di bawah kebijakan privasi masing-masing.</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">5. Hak Pengguna</h4>
+              <p>Anda berhak melihat berkas Anda, memperbarui profil, mengubah kata sandi, dan memutuskan hubungan akses Google Drive kapan saja (yang akan langsung menghapus seluruh token Google dari sistem kami).</p>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end shrink-0">
+              <button
+                onClick={() => setIsPrivacyModalOpen(false)}
+                className="px-6 py-2 bg-primary hover:bg-[#003da3] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Saya Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Terms of Service Modal */}
+      {isTermsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            onClick={() => setIsTermsModalOpen(false)}
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity" 
+          />
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-[0_30px_70px_rgba(0,0,0,0.18)] border border-slate-100 overflow-hidden animate-scaleUp z-10 max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary to-[#0053db] px-6 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <Lock className="w-5 h-5 text-white" />
+                <span className="text-white font-bold text-sm">Ketentuan Layanan (Terms of Service)</span>
+              </div>
+              <button 
+                onClick={() => setIsTermsModalOpen(false)}
+                className="text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto space-y-4 text-slate-600 text-xs font-semibold leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900">Ketentuan Layanan Horizon Cloud</h3>
+              <p className="text-slate-400">Terakhir diperbarui: 13 Juni 2026</p>
+              
+              <p>Dengan mengakses atau menggunakan platform Horizon Cloud, Anda menyatakan menyetujui seluruh ketentuan di bawah ini:</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">1. Tanggung Jawab Akun</h4>
+              <p>Anda bertanggung jawab penuh untuk menjaga kerahasiaan kredensial login Anda. Seluruh aktivitas yang terjadi di bawah akun Anda, termasuk unggahan file dan pembagian tautan berbagi (*sharing link*), merupakan tanggung jawab pribadi Anda.</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">2. Kebijakan Penggunaan Layanan</h4>
+              <p>Anda setuju untuk TIDAK menggunakan layanan ini untuk:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Mengunggah virus, malware, atau konten berbahaya lainnya yang mengancam integritas sistem penyimpanan.</li>
+                <li>Melakukan eksploitasi kuota penyimpanan gratis (default 1 GB per pengguna).</li>
+                <li>Mengunggah berkas yang melanggar hak cipta kekayaan intelektual orang lain.</li>
+                <li>Mengganggu kinerja VPS Storage Node, API gRPC, atau server basis data utama.</li>
+              </ul>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">3. Kepemilikan & Lisensi Konten</h4>
+              <p>Pengguna tetap memiliki hak kepemilikan penuh atas file yang diunggah. Anda hanya memberikan lisensi terbatas kepada Horizon Cloud untuk melakukan pembacaan berkas (seperti ekstraksi teks PDF untuk asisten AI) guna menjalankan fungsi aplikasi sebagaimana mestinya.</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">4. Tautan Berbagi File (*File Sharing*)</h4>
+              <p>Sistem menyediakan pembuatan tautan berbagi yang dapat diakses publik atau pengguna tertentu. Horizon Cloud tidak bertanggung jawab atas kebocoran informasi yang disebabkan oleh penyebaran tautan berbagi secara keliru oleh pengguna.</p>
+
+              <h4 className="text-sm font-bold text-slate-800 mt-6 uppercase">5. Batasan Tanggung Jawab</h4>
+              <p>Horizon Cloud disediakan secara "apa adanya" (as-is). Kami tidak menjamin ketersediaan layanan tanpa gangguan dan tidak bertanggung jawab atas hilangnya data karena kelalaian pihak ketiga atau kegagalan perangkat keras eksternal. Pengguna sangat disarankan untuk memiliki cadangan data penting secara mandiri.</p>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end shrink-0">
+              <button
+                onClick={() => setIsTermsModalOpen(false)}
+                className="px-6 py-2 bg-primary hover:bg-[#003da3] text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Saya Menyetujui
+              </button>
             </div>
           </div>
         </div>
