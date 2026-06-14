@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import apiClient from '../api/apiClient';
 import { loginUser, registerUser, refreshToken, fetchUserProfile, logoutUser } from '../api/auth';
 import { RegisterRequest, LoginRequest, UserInfo } from '../types/auth.types';
@@ -21,12 +21,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Configure Axios Interceptor for injecting JWT
+  // Use ref so the interceptor always reads the LATEST token synchronously
+  // (avoids race condition where dashboard API calls fire before useEffect updates the interceptor)
+  const accessTokenRef = useRef<string | null>(accessToken);
+  accessTokenRef.current = accessToken;
+
+  // Configure Axios Interceptor for injecting JWT — register ONCE
   useEffect(() => {
     const requestInterceptor = apiClient.interceptors.request.use(
       (config) => {
-        if (accessToken && !config.headers.Authorization) {
-          config.headers.Authorization = `Bearer ${accessToken}`;
+        const token = accessTokenRef.current;
+        if (token && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
@@ -36,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       apiClient.interceptors.request.eject(requestInterceptor);
     };
-  }, [accessToken]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Configure Axios Interceptor for handling 401 Unauthorized (Auto-refresh)
   useEffect(() => {
