@@ -237,4 +237,174 @@
   animation: fade-in 0.2s ease-out forwards;
 }
 
+/* ==========================================
+   MOBILE RESPONSIVENESS CUSTOM OVERRIDES 
+   (Screens under 768px)
+   ========================================== */
+@media (max-width: 768px) {
+  /* 1. SIDEBAR & STORAGE DETAILS IN DRAWER */
+  .md\:hidden nav {
+    max-width: 85vw !important;
+    width: 280px !important;
+  }
+  
+  /* Stack & polish storage details and bottom navigation */
+  .md\:hidden nav .mt-auto {
+    margin-top: auto !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1.5rem !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* 2. TABLE TO CARD CONVERSION FOR MY DRIVE */
+  /* Prevent horizontal table scrolling, force content flow */
+  .overflow-x-auto {
+    overflow-x: visible !important;
+  }
+  
+  .overflow-x-auto table {
+    min-width: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .overflow-x-auto thead {
+    display: none !important; /* Hide column names */
+  }
+  
+  .overflow-x-auto tbody {
+    display: block !important;
+    width: 100% !important;
+    background: transparent !important;
+  }
+  
+  /* Style table row (tr) as cards */
+  .overflow-x-auto tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 1.25rem !important;
+    padding: 1.25rem !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0px 4px 12px rgba(15, 23, 42, 0.03) !important;
+    position: relative !important;
+    width: 100% !important;
+    transition: all 0.2s ease;
+  }
+  
+  .overflow-x-auto tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 16px rgba(15, 23, 42, 0.06) !important;
+    background: #ffffff !important;
+  }
+  
+  /* Convert td cells to vertical stack items */
+  .overflow-x-auto td {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 0.5rem 0 !important;
+    border: none !important;
+  }
+  
+  /* Main file name header inside the card */
+  .overflow-x-auto td:first-child {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-bottom: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+    justify-content: flex-start !important;
+  }
+  
+  .overflow-x-auto td:first-child > div {
+    width: 100% !important;
+  }
+  
+  .overflow-x-auto td:first-child p {
+    max-width: 75vw !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+  }
+  
+  /* Insert label prefixes dynamically for details */
+  .overflow-x-auto td:nth-child(2)::before {
+    content: "Penyedia";
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .overflow-x-auto td:nth-child(3):not(.hidden)::before {
+    content: "Tanggal";
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .overflow-x-auto td:nth-child(4)::before {
+    content: "Ukuran";
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  /* Card action buttons separator and flex alignment */
+  .overflow-x-auto td:last-child {
+    border-top: 1px solid #f1f5f9 !important;
+    padding-top: 0.75rem !important;
+    margin-top: 0.5rem !important;
+    justify-content: flex-end !important;
+  }
+  
+  .overflow-x-auto td:last-child > div {
+    gap: 0.5rem !important;
+  }
+
+  /* 3. HEADER ROW ALIGNMENT & COMPACTION */
+  header {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  header > div:first-of-type {
+    gap: 0.5rem !important;
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+  }
+  
+  header > div:first-of-type span {
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    white-space: nowrap !important;
+  }
+  
+  header img {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  
+  header > div.ml-auto {
+    gap: 0.25rem !important;
+    flex-shrink: 0 !important;
+  }
+  
+  header button {
+    padding: 0.35rem !important;
+  }
+  
+  header div.cursor-pointer {
+    padding-right: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+}
+
 
