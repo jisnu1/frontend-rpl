@@ -47,7 +47,11 @@ export default function UsersTab({
                     <div className="font-bold text-slate-800 text-xs">{reqUser?.username || `User ID: ${req.userId}`}</div>
                     <div className="text-[10px] text-slate-400 font-bold mt-0.5">{reqUser?.email}</div>
                     <div className="mt-3">
-                      <span className="text-[9px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-lg">
+                      <span className={`text-[10px] font-black border px-2.5 py-1 rounded-full uppercase tracking-wider transition-all ${
+                        req.requestedTier === 'PREMIUM_INDIVIDUAL'
+                          ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm shadow-amber-50'
+                          : 'bg-cyan-50 text-cyan-800 border-cyan-300 shadow-sm shadow-cyan-50'
+                      }`}>
                         {req.requestedTier === 'PREMIUM_INDIVIDUAL' ? 'Premium Individual' : 'Premium Academic'}
                       </span>
                     </div>

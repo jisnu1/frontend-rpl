@@ -121,12 +121,12 @@ export default function Sidebar({
                 <span className="text-lg font-bold tracking-tight text-white">Horizon Cloud</span>
                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                   <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage</span>
-                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                     user?.subscriptionTier === 'PREMIUM_INDIVIDUAL'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 shadow-sm shadow-amber-500/10'
                       : user?.subscriptionTier === 'PREMIUM_ACADEMIC'
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                      : 'bg-white/10 text-white/70 border border-white/10'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-sm shadow-cyan-500/10'
+                      : 'bg-white/10 text-white/90 border border-white/20'
                   }`}>
                     {user?.subscriptionTier === 'PREMIUM_INDIVIDUAL' ? 'Premium' : user?.subscriptionTier === 'PREMIUM_ACADEMIC' ? 'Academic' : 'Freemium'}
                   </span>

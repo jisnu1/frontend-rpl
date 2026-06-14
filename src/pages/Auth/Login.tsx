@@ -12,7 +12,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -25,16 +25,16 @@ export default function Login() {
   }, []);
 
   React.useEffect(() => {
-    // Pengaman jika user yang sudah login mengakses halaman /login secara langsung
     if (isAuthenticated) {
-      navigate('/my-drive', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email.trim() || !password.trim()) {
       setError('Email dan Password wajib diisi.');
       return;
@@ -43,12 +43,10 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await login({ email, password });
-      // Pindahkan navigate ke sini agar URL langsung berubah sebelum komponen unmount
-      navigate('/my-drive', { replace: true });
     } catch (err: any) {
       console.error(err);
       setError(
-        err.response?.data?.message || 
+        err.response?.data?.message ||
         'Login gagal. Periksa kembali email dan password Anda.'
       );
     } finally {
@@ -69,7 +67,7 @@ export default function Login() {
         {/* Card Form */}
         <Card hoverLift={false} className="p-8">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Sign In to Your Account</h2>
-          
+
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>

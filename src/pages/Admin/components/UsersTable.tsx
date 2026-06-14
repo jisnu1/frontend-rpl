@@ -63,12 +63,12 @@ export default function UsersTable({
               </td>
               <td className="py-3 px-4">
                 <div className="flex flex-col">
-                  <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wide border ${
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all ${
                     user.subscriptionTier === 'PREMIUM_INDIVIDUAL'
-                      ? 'bg-amber-100 text-amber-800 border-amber-200'
+                      ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm shadow-amber-100'
                       : user.subscriptionTier === 'PREMIUM_ACADEMIC'
-                      ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
-                      : 'bg-slate-100 text-slate-800 border-slate-200'
+                      ? 'bg-cyan-50 text-cyan-800 border-cyan-300 shadow-sm shadow-cyan-100'
+                      : 'bg-slate-50 text-slate-700 border-slate-300'
                   }`}>
                     {user.subscriptionTier === 'PREMIUM_INDIVIDUAL'
                       ? 'Premium Individual'
