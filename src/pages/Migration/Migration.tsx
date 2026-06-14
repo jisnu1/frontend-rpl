@@ -659,13 +659,17 @@ export default function Migration() {
           </div>
 
           {/* Mobile card view - shown only on mobile */}
-          <div className="md:hidden divide-y divide-slate-100">
+          <div className="md:hidden p-3 space-y-2 bg-slate-50/60">
             {/* Select all row for mobile */}
-            <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50/60">
+            <div
+              className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-2.5 shadow-sm cursor-pointer"
+              onClick={handleToggleSelectAll}
+            >
               <input
                 type="checkbox"
                 checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])}
                 onChange={handleToggleSelectAll}
+                onClick={(e) => e.stopPropagation()}
                 className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
               />
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pilih Semua</span>
@@ -677,8 +681,10 @@ export default function Migration() {
                 <div
                   key={file.id}
                   onClick={() => handleToggleFile(file)}
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                    isChecked ? 'bg-primary/5' : 'hover:bg-slate-50'
+                  className={`flex items-center gap-3 bg-white border rounded-2xl px-4 py-3 cursor-pointer transition-all shadow-sm ${
+                    isChecked
+                      ? 'border-primary/40 bg-primary/5 shadow-primary/10'
+                      : 'border-slate-100 hover:border-slate-200 hover:shadow-md'
                   }`}
                 >
                   <div onClick={(e) => e.stopPropagation()} className="shrink-0">
@@ -689,25 +695,25 @@ export default function Migration() {
                       className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
                     />
                   </div>
+                  <div className="flex items-center gap-2 shrink-0 w-8 h-8 bg-slate-100 rounded-xl justify-center">
+                    <File className="w-4 h-4 text-slate-500" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <File className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="text-xs font-bold text-slate-800 truncate">{file.originalFileName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1 pl-6">
+                    <span className="text-xs font-bold text-slate-800 truncate block">{file.originalFileName}</span>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                       <span className="text-[10px] font-semibold text-slate-400">{formatSize(file.size)}</span>
-                      <span className="text-slate-200">•</span>
-                      <span className="text-[10px] font-black text-slate-400 uppercase">{file.provider}</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-[10px] font-black text-primary/70 uppercase bg-primary/5 px-1.5 py-0.5 rounded-full">{file.provider === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Storage Node'}</span>
                       {file.createdAt && (
                         <>
-                          <span className="text-slate-200">•</span>
-                          <span className="text-[10px] text-slate-400">{new Date(file.createdAt).toLocaleDateString()}</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-[10px] text-slate-400">{new Date(file.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                         </>
                       )}
                     </div>
                     {isTooLarge && (
-                      <div className="mt-1 pl-6">
-                        <span className="text-[9px] font-black bg-red-50 text-red-500 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      <div className="mt-1.5">
+                        <span className="text-[9px] font-black bg-red-50 text-red-500 px-2 py-0.5 rounded-full inline-flex items-center gap-1 border border-red-100">
                           <ShieldAlert className="w-2.5 h-2.5" />
                           Melebihi batas ukuran ({formatSize(config.maxFileSizeBytes)})
                         </span>
