@@ -494,12 +494,12 @@ export default function Migration() {
         </div>
         
         {/* Dynamic statistics block */}
-        <div className="flex flex-col md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
-          <div className="w-full md:w-auto bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto items-start md:items-center">
+          <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 space-y-0.5 w-auto">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian hari ini</span>
             <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit} migrated</span>
           </div>
-          <div className="w-full md:w-auto bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+          <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20 space-y-0.5 w-auto">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maksimal Ukuran File</span>
             <span className="text-xs md:text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
           </div>
@@ -507,26 +507,28 @@ export default function Migration() {
       </div>
 
       {/* Tabs list */}
-      <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
-        {tabs.map(tab => {
-          const isActive = activeTab === tab.id;
-          const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap ${
-                isActive
-                  ? 'border-primary text-primary bg-primary/5'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
-              }`}
-            >
-              <TabIcon className="w-4 h-4 shrink-0" />
-              <span>{tab.name}</span>
-              {tab.email && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
-            </button>
-          );
-        })}
+      <div className="w-full max-w-full overflow-hidden">
+        <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
+                }`}
+              >
+                <TabIcon className="w-4 h-4 shrink-0" />
+                <span>{tab.name}</span>
+                {tab.email && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Search Input Container */}
@@ -586,9 +588,9 @@ export default function Migration() {
             <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
           </div>
         ) : filteredTabFiles.length === 0 ? (
-          <div className="py-24 px-4 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-2 select-none">
+          <div className="py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
             <Sliders className="w-12 h-12 text-slate-200" />
-            <span>Belum ada berkas di dalam penyimpanan ini.</span>
+            <span className="max-w-[250px] leading-relaxed">Belum ada berkas di dalam penyimpanan ini.</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
