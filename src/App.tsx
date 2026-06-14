@@ -14,6 +14,7 @@ import Register from './pages/Auth/Register';
 import VerifyRegistration from './pages/Auth/VerifyRegistration';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import PublicSharePage from './pages/Shared/PublicSharePage';
+import LandingPage from './pages/Landing/LandingPage';
 import { useAuth } from './context/AuthContext';
 import { Construction } from 'lucide-react';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
@@ -94,19 +95,32 @@ export default function App() {
     );
   }
 
-  if (isAuthRoute) {
-    return (
-      <>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-registration" element={<VerifyRegistration />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-        <FloatingReportButton />
-      </>
-    );
+  if (!isAuthenticated) {
+    if (location.pathname === '/' || location.pathname === '/landing') {
+      return (
+        <>
+          <LandingPage />
+          <FloatingReportButton />
+        </>
+      );
+    }
+
+    if (isAuthRoute) {
+      return (
+        <>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/verify-registration" element={<VerifyRegistration />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+          <FloatingReportButton />
+        </>
+      );
+    }
+
+    return <Navigate to="/login" replace />;
   }
 
   const handleUploadSuccess = () => {
@@ -144,6 +158,7 @@ export default function App() {
             <Route path="/migration" element={<ProtectedRoute><Migration /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="*" element={<PlaceholderPage title="Not Found" />} />
           </Routes>
         </main>
@@ -154,6 +169,9 @@ export default function App() {
 
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
+
+      {/* Global floating bug reporter */}
+      <FloatingReportButton />
     </div>
   );
 }
