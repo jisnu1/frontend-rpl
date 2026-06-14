@@ -37,6 +37,12 @@ interface TabConfig {
   email?: string;
 }
 
+const getProviderName = (provider: string) => {
+  if (provider === 'GOOGLE_DRIVE') return 'Google Drive';
+  if (provider === 'STORAGE_NODE') return 'VPS Storage Node';
+  return provider;
+};
+
 export default function Migration() {
   const { user } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
@@ -61,9 +67,7 @@ export default function Migration() {
   // Migration running states
   const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
   const [batchTasks, setBatchTasks] = useState<MigrationTaskDto[]>([]);
-  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
-  const consoleEndRef = useRef<HTMLDivElement>(null);
 
   // Load initial data
   const loadInitialData = async () => {
@@ -90,6 +94,14 @@ export default function Migration() {
       startOfToday.setHours(0,0,0,0);
       const todayTasks = tasks.filter(t => new Date(t.createdAt) >= startOfToday);
       setTodayTasksCount(todayTasks.length);
+
+      // Restore active migration dashboard if there's any active running/pending task
+      const activeTask = tasks.find(t => t.status === 'PENDING' || t.status === 'RUNNING');
+      if (activeTask) {
+        setActiveBatchId(activeTask.batchId);
+        const activeBatchTasks = tasks.filter(t => t.batchId === activeTask.batchId);
+        setBatchTasks(activeBatchTasks);
+      }
 
     } catch (err) {
       console.error('Failed to load migration data', err);
@@ -184,51 +196,23 @@ export default function Migration() {
   const handleMigrationStarted = (batchId: string) => {
     setSelectedFiles({});
     setActiveBatchId(batchId);
-    setConsoleLogs([
-      `[${new Date().toLocaleTimeString()}] Menghubungkan ke layanan migrasi massal...`,
-      `[${new Date().toLocaleTimeString()}] Menginisialisasi Batch ID: ${batchId}`,
-      `[${new Date().toLocaleTimeString()}] Memindahkan file ke worker thread pool...`
-    ]);
   };
 
   // Polling migration progress
   useEffect(() => {
     if (!activeBatchId) return;
 
-    let previousStatuses: Record<string, string> = {};
-
     const poll = async () => {
       try {
         const tasks = await fetchMigrationTasks(activeBatchId);
         setBatchTasks(tasks);
 
-        const newLogs: string[] = [];
         let allFinished = true;
-
         tasks.forEach(task => {
-          const prevStatus = previousStatuses[task.id];
-          const currentStatus = task.status;
-          
-          if (prevStatus !== currentStatus) {
-            previousStatuses[task.id] = currentStatus;
-            const time = new Date().toLocaleTimeString();
-            if (currentStatus === 'RUNNING') {
-              newLogs.push(`[${time}] 🚀 Memulai migrasi untuk: ${task.fileName || task.fileId}`);
-            } else if (currentStatus === 'SUCCESS') {
-              newLogs.push(`[${time}] ✅ Sukses memindahkan: ${task.fileName || task.fileId}`);
-            } else if (currentStatus === 'FAILED') {
-              newLogs.push(`[${time}] ❌ Gagal memindahkan: ${task.fileName || task.fileId} (${task.errorMessage || 'Unknown Error'})`);
-            }
-          }
-
-          if (currentStatus === 'PENDING' || currentStatus === 'RUNNING') {
+          if (task.status === 'PENDING' || task.status === 'RUNNING') {
             allFinished = false;
           }
         });
-
-        if (newLogs.length > 0) {
-          setConsoleLogs(prev => [...prev, ...newLogs]);
-        }
 
         if (allFinished && tasks.length > 0) {
           clearInterval(interval);
@@ -247,11 +231,6 @@ export default function Migration() {
 
     return () => clearInterval(interval);
   }, [activeBatchId]);
-
-  // Scroll console to bottom
-  useEffect(() => {
-    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [consoleLogs]);
 
   // Handle Admin Config Update
   const handleUpdateConfig = async (e: React.FormEvent) => {
@@ -280,9 +259,7 @@ export default function Migration() {
   // Check if any selected files exceed config limit
   const hasTooLargeFiles = selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
 
-  const isDailyLimitReached = todayTasksCount >= config.maxDailyLimit;
-
-  // Render Progress Dashboard Screen
+  const isDailyLimitReached = todayTasksCount >= config.maxDailyL  // Render Progress Dashboard Screen
   if (activeBatchId) {
     const completedCount = batchTasks.filter(t => t.status === 'SUCCESS').length;
     const failedCount = batchTasks.filter(t => t.status === 'FAILED').length;
@@ -291,6 +268,12 @@ export default function Migration() {
     const overallProgress = totalCount > 0 
       ? Math.round((batchTasks.reduce((acc, t) => acc + (t.progress || 0), 0) / (totalCount * 100)) * 100)
       : 0;
+
+    const getProviderIcon = (provider: string) => {
+      if (provider === 'GOOGLE_DRIVE') return <HardDrive className="w-3.5 h-3.5 text-sky-500 shrink-0" />;
+      if (provider === 'STORAGE_NODE') return <Database className="w-3.5 h-3.5 text-indigo-650 shrink-0" />;
+      return <File className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
+    };
 
     return (
       <div className="p-8 max-w-5xl mx-auto w-full flex flex-col gap-8 min-h-[calc(100vh-4rem)] animate-fadeIn">
@@ -374,65 +357,84 @@ export default function Migration() {
         </div>
 
         {/* List of files in progress */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Berkas Migrasi</h3>
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             {batchTasks.map(task => {
               const isSuccess = task.status === 'SUCCESS';
               const isFailed = task.status === 'FAILED';
               const isRunning = task.status === 'RUNNING';
 
+              let statusText = 'Menunggu antrean...';
+              if (isRunning) {
+                statusText = task.progress < 50 
+                  ? `Mengunduh berkas dari sumber (${Math.round(task.progress * 2)}%)`
+                  : `Mengunggah berkas ke target (${Math.round((task.progress - 50) * 2)}%)`;
+              } else if (isSuccess) {
+                statusText = 'Migrasi Selesai';
+              } else if (isFailed) {
+                statusText = 'Migrasi Gagal';
+              }
+
               return (
-                <div key={task.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-2.5">
+                <div key={task.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-3.5 transition-all hover:shadow-md">
+                  
+                  {/* File Name Header */}
                   <div className="flex justify-between items-start gap-4">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <File className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="text-xs font-black text-slate-700 truncate" title={task.fileName || task.fileId}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <File className="w-5 h-5 text-indigo-650 shrink-0" />
+                      <span className="text-xs font-black text-slate-800 truncate" title={task.fileName || task.fileId}>
                         {task.fileName || task.fileId}
                       </span>
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shrink-0 ${
                       isSuccess ? 'bg-emerald-100 text-emerald-700' :
                       isFailed ? 'bg-red-100 text-red-700' :
-                      isRunning ? 'bg-blue-100 text-blue-700 animate-pulse' :
+                      isRunning ? 'bg-indigo-50 text-indigo-650 animate-pulse' :
                       'bg-slate-100 text-slate-500'
                     }`}>
                       {task.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-primary'}`}
-                        style={{ width: `${task.progress || 0}%` }}
-                      />
+                  {/* Provider Direction Visual flow */}
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs font-semibold text-slate-655 w-fit">
+                    <div className="flex items-center gap-1.5">
+                      {getProviderIcon(task.sourceProvider)}
+                      <span>{getProviderName(task.sourceProvider)}</span>
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 shrink-0">{Math.round(task.progress || 0)}%</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400" />
+                    <div className="flex items-center gap-1.5">
+                      {getProviderIcon(task.targetProvider)}
+                      <span>{getProviderName(task.targetProvider)}</span>
+                    </div>
                   </div>
 
+                  {/* Progress Info & Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-500">
+                      <span>{statusText}</span>
+                      <span className="font-black text-slate-700">{Math.round(task.progress || 0)}%</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-300 ${isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-primary'}`}
+                          style={{ width: `${task.progress || 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Error Message if Failed */}
                   {isFailed && task.errorMessage && (
-                    <div className="text-[10px] font-bold text-red-600 bg-red-50/50 border border-red-100 p-2.5 rounded-xl mt-0.5 leading-relaxed">
+                    <div className="text-[10px] font-bold text-red-600 bg-red-50/50 border border-red-100 p-3 rounded-2xl leading-relaxed">
                       Error: {task.errorMessage}
                     </div>
                   )}
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Live log Terminal */}
-        <div className="space-y-3 flex-1 flex flex-col min-h-60">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-            <Terminal className="w-4 h-4" />
-            <span>Console Live Logs</span>
-          </div>
-          <div className="flex-1 bg-slate-950 rounded-2xl p-4 border border-slate-900 shadow-inner font-mono text-[10px] leading-relaxed text-emerald-400 overflow-y-auto max-h-80 select-text">
-            {consoleLogs.map((logLine, i) => (
-              <div key={i}>{logLine}</div>
-            ))}
-            <div ref={consoleEndRef} />
           </div>
         </div>
       </div>

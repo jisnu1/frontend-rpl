@@ -4,6 +4,7 @@ import apiClient from '../api/apiClient';
 import { getDownloadUrl } from '../api/files';
 import { useToast } from './ToastContext';
 import { startMigration, fetchMigrationTasks } from '../api/migrations';
+import { useAuth } from './AuthContext';
 
 export interface BackgroundActivity {
   id: string;
@@ -47,12 +48,14 @@ const ActivityContext = createContext<ActivityContextType | undefined>(undefined
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function ActivityProvider({ children }: { children: ReactNode }) {
+  const { accessToken } = useAuth();
   const [activities, setActivities] = useState<BackgroundActivity[]>([]);
   const [notifications, setNotifications] = useState<ActivityNotification[]>([]);
   const { success: toastSuccess, error: toastError } = useToast();
 
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
   const activeTasksRef = useRef<Map<string, { type: 'upload' | 'download'; fileId: string; provider?: any; fileName: string }>>(new Map());
+  const activePollsRef = useRef<Set<string>>(new Set());
 
   // Load notifications from localStorage on mount
   useEffect(() => {
@@ -335,6 +338,103 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     activeTasksRef.current.delete(actId);
   }, [updateActivityStatus, addNotification]);
 
+  const startPollingForBatch = useCallback((batchId: string, fileNamesMap?: Record<string, string>) => {
+    if (activePollsRef.current.has(batchId)) return;
+    activePollsRef.current.add(batchId);
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const tasks = await fetchMigrationTasks(batchId);
+        let allFinished = true;
+
+        tasks.forEach(task => {
+          const actId = `migration_${task.fileId}_${batchId}`;
+          const percentage = Math.round(task.progress || 0);
+          const fileName = task.fileName || (fileNamesMap && fileNamesMap[task.fileId]) || 'File';
+
+          if (task.status === 'SUCCESS') {
+            setActivities(prev => {
+              const act = prev.find(a => a.id === actId);
+              if (act && act.status === 'running') {
+                addNotification('migration', fileName, 'success');
+                setTimeout(() => {
+                  setActivities(p => p.filter(a => a.id !== actId));
+                }, 4000);
+                return prev.map(a => a.id === actId ? { ...a, status: 'success' as const, progress: 100 } : a);
+              }
+              return prev;
+            });
+          } else if (task.status === 'FAILED') {
+            const errorMsg = task.errorMessage || 'Migrasi gagal.';
+            setActivities(prev => {
+              const act = prev.find(a => a.id === actId);
+              if (act && act.status === 'running') {
+                addNotification('migration', fileName, 'error', errorMsg);
+                setTimeout(() => {
+                  setActivities(p => p.filter(a => a.id !== actId));
+                }, 6050);
+                return prev.map(a => a.id === actId ? { ...a, status: 'error' as const, errorMessage: errorMsg } : a);
+              }
+              return prev;
+            });
+          } else {
+            setActivities(prev =>
+              prev.map(a => a.id === actId ? { ...a, progress: percentage } : a)
+            );
+            allFinished = false;
+          }
+        });
+
+        if (allFinished) {
+          clearInterval(pollInterval);
+          activePollsRef.current.delete(batchId);
+        }
+      } catch (err) {
+        console.error('Failed to poll migration tasks', err);
+      }
+    }, 2000);
+  }, [addNotification]);
+
+  // Restore running migrations on mount/login
+  useEffect(() => {
+    if (!accessToken) return;
+
+    async function restoreActiveMigrations() {
+      try {
+        const tasks = await fetchMigrationTasks();
+        const activeTasks = tasks.filter(t => t.status === 'PENDING' || t.status === 'RUNNING');
+        if (activeTasks.length > 0) {
+          // Group by batchId
+          const batchIds = Array.from(new Set(activeTasks.map(t => t.batchId)));
+          
+          batchIds.forEach(batchId => {
+            const batchTasks = activeTasks.filter(t => t.batchId === batchId);
+            
+            const newActivities = batchTasks.map(task => ({
+              id: `migration_${task.fileId}_${batchId}`,
+              type: 'migration' as const,
+              name: task.fileName || 'File',
+              progress: Math.round(task.progress || 0),
+              status: 'running' as const,
+            }));
+            
+            setActivities(prev => {
+              const filtered = prev.filter(act => !act.id.endsWith(batchId));
+              return [...filtered, ...newActivities];
+            });
+
+            startPollingForBatch(batchId);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to restore active migrations', err);
+      }
+    }
+
+    const timeout = setTimeout(restoreActiveMigrations, 1500);
+    return () => clearTimeout(timeout);
+  }, [accessToken, startPollingForBatch]);
+
   const migrateFiles = useCallback(async (
     fileIds: string[],
     fileNamesMap: Record<string, string>,
@@ -364,61 +464,11 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
       });
 
       setActivities(prev => [...prev, ...newActivities]);
-
-      // Start polling
-      const pollInterval = setInterval(async () => {
-        try {
-          const tasks = await fetchMigrationTasks(batchId);
-          let allFinished = true;
-
-          tasks.forEach(task => {
-            const actId = `migration_${task.fileId}_${batchId}`;
-            const percentage = Math.round(task.progress || 0);
-
-            if (task.status === 'SUCCESS') {
-              setActivities(prev => {
-                const act = prev.find(a => a.id === actId);
-                if (act && act.status === 'running') {
-                  addNotification('migration', task.fileName || fileNamesMap[task.fileId] || 'File', 'success');
-                  setTimeout(() => {
-                    setActivities(p => p.filter(a => a.id !== actId));
-                  }, 4000);
-                  return prev.map(a => a.id === actId ? { ...a, status: 'success' as const, progress: 100 } : a);
-                }
-                return prev;
-              });
-            } else if (task.status === 'FAILED') {
-              const errorMsg = task.errorMessage || 'Migrasi gagal.';
-              setActivities(prev => {
-                const act = prev.find(a => a.id === actId);
-                if (act && act.status === 'running') {
-                  addNotification('migration', task.fileName || fileNamesMap[task.fileId] || 'File', 'error', errorMsg);
-                  setTimeout(() => {
-                    setActivities(p => p.filter(a => a.id !== actId));
-                  }, 6000);
-                  return prev.map(a => a.id === actId ? { ...a, status: 'error' as const, errorMessage: errorMsg } : a);
-                }
-                return prev;
-              });
-            } else {
-              setActivities(prev =>
-                prev.map(a => a.id === actId ? { ...a, progress: percentage } : a)
-              );
-              allFinished = false;
-            }
-          });
-
-          if (allFinished) {
-            clearInterval(pollInterval);
-          }
-        } catch (err) {
-          console.error('Failed to poll migration tasks', err);
-        }
-      }, 2000);
+      startPollingForBatch(batchId, fileNamesMap);
     }
 
     return res;
-  }, [addNotification]);
+  }, [startPollingForBatch]);
 
   return (
     <ActivityContext.Provider
