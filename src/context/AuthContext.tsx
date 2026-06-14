@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import apiClient from '../api/apiClient';
-import { loginUser, registerUser, refreshToken, fetchUserProfile } from '../api/auth';
+import { loginUser, registerUser, refreshToken, fetchUserProfile, logoutUser } from '../api/auth';
 import { RegisterRequest, LoginRequest, UserInfo } from '../types/auth.types';
 
 interface AuthContextType {
@@ -10,7 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUserProfileState: (updated: UserInfo) => void;
 }
 
@@ -107,10 +107,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await registerUser(data);
   };
 
-  const logout = () => {
-    setAccessToken(null);
-    setUser(null);
-    // Call backend logout or clear cookie if any
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error('Failed to logout from backend:', err);
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
   };
 
   const updateUserProfileState = (updated: UserInfo) => {

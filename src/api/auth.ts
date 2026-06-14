@@ -52,3 +52,8 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UserInf
 export async function updatePassword(data: UpdatePasswordRequest): Promise<void> {
   await apiClient.put('/users/me/password', data);
 }
+
+export async function logoutUser(): Promise<void> {
+  await apiClient.post('/auth/logout');
+}
+
