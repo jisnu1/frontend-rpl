@@ -123,7 +123,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const isEmpty = !isLoading && filteredFiles.length === 0;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
       
       {/* Modal Konfirmasi Hapus Berkas */}
       <Modal
@@ -135,7 +135,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         <p className="text-sm text-slate-550 leading-relaxed">
           Apakah Anda yakin ingin menghapus berkas <strong className="text-slate-800 font-semibold">"{confirmDeleteFile?.originalFileName}"</strong> secara permanen? Tindakan ini tidak dapat dibatalkan.
         </p>
-        <div className="flex gap-3 justify-end mt-6">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end mt-6">
           <Button
             variant="secondary"
             disabled={isDeleting}
@@ -163,7 +163,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         <p className="text-sm text-slate-550 leading-relaxed font-semibold">
           Apakah Anda yakin ingin mengunduh berkas <strong className="text-slate-800 font-bold">"{confirmDownloadFile?.originalFileName}"</strong> ({confirmDownloadFile ? formatSize(confirmDownloadFile.size) : ''}) ke perangkat Anda?
         </p>
-        <div className="flex gap-3 justify-end mt-6">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end mt-6">
           <Button
             variant="secondary"
             onClick={() => setConfirmDownloadFile(null)}
@@ -185,7 +185,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       </Modal>
 
       {/* Header Halaman & Kontrol Tampilan */}
-      <div className="flex justify-between items-end flex-wrap gap-4">
+      <div className="flex justify-between items-start md:items-end flex-wrap gap-3 md:gap-4">
         <div>
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-slate-450 mb-1">
@@ -193,9 +193,9 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             <ChevronRight className="w-3.5 h-3.5 text-slate-350" />
             <span className="text-slate-500 font-medium">My Drive</span>
           </nav>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
             My Drive
-            <FolderOpen className="w-8 h-8 text-primary" />
+            <FolderOpen className="w-6 h-6 md:w-8 md:h-8 text-primary" />
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Kelola seluruh berkas penyimpanan pribadi Anda di server Horizon Cloud.
@@ -315,15 +315,15 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           
           {/* ── LIST VIEW ─────────────────────────────── */}
           {viewMode === 'list' && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed">
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <table className="w-full text-left border-collapse" style={{ minWidth: '600px' }}>
                 <thead>
                   <tr className="bg-slate-50/70 border-b border-slate-100">
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[140px] min-w-[140px]">Penyedia</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[220px] min-w-[220px]">Tanggal Ditambahkan</th>
-                    <th className="px-6 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[120px] min-w-[120px]">Ukuran</th>
-                    <th className="px-8 py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right w-[280px] min-w-[280px]">Aksi</th>
+                    <th className="px-4 md:px-8 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
+                    <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[110px] min-w-[110px]">Penyedia</th>
+                    <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[160px] min-w-[160px] hidden md:table-cell">Tanggal</th>
+                    <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[80px] min-w-[80px]">Ukuran</th>
+                    <th className="px-2 md:px-8 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right w-[130px] min-w-[130px]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -375,11 +375,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           className="group hover:bg-slate-50/40 transition-colors cursor-pointer"
                         >
                           {/* Nama */}
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-4">
+                          <td className="px-4 md:px-8 py-4 md:py-5">
+                            <div className="flex items-center gap-2 md:gap-4">
                               <FileIcon type={ext} className="w-5 h-5 shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 truncate max-w-[280px]" title={file.originalFileName}>
+                                <p className="text-sm font-bold text-slate-800 truncate max-w-[140px] md:max-w-[280px]" title={file.originalFileName}>
                                   {file.originalFileName}
                                 </p>
                               </div>
@@ -387,49 +387,46 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           </td>
                           
                           {/* Penyedia */}
-                          <td className="px-6 py-5">
-                            <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
+                          <td className="px-3 md:px-6 py-4 md:py-5">
+                            <span className={`inline-flex px-2 py-0.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded-full border ${
                               file.provider?.toUpperCase() === 'GOOGLE_DRIVE' 
                                 ? 'bg-amber-50 border-amber-100 text-amber-600' 
                                 : 'bg-blue-50 border-blue-100 text-blue-600'
                             }`}>
-                              {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Node'}
+                              {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local'}
                             </span>
                           </td>
 
-                          {/* Tanggal */}
-                          <td className="px-6 py-5 text-xs font-semibold text-slate-450">
+                          {/* Tanggal - hide on mobile */}
+                          <td className="px-3 md:px-6 py-4 md:py-5 text-xs font-semibold text-slate-450 hidden md:table-cell">
                             {file.createdAt ? new Date(file.createdAt).toLocaleString() : '-'}
                           </td>
 
                           {/* Ukuran */}
-                          <td className="px-6 py-5 text-xs font-bold text-slate-500">
+                          <td className="px-3 md:px-6 py-4 md:py-5 text-xs font-bold text-slate-500">
                             {formatSize(file.size)}
                           </td>
 
-                          <td className="pl-2 pr-6 py-5 w-[280px] min-w-[280px]" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-end gap-2 shrink-0 relative z-10">
+                          <td className="pl-1 pr-3 md:pl-2 md:pr-6 py-4 md:py-5" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end gap-1 md:gap-2 shrink-0 relative z-10">
                               {isPdf && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  icon={Sparkles}
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     navigate(`/recap?fileId=${file.id}`);
                                   }}
-                                  className="text-primary hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
+                                  className="hidden md:flex items-center justify-center p-1.5 rounded-lg text-primary hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
                                   title="Analisis AI Recap"
                                 >
-                                  AI Recap
-                                </Button>
+                                  <Sparkles className="w-4 h-4" />
+                                </button>
                               )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setConfirmDownloadFile(file);
                                 }}
-                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100 cursor-pointer"
+                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
                                 title="Unduh Berkas"
                               >
                                 <Download className="w-4 h-4" />
@@ -439,7 +436,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   setActiveShareFile(file);
                                 }}
-                                className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100 cursor-pointer"
+                                className="hidden sm:flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
                                 title="Bagikan Akses Berkas"
                               >
                                 <Share2 className="w-4 h-4" />
@@ -449,7 +446,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                   e.stopPropagation();
                                   setConfirmDeleteFile(file);
                                 }}
-                                className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-55 transition-all cursor-pointer"
+                                className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer"
                                 title="Hapus Berkas"
                               >
                                 <Trash2 className="w-4 h-4" />

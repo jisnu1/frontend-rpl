@@ -133,7 +133,7 @@ export default function FilePreviewModal({
       <div className="relative bg-white rounded-3xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row shadow-[0px_20px_50px_rgba(15,23,42,0.3)] border border-slate-100 z-10 animate-fadeIn max-h-[90vh]">
         
         {/* Left Side: Preview Area */}
-        <div className="md:w-3/5 bg-slate-950/95 flex items-center justify-center p-6 border-b border-slate-800 md:border-b-0 md:border-r border-slate-800 relative min-h-[300px] md:min-h-[480px]">
+        <div className="md:w-3/5 bg-slate-950/95 flex items-center justify-center p-4 md:p-6 border-b border-slate-800 md:border-b-0 md:border-r border-slate-800 relative min-h-[220px] max-h-[45vh] md:max-h-none md:min-h-[480px]">
           
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-950/95 z-20">

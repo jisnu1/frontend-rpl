@@ -305,7 +305,7 @@ export default function Migration() {
     };
 
     return (
-      <div className="p-8 max-w-5xl mx-auto w-full flex flex-col gap-8 min-h-[calc(100vh-4rem)] animate-fadeIn">
+      <div className="p-4 md:p-8 max-w-5xl mx-auto w-full flex flex-col gap-5 md:gap-8 min-h-[calc(100vh-4rem)] animate-fadeIn">
         
         {/* Success Modal Overlay */}
         {successModalOpen && (
@@ -353,7 +353,7 @@ export default function Migration() {
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-start gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-surface-container-low text-primary animate-pulse">
               <RefreshCw className="w-6 h-6 animate-spin" style={{ animationDuration: '4s' }} />
@@ -480,12 +480,12 @@ export default function Migration() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
       
       {/* Title & Top Description Banner */}
-      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-6 shadow-md border border-primary/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-4 md:p-6 shadow-md border border-primary/10 flex flex-col gap-4 md:flex-row md:justify-between md:items-center relative overflow-hidden">
         <div className="space-y-1 z-10">
-          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-black tracking-tight flex items-center gap-2">
             One-Click Multi-Cloud Migration
           </h2>
           <p className="text-xs text-white/80 font-semibold max-w-xl">
@@ -547,10 +547,10 @@ export default function Migration() {
 
       {/* Floating Action Bar (selection actions) */}
       {selectedCount > 0 && (
-        <div className="sticky top-20 z-20 flex justify-center animate-fadeIn">
-          <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
+        <div className="sticky top-20 z-20 flex justify-center animate-fadeIn px-2">
+          <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-2.5 md:py-3 px-4 md:px-6 flex items-center justify-between gap-3 md:gap-6 max-w-xl w-full">
             <div className="flex flex-col">
-              <span className="text-xs font-black text-slate-800">{selectedCount} Berkas Terpilih</span>
+              <span className="text-xs font-black text-slate-800">{selectedCount} Berkas</span>
               <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
             </div>
             

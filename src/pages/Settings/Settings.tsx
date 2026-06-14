@@ -344,39 +344,39 @@ export default function Settings() {
       )}
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-100 text-xs font-bold gap-6">
+      <div className="flex border-b border-slate-100 text-xs font-bold gap-1 sm:gap-6 overflow-x-auto custom-scrollbar">
         <button
           onClick={() => setActiveTab('profile')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider ${
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider shrink-0 ${
             activeTab === 'profile'
               ? 'border-primary text-primary'
               : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           <User className="w-4 h-4" />
-          Profil & Keamanan
+          <span className="hidden sm:inline">Profil &</span> Keamanan
         </button>
         <button
           onClick={() => setActiveTab('cloud')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider ${
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider shrink-0 ${
             activeTab === 'cloud'
               ? 'border-primary text-primary'
               : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           <Cloud className="w-4 h-4" />
-          Integrasi Cloud
+          <span className="hidden sm:inline">Integrasi </span>Cloud
         </button>
         <button
           onClick={() => setActiveTab('report')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider ${
+          className={`pb-3 border-b-2 transition-all flex items-center gap-2 uppercase tracking-wider shrink-0 ${
             activeTab === 'report'
               ? 'border-primary text-primary'
               : 'border-transparent text-slate-400 hover:text-slate-600'
           }`}
         >
           <MessageSquareWarning className="w-4 h-4" />
-          Laporkan Masalah
+          <span className="hidden sm:inline">Laporkan </span>Masalah
         </button>
       </div>
 

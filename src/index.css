@@ -5,6 +5,27 @@
 @layer base {
   body {
     font-family: 'Manrope', sans-serif;
+    /* Prevent horizontal overflow on mobile */
+    overflow-x: hidden;
+  }
+
+  /* Prevent iOS auto-zoom on focused inputs/selects (need font-size >= 16px) */
+  @media (max-width: 767px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="search"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Faster touch tap feedback */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

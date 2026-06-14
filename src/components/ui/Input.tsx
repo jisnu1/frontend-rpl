@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={actualType}
-            className={`w-full bg-[#F1F5F9] border-none rounded-full py-2.5 text-xs font-semibold text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none ${
+            className={`w-full bg-[#F1F5F9] border-none rounded-full py-2.5 text-base md:text-xs font-semibold text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none ${
               LeftIcon ? 'pl-11' : 'pl-4'
             } ${
               (RightIcon || isPasswordType) ? 'pr-11' : 'pr-4'
