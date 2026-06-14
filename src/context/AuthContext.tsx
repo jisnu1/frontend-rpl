@@ -90,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const data = await refreshToken();
             if (data && data.accessToken) {
               setAccessToken(data.accessToken);
-              localStorage.setItem('accessToken', data.accessToken);
               const profile = await fetchUserProfile(data.accessToken);
               setUser(profile);
               
@@ -123,26 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Try checking session on initial load
   useEffect(() => {
     async function checkSession() {
-      const storedToken = localStorage.getItem('accessToken');
-      if (storedToken) {
-        try {
-          // Attempt to fetch profile using stored access token
-          setAccessToken(storedToken);
-          const profile = await fetchUserProfile(storedToken);
-          setUser(profile);
-          setIsLoading(false);
-          return;
-        } catch (err) {
-          console.warn('Stored access token invalid or expired, trying refresh token...', err);
-        }
-      }
-
-      // Fallback to refresh token cookie if no access token or it expired
+      // Fallback to refresh token cookie on initial load
       try {
         const data = await refreshToken();
         if (data && data.accessToken) {
           setAccessToken(data.accessToken);
-          localStorage.setItem('accessToken', data.accessToken);
           const profile = await fetchUserProfile(data.accessToken);
           setUser(profile);
         } else {
@@ -160,7 +144,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginRequest) => {
     const res = await loginUser(data);
     setAccessToken(res.accessToken);
-    localStorage.setItem('accessToken', res.accessToken);
     const profile = await fetchUserProfile(res.accessToken);
     setUser(profile);
   };
@@ -177,7 +160,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setAccessToken(null);
       setUser(null);
-      localStorage.removeItem('accessToken');
     }
   };
 
