@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Cpu, Lock, Unlock } from 'lucide-react';
+import { Database, Cpu, Lock, Unlock, RefreshCw } from 'lucide-react';
 import { AdminUserResponse } from '../../../api/admin';
 
 interface UsersTableProps {
@@ -7,6 +7,7 @@ interface UsersTableProps {
   formatBytes: (bytes: number) => string;
   onOpenQuotaModal: (user: AdminUserResponse) => void;
   onOpenAiLimitModal: (user: AdminUserResponse) => void;
+  onOpenMigrationLimitModal: (user: AdminUserResponse) => void;
   onToggleStatus: (user: AdminUserResponse) => void;
 }
 
@@ -15,6 +16,7 @@ export default function UsersTable({
   formatBytes,
   onOpenQuotaModal,
   onOpenAiLimitModal,
+  onOpenMigrationLimitModal,
   onToggleStatus
 }: UsersTableProps) {
   return (
@@ -26,7 +28,7 @@ export default function UsersTable({
             <th className="py-3 px-4">Hak Akses</th>
             <th className="py-3 px-4">Penyimpanan Terpakai</th>
             <th className="py-3 px-4">Limit AI Harian</th>
-            <th className="py-3 px-4">Pemakaian AI Hari Ini</th>
+            <th className="py-3 px-4">Limit Migrasi</th>
             <th className="py-3 px-4 text-center">Status Akun</th>
             <th className="py-3 px-4 text-right">Aksi</th>
           </tr>
@@ -66,15 +68,13 @@ export default function UsersTable({
               </td>
               <td className="py-3 px-4 font-bold text-slate-800">{user.aiDailyLimit} kali</td>
               <td className="py-3 px-4">
-                <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                  <span
-                    className={`${
-                      user.dailyAiRequests >= user.aiDailyLimit ? 'text-rose-600' : 'text-indigo-600'
-                    }`}
-                  >
-                    {user.dailyAiRequests}
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800">
+                    {user.migrationDailyLimit != null ? user.migrationDailyLimit : 3} kali/hari
                   </span>
-                  <span className="text-slate-400">/ {user.aiDailyLimit}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Maks {formatBytes(user.migrationMaxFileSize != null ? user.migrationMaxFileSize : 268435456)}
+                  </span>
                 </div>
               </td>
               <td className="py-3 px-4 text-center">
@@ -106,6 +106,13 @@ export default function UsersTable({
                     className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/50"
                   >
                     <Cpu className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onOpenMigrationLimitModal(user)}
+                    title="Edit Limit Migrasi"
+                    className="p-1.5 text-slate-500 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/50"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
                   </button>
 
                   {/* Protect self-deactivation */}

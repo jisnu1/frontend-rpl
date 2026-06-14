@@ -51,7 +51,6 @@ export default function Migration() {
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [externalAccounts, setExternalAccounts] = useState<ExternalAccountDto[]>([]);
   const [config, setConfig] = useState<MigrationConfig>({ maxFileSizeBytes: 268435456, maxDailyLimit: 3, todayTasksCount: 0 });
-  const [todayTasksCount, setTodayTasksCount] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<Record<string, FileResponse>>({});
@@ -90,18 +89,20 @@ export default function Migration() {
       setAdminMaxMb((migrationConf.maxFileSizeBytes / 1024 / 1024).toString());
       setAdminDailyLimit(migrationConf.maxDailyLimit.toString());
 
-      // Calculate daily usage from user's history tasks (only count created_at today)
-      const startOfToday = new Date();
-      startOfToday.setHours(0,0,0,0);
-      const todayTasks = tasks.filter(t => new Date(t.createdAt) >= startOfToday);
-      setTodayTasksCount(todayTasks.length);
-
-      // Restore active migration dashboard if there's any active running/pending task
-      const activeTask = tasks.find(t => t.status === 'PENDING' || t.status === 'RUNNING');
-      if (activeTask) {
-        setActiveBatchId(activeTask.batchId);
-        const activeBatchTasks = tasks.filter(t => t.batchId === activeTask.batchId);
+      // Restore active migration dashboard using localStorage first, or fall back to any active task in tasks list
+      const storedBatchId = localStorage.getItem('activeMigrationBatchId');
+      if (storedBatchId) {
+        setActiveBatchId(storedBatchId);
+        const activeBatchTasks = tasks.filter(t => t.batchId === storedBatchId);
         setBatchTasks(activeBatchTasks);
+      } else {
+        const activeTask = tasks.find(t => t.status === 'PENDING' || t.status === 'RUNNING');
+        if (activeTask) {
+          setActiveBatchId(activeTask.batchId);
+          localStorage.setItem('activeMigrationBatchId', activeTask.batchId);
+          const activeBatchTasks = tasks.filter(t => t.batchId === activeTask.batchId);
+          setBatchTasks(activeBatchTasks);
+        }
       }
 
     } catch (err) {
@@ -197,6 +198,7 @@ export default function Migration() {
   const handleMigrationStarted = (batchId: string) => {
     setSelectedFiles({});
     setActiveBatchId(batchId);
+    localStorage.setItem('activeMigrationBatchId', batchId);
   };
 
   // Polling migration progress
@@ -274,7 +276,7 @@ export default function Migration() {
   // Check if any selected files exceed config limit
   const hasTooLargeFiles = selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
 
-  const isDailyLimitReached = todayTasksCount >= config.maxDailyLimit;
+  const isDailyLimitReached = config.todayTasksCount >= config.maxDailyLimit;
 
   // Add a full-page loading spinner if isLoading is true
   if (isLoading) {
@@ -341,8 +343,9 @@ export default function Migration() {
                   setSuccessModalOpen(false);
                   setActiveBatchId(null);
                   setBatchTasks([]);
+                  localStorage.removeItem('activeMigrationBatchId');
                 }}
-                className="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md"
               >
                 Kembali ke Daftar Berkas
               </button>
@@ -480,24 +483,24 @@ export default function Migration() {
     <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
       
       {/* Title & Top Description Banner */}
-      <div className="bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-950 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-6 shadow-md border border-primary/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
         <div className="space-y-1 z-10">
           <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
             One-Click Multi-Cloud Migration
           </h2>
-          <p className="text-xs text-indigo-200 font-semibold max-w-xl">
+          <p className="text-xs text-white/80 font-semibold max-w-xl">
             Pindahkan atau salin berkas Anda secara massal antarsumber penyimpanan dengan aman.
           </p>
         </div>
         
         {/* Dynamic statistics block */}
         <div className="flex gap-4 z-10 flex-wrap">
-          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/5 space-y-0.5">
-            <span className="text-[9px] font-black text-indigo-300 uppercase block tracking-wider">Batas Harian hari ini</span>
-            <span className="text-xs font-black">{todayTasksCount} / {config.maxDailyLimit} migrated</span>
+          <div className="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian hari ini</span>
+            <span className="text-xs font-black">{config.todayTasksCount} / {config.maxDailyLimit} migrated</span>
           </div>
-          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/5 space-y-0.5">
-            <span className="text-[9px] font-black text-indigo-300 uppercase block tracking-wider">Maksimal Ukuran File</span>
+          <div className="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-white/20 space-y-0.5">
+            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maksimal Ukuran File</span>
             <span className="text-xs font-black">{formatSize(config.maxFileSizeBytes)}</span>
           </div>
         </div>
@@ -514,7 +517,7 @@ export default function Migration() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap ${
                 isActive
-                  ? 'border-primary text-primary bg-indigo-50/20'
+                  ? 'border-primary text-primary bg-primary/5'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
               }`}
             >
@@ -545,7 +548,7 @@ export default function Migration() {
       {/* Floating Action Bar (selection actions) */}
       {selectedCount > 0 && (
         <div className="sticky top-20 z-20 flex justify-center animate-fadeIn">
-          <div className="bg-white/85 backdrop-blur-md border border-indigo-100 shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
+          <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
             <div className="flex flex-col">
               <span className="text-xs font-black text-slate-800">{selectedCount} Berkas Terpilih</span>
               <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
@@ -565,7 +568,7 @@ export default function Migration() {
                 type="button"
                 disabled={hasTooLargeFiles || isDailyLimitReached}
                 onClick={() => setIsModalOpen(true)}
-                className="bg-primary hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>Migrasikan</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -615,7 +618,7 @@ export default function Migration() {
                     <tr 
                       key={file.id} 
                       className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${
-                        isChecked ? 'bg-indigo-50/10' : ''
+                        isChecked ? 'bg-primary/5' : ''
                       }`}
                       onClick={() => handleToggleFile(file)}
                     >
@@ -682,31 +685,31 @@ export default function Migration() {
 
         {/* Admin Configuration Board */}
         {isAdmin && (
-          <div className="bg-indigo-950/5 text-indigo-950 p-5 rounded-3xl border border-indigo-950/10 space-y-4">
+          <div className="bg-surface-container-low text-on-surface p-5 rounded-3xl border border-surface-variant space-y-4">
             <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-indigo-700" />
-              <h4 className="text-xs font-black uppercase tracking-wider text-indigo-900">Admin Migration Config</h4>
+              <Sliders className="w-5 h-5 text-primary" />
+              <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Migration Config</h4>
             </div>
 
             <form onSubmit={handleUpdateConfig} className="space-y-3.5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-indigo-900/60 uppercase">Max Size (MB)</label>
+                  <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
                   <input
                     type="number"
                     value={adminMaxMb}
                     onChange={(e) => setAdminMaxMb(e.target.value)}
-                    className="w-full bg-white border border-indigo-950/10 rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-indigo-900/60 uppercase">Daily Limit (Files)</label>
+                  <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Daily Limit (Files)</label>
                   <input
                     type="number"
                     value={adminDailyLimit}
                     onChange={(e) => setAdminDailyLimit(e.target.value)}
-                    className="w-full bg-white border border-indigo-950/10 rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
                 </div>
@@ -715,7 +718,7 @@ export default function Migration() {
               <button
                 type="submit"
                 disabled={isUpdatingConfig}
-                className="w-full bg-indigo-900 hover:bg-indigo-950 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
                 {isUpdatingConfig ? (
                   <>

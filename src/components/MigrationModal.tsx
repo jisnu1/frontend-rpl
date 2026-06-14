@@ -139,7 +139,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+            <div className="p-2 rounded-xl bg-surface-container-low text-primary">
               <RefreshCw className="w-5 h-5" />
             </div>
             <div>
@@ -178,7 +178,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                   onClick={() => setTargetProvider('STORAGE_NODE')}
                   className={`p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-200 ${
                     targetProvider === 'STORAGE_NODE'
-                      ? 'border-primary bg-indigo-50/30 ring-2 ring-primary/10'
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/10'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
@@ -191,7 +191,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                   onClick={() => setTargetProvider('GOOGLE_DRIVE')}
                   className={`p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-200 ${
                     targetProvider === 'GOOGLE_DRIVE'
-                      ? 'border-primary bg-indigo-50/30 ring-2 ring-primary/10'
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/10'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
@@ -234,22 +234,22 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                 <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden flex">
                   {/* Current used */}
                   <div 
-                    className="bg-indigo-650 h-full"
+                    className="bg-secondary h-full"
                     style={{ width: `${(usedBytes / quotaBytes) * 100}%` }}
                   />
                   {/* New files */}
                   <div 
-                    className={`${isQuotaExceeded ? 'bg-red-500' : 'bg-primary/60'} h-full transition-all duration-305`}
+                    className={`${isQuotaExceeded ? 'bg-error' : 'bg-primary/60'} h-full transition-all duration-305`}
                     style={{ width: `${(totalBytesToMigrate / quotaBytes) * 100}%` }}
                   />
                 </div>
                 <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-indigo-650" />
+                    <span className="w-2 h-2 rounded-full bg-secondary" />
                     <span>Terpakai ({formatSize(usedBytes)})</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-red-500' : 'bg-primary/60'}`} />
+                    <span className={`w-2 h-2 rounded-full ${isQuotaExceeded ? 'bg-error' : 'bg-primary/60'}`} />
                     <span>Migrasi Baru ({formatSize(totalBytesToMigrate)})</span>
                   </div>
                 </div>
@@ -321,7 +321,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                 type="button"
                 disabled={isQuotaExceeded || hasSelfMigration || (targetProvider === 'GOOGLE_DRIVE' && externalAccounts.length === 0)}
                 onClick={() => setShowConfirmStep(true)}
-                className="flex-1 bg-primary hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Lanjutkan
               </button>
@@ -359,7 +359,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
             {/* Critical Delete Warning */}
             {deleteSource && (
               <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-red-650" />
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-error" />
                 <div>
                   <span className="font-black text-red-950 block">⚠️ Perhatian Khusus</span>
                   <p className="text-[10px] leading-normal font-semibold mt-0.5">
@@ -383,7 +383,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleStartMigration}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 bg-error hover:bg-error/90 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

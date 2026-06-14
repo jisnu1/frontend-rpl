@@ -17,6 +17,8 @@ import {
   updateUserStorageQuota, 
   fetchUserActivities, 
   fetchAiTokenStats,
+  updateUserMigrationLimit,
+  updateUserMigrationMaxSize,
   AppSetting,
   AdminUserResponse,
   UserActivity,
@@ -26,6 +28,7 @@ import {
 // Import Modular Components
 import QuotaModal from './components/QuotaModal';
 import AiLimitModal from './components/AiLimitModal';
+import MigrationLimitModal from './components/MigrationLimitModal';
 import StatsTab from './components/StatsTab';
 import UsersTab from './components/UsersTab';
 import LogsTab from './components/LogsTab';
@@ -50,6 +53,10 @@ export default function AdminDashboard() {
   const [newAiLimit, setNewAiLimit] = useState<number>(5);
   const [quotaModalOpen, setQuotaModalOpen] = useState(false);
   const [aiLimitModalOpen, setAiLimitModalOpen] = useState(false);
+  const [migrationLimitModalOpen, setMigrationLimitModalOpen] = useState(false);
+  const [newMigrationDailyLimit, setNewMigrationDailyLimit] = useState<number>(3);
+  const [newMigrationMaxSizeValue, setNewMigrationMaxSizeValue] = useState<string>('256');
+  const [newMigrationMaxSizeUnit, setNewMigrationMaxSizeUnit] = useState<'MB' | 'GB' | 'TB'>('MB');
 
   // AI config form state
   const [aiForm, setAiForm] = useState<Record<string, string>>({});
@@ -157,6 +164,55 @@ export default function AdminDashboard() {
       loadData();
     } catch (err) {
       showMessage('Gagal memperbarui batas AI harian.', 'error');
+    }
+  };
+
+  const openMigrationLimitModal = (user: AdminUserResponse) => {
+    setEditingUser(user);
+    setNewMigrationDailyLimit(user.migrationDailyLimit != null ? user.migrationDailyLimit : 3);
+    
+    const maxFileSize = user.migrationMaxFileSize != null ? user.migrationMaxFileSize : 268435456;
+    const mb = maxFileSize / (1024 * 1024);
+    if (mb >= 1024 && mb % 1024 === 0) {
+      setNewMigrationMaxSizeValue((mb / 1024).toString());
+      setNewMigrationMaxSizeUnit('GB');
+    } else {
+      setNewMigrationMaxSizeValue(mb % 1 === 0 ? mb.toString() : mb.toFixed(1));
+      setNewMigrationMaxSizeUnit('MB');
+    }
+    
+    setMigrationLimitModalOpen(true);
+  };
+
+  const handleUpdateMigrationLimits = async () => {
+    if (!editingUser) return;
+    try {
+      const dailyLimitVal = newMigrationDailyLimit;
+      if (dailyLimitVal < 0) {
+        showMessage('Batas migrasi harian tidak boleh negatif.', 'error');
+        return;
+      }
+
+      const sizeVal = parseFloat(newMigrationMaxSizeValue);
+      if (isNaN(sizeVal) || sizeVal <= 0) {
+        showMessage('Nilai batas ukuran file tidak valid.', 'error');
+        return;
+      }
+
+      let multiplier = 1024 * 1024; // MB default
+      if (newMigrationMaxSizeUnit === 'GB') multiplier *= 1024;
+      if (newMigrationMaxSizeUnit === 'TB') multiplier *= 1024 * 1024;
+
+      const sizeBytes = Math.round(sizeVal * multiplier);
+
+      await updateUserMigrationLimit(editingUser.id, dailyLimitVal);
+      await updateUserMigrationMaxSize(editingUser.id, sizeBytes);
+
+      showMessage(`Batas migrasi untuk ${editingUser.username} berhasil diperbarui.`, 'success');
+      setMigrationLimitModalOpen(false);
+      loadData();
+    } catch (err) {
+      showMessage('Gagal memperbarui batas migrasi pengguna.', 'error');
     }
   };
 
@@ -286,6 +342,7 @@ export default function AdminDashboard() {
             formatBytes={formatBytes}
             onOpenQuotaModal={openQuotaModal}
             onOpenAiLimitModal={openAiLimitModal}
+            onOpenMigrationLimitModal={openMigrationLimitModal}
             onToggleStatus={handleToggleStatus}
           />
         )}
@@ -331,6 +388,20 @@ export default function AdminDashboard() {
         limit={newAiLimit}
         onLimitChange={setNewAiLimit}
         onSave={handleUpdateAiLimit}
+      />
+
+      {/* Migration Limits Modification Modal */}
+      <MigrationLimitModal
+        isOpen={migrationLimitModalOpen}
+        onClose={() => setMigrationLimitModalOpen(false)}
+        username={editingUser?.username || ''}
+        dailyLimit={newMigrationDailyLimit}
+        maxFileSizeValue={newMigrationMaxSizeValue}
+        maxFileSizeUnit={newMigrationMaxSizeUnit}
+        onDailyLimitChange={setNewMigrationDailyLimit}
+        onMaxFileSizeValueChange={setNewMigrationMaxSizeValue}
+        onMaxFileSizeUnitChange={setNewMigrationMaxSizeUnit}
+        onSave={handleUpdateMigrationLimits}
       />
     </div>
   );

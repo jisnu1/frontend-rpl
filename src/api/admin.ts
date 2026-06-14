@@ -18,6 +18,8 @@ export interface AdminUserResponse {
   aiDailyLimit: number;
   dailyAiRequests: number;
   roles: string[];
+  migrationDailyLimit: number;
+  migrationMaxFileSize: number;
 }
 
 export interface UserActivity {
@@ -70,6 +72,14 @@ export async function updateUserAiLimit(userId: number, aiLimit: number): Promis
 
 export async function updateUserStorageQuota(userId: number, quotaBytes: number): Promise<void> {
   await apiClient.put(`/files/users/${userId}/quota`, { quotaBytes });
+}
+
+export async function updateUserMigrationLimit(userId: number, migrationLimit: number): Promise<void> {
+  await apiClient.put(`/admin/users/${userId}/migration-limit`, { migrationLimit });
+}
+
+export async function updateUserMigrationMaxSize(userId: number, maxFileSize: number): Promise<void> {
+  await apiClient.put(`/admin/users/${userId}/migration-max-size`, { maxFileSize });
 }
 
 export async function fetchUserActivities(page = 0, size = 20): Promise<UserActivity[]> {

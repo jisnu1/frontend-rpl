@@ -7,6 +7,7 @@ interface UsersTabProps {
   formatBytes: (bytes: number) => string;
   onOpenQuotaModal: (user: AdminUserResponse) => void;
   onOpenAiLimitModal: (user: AdminUserResponse) => void;
+  onOpenMigrationLimitModal: (user: AdminUserResponse) => void;
   onToggleStatus: (user: AdminUserResponse) => void;
 }
 
@@ -15,6 +16,7 @@ export default function UsersTab({
   formatBytes,
   onOpenQuotaModal,
   onOpenAiLimitModal,
+  onOpenMigrationLimitModal,
   onToggleStatus
 }: UsersTabProps) {
   return (
@@ -24,6 +26,7 @@ export default function UsersTab({
         formatBytes={formatBytes}
         onOpenQuotaModal={onOpenQuotaModal}
         onOpenAiLimitModal={onOpenAiLimitModal}
+        onOpenMigrationLimitModal={onOpenMigrationLimitModal}
         onToggleStatus={onToggleStatus}
       />
     </div>

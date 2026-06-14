@@ -11,7 +11,8 @@ import {
   LogOut,
   Settings,
   HardDrive,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
@@ -41,7 +42,7 @@ export default function Sidebar({
   onToggleMinimize
 }: SidebarProps) {
   const location = useLocation();
-  const { logout, accessToken } = useAuth();
+  const { logout, accessToken, user } = useAuth();
   const [storage, setStorage] = useState<UserStorageResponse | null>(null);
   const [gdriveStorages, setGdriveStorages] = useState<GoogleDriveStorageInfo[]>([]);
   const [isStorageCollapsed, setIsStorageCollapsed] = useState(false);
@@ -89,12 +90,18 @@ export default function Sidebar({
   const quotaBytes = storage?.quotaBytes || 1073741824; // fallback 1 GB
   const percentage = quotaBytes > 0 ? (usedBytes / quotaBytes) * 100 : 0;
 
+  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('ROLE_ADMIN') || user?.username === 'admin';
+
   const navLinks = [
     { name: 'My Drive', path: '/', icon: FolderOpen },
     { name: 'Shared', path: '/shared', icon: Users },
     { name: 'Migration', path: '/migration', icon: RefreshCw },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
+
+  if (isAdmin) {
+    navLinks.push({ name: 'Admin Panel', path: '/admin', icon: Shield });
+  }
 
   const sidebarContent = (isMobile = false) => {
     const isMinimizedState = !isMobile && isMinimized;

@@ -8,6 +8,7 @@ import Recap from './pages/Recap/Recap';
 import Shared from './pages/Shared/Shared';
 import Settings from './pages/Settings/Settings';
 import Migration from './pages/Migration/Migration';
+import AdminDashboard from './pages/Admin/AdminDashboard';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import VerifyRegistration from './pages/Auth/VerifyRegistration';
@@ -142,6 +143,7 @@ export default function App() {
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/migration" element={<ProtectedRoute><Migration /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="*" element={<PlaceholderPage title="Not Found" />} />
           </Routes>
         </main>
