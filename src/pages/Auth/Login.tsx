@@ -25,11 +25,11 @@ export default function Login() {
   }, []);
 
   React.useEffect(() => {
+    // Pengaman jika user yang sudah login mengakses halaman /login secara langsung
     if (isAuthenticated) {
       navigate('/my-drive', { replace: true });
     }
   }, [isAuthenticated, navigate]);
-
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,6 +43,8 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await login({ email, password });
+      // Pindahkan navigate ke sini agar URL langsung berubah sebelum komponen unmount
+      navigate('/my-drive', { replace: true });
     } catch (err: any) {
       console.error(err);
       setError(
