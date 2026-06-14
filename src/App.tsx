@@ -100,7 +100,6 @@ export default function App() {
       return (
         <>
           <LandingPage />
-          <FloatingReportButton />
         </>
       );
     }
@@ -115,7 +114,6 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-          <FloatingReportButton />
         </>
       );
     }
@@ -170,8 +168,8 @@ export default function App() {
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
 
-      {/* Global floating bug reporter */}
-      <FloatingReportButton />
+      {/* Global floating bug reporter - only shown on settings page */}
+      {location.pathname === '/settings' && <FloatingReportButton />}
     </div>
   );
 }
