@@ -480,333 +480,455 @@ export default function Migration() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
-      
-      {/* Title & Top Description Banner */}
-      <div className="migration-banner bg-gradient-to-r from-primary to-[#0053db] text-white rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-md border border-primary/10 flex flex-col gap-3 md:flex-row md:justify-between md:items-center relative overflow-hidden">
-        <div className="space-y-0.5 z-10 w-full">
-          <h2 className="text-sm md:text-xl font-black tracking-tight flex items-center gap-2">
-            One-Click Multi-Cloud Migration
-          </h2>
-          <p className="text-[10px] md:text-xs text-white/80 font-semibold max-w-xl">
-            Pindahkan atau salin berkas Anda secara massal antarsumber penyimpanan dengan aman.
-          </p>
-        </div>
-        
-        {/* Dynamic statistics block */}
-        <div className="migration-banner-stats grid grid-cols-2 md:flex md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
-          <div className="migration-banner-stat-card bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
-            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian</span>
-            <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit}</span>
+    <>
+      {/* ============================================================
+          DESKTOP LAYOUT — hidden on mobile, unchanged
+          ============================================================ */}
+      <div className="hidden md:flex p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex-col relative">
+
+        {/* Title & Top Description Banner */}
+        <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-6 shadow-md border border-primary/10 flex flex-row justify-between items-center relative overflow-hidden">
+          <div className="space-y-0.5 z-10">
+            <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+              One-Click Multi-Cloud Migration
+            </h2>
+            <p className="text-xs text-white/80 font-semibold max-w-xl">
+              Pindahkan atau salin berkas Anda secara massal antarsumber penyimpanan dengan aman.
+            </p>
           </div>
-          <div className="migration-banner-stat-card bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
-            <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maks. Ukuran</span>
-            <span className="text-xs md:text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs list */}
-      <div className="migration-tabs-wrapper w-full" style={{minWidth: 0}}>
-        <div className="migration-tabs-container border-b border-slate-100 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth -mx-4 md:mx-0 px-4 md:px-0">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3 md:px-4 py-2.5 md:py-3 border-b-2 font-bold text-[11px] md:text-xs transition-all whitespace-nowrap shrink-0 ${
-                  isActive
-                    ? 'border-primary text-primary bg-primary/5'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
-                }`}
-              >
-                <TabIcon className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
-                <span className="max-w-[80px] md:max-w-none truncate">{tab.name}</span>
-                {tab.email && <span className="hidden md:inline text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Search Input Container */}
-      <div className="migration-search-container flex flex-col md:flex-row gap-4 justify-between items-center w-full">
-        <div className="migration-search-input-wrapper relative w-full md:max-w-md group">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-            <Search className="w-4 h-4" />
-          </span>
-          <input
-            className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
-            placeholder={`Cari berkas di ${currentTabConfig?.name}...`}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Floating Action Bar (selection actions) */}
-      {selectedCount > 0 && (
-        <div className="sticky top-20 z-20 flex justify-center animate-fadeIn px-2">
-          <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-2.5 md:py-3 px-4 md:px-6 flex items-center justify-between gap-3 md:gap-6 max-w-xl w-full">
-            <div className="flex flex-col">
-              <span className="text-xs font-black text-slate-800">{selectedCount} Berkas</span>
-              <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
+          <div className="flex flex-row gap-4 z-10">
+            <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+              <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian</span>
+              <span className="text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit}</span>
             </div>
-            
-            <div className="flex items-center gap-3">
+            <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+              <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maks. Ukuran</span>
+              <span className="text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs list */}
+        <div className="w-full" style={{minWidth: 0}}>
+          <div className="border-b border-slate-100 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
+                    isActive
+                      ? 'border-primary text-primary bg-primary/5'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
+                  }`}
+                >
+                  <TabIcon className="w-4 h-4 shrink-0" />
+                  <span>{tab.name}</span>
+                  {tab.email && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="flex flex-row gap-4 justify-between items-center w-full">
+          <div className="relative max-w-md w-full group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <Search className="w-4 h-4" />
+            </span>
+            <input
+              className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
+              placeholder={`Cari berkas di ${currentTabConfig?.name}...`}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Floating Action Bar */}
+        {selectedCount > 0 && (
+          <div className="sticky top-20 z-20 flex justify-center animate-fadeIn px-2">
+            <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
+              <div className="flex flex-col">
+                <span className="text-xs font-black text-slate-800">{selectedCount} Berkas</span>
+                <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={handleClearSelection} className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all" title="Kosongkan Pilihan">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={hasTooLargeFiles || isDailyLimitReached}
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>Migrasikan</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Files Table */}
+        <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
+          {isLoading ? (
+            <div className="py-24 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
+            </div>
+          ) : filteredTabFiles.length === 0 ? (
+            <div className="py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
+              <Sliders className="w-12 h-12 text-slate-200" />
+              <span className="max-w-[220px] leading-relaxed">Belum ada berkas di dalam penyimpanan ini.</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50/60 border-b border-slate-100 text-slate-400 font-black tracking-wider uppercase">
+                    <th className="py-3 px-5 w-10 text-center">
+                      <input type="checkbox" checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])} onChange={handleToggleSelectAll} className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" />
+                    </th>
+                    <th className="py-3 px-4">Nama Berkas</th>
+                    <th className="py-3 px-4">Ukuran</th>
+                    <th className="py-3 px-4">Provider</th>
+                    <th className="py-3 px-4">Tanggal Dibuat</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  {filteredTabFiles.map(file => {
+                    const isChecked = !!selectedFiles[file.id];
+                    const isTooLarge = file.size > config.maxFileSizeBytes;
+                    return (
+                      <tr key={file.id} className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${isChecked ? 'bg-primary/5' : ''}`} onClick={() => handleToggleFile(file)}>
+                        <td className="py-3.5 px-5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" checked={isChecked} onChange={() => handleToggleFile(file)} className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" />
+                        </td>
+                        <td className="py-3.5 px-4 font-bold max-w-sm">
+                          <div className="flex items-center gap-2.5">
+                            <File className="w-4.5 h-4.5 text-slate-400 shrink-0" />
+                            <span className="truncate" title={file.originalFileName}>{file.originalFileName}</span>
+                            {isTooLarge && (
+                              <span className="text-[8px] font-black bg-error-container text-error px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                                <ShieldAlert className="w-2.5 h-2.5" />
+                                Premium limit exceeded ({formatSize(config.maxFileSizeBytes)})
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-500">{formatSize(file.size)}</td>
+                        <td className="py-3.5 px-4 text-on-surface-variant uppercase font-black">{file.provider}</td>
+                        <td className="py-3.5 px-4 text-slate-400">{file.createdAt ? new Date(file.createdAt).toLocaleDateString() : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom notes & admin */}
+        <div className="grid grid-cols-2 gap-6">
+          <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Catatan & Ketentuan Premium</span>
+              <div className="space-y-2 text-xs font-semibold text-on-surface-variant leading-relaxed">
+                <div className="flex gap-2.5 items-start">
+                  <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
+                </div>
+                <div className="flex gap-2.5 items-start">
+                  <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <span>Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
+                </div>
+              </div>
+            </div>
+            {isDailyLimitReached && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-[11px] font-bold flex items-start gap-2 animate-pulse mt-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Batas harian migrasi Anda hari ini telah terlampaui. Silakan coba kembali besok!</span>
+              </div>
+            )}
+          </div>
+          {isAdmin && (
+            <div className="bg-surface-container-low text-on-surface p-5 rounded-3xl border border-surface-variant space-y-4">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-primary" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Migration Config</h4>
+              </div>
+              <form onSubmit={handleUpdateConfig} className="space-y-3.5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
+                    <input type="number" value={adminMaxMb} onChange={(e) => setAdminMaxMb(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Daily Limit (Files)</label>
+                    <input type="number" value={adminDailyLimit} onChange={(e) => setAdminDailyLimit(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                  </div>
+                </div>
+                <button type="submit" disabled={isUpdatingConfig} className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50">
+                  {isUpdatingConfig ? (<><Loader2 className="w-4 h-4 animate-spin" />Memperbarui...</>) : ('Terapkan Konfigurasi')}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================================
+          MOBILE LAYOUT — shown only on mobile (< md), brand new
+          ============================================================ */}
+      <div className="md:hidden flex flex-col min-h-screen bg-slate-50 pb-32">
+
+        {/* ── Banner compact ── */}
+        <div className="bg-gradient-to-br from-primary to-[#0041c4] text-white px-4 pt-4 pb-5">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <h1 className="text-base font-black leading-tight tracking-tight">Multi-Cloud Migration</h1>
+              <p className="text-[11px] text-white/70 font-medium mt-0.5">Pindahkan berkas antar penyimpanan dengan mudah</p>
+            </div>
+            <div className="p-2 bg-white/10 rounded-xl border border-white/20 shrink-0">
+              <RefreshCw className="w-5 h-5" />
+            </div>
+          </div>
+          {/* Stats pills */}
+          <div className="flex gap-2">
+            <div className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-3 py-2.5 text-center">
+              <p className="text-[9px] font-black text-white/60 uppercase tracking-wider">Batas Harian</p>
+              <p className="text-sm font-black mt-0.5">{config.todayTasksCount} / {config.maxDailyLimit}</p>
+            </div>
+            <div className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-3 py-2.5 text-center">
+              <p className="text-[9px] font-black text-white/60 uppercase tracking-wider">Maks. Ukuran</p>
+              <p className="text-sm font-black mt-0.5">{formatSize(config.maxFileSizeBytes)}</p>
+            </div>
+            {isDailyLimitReached && (
+              <div className="flex-1 bg-red-500/80 border border-red-300/30 rounded-2xl px-3 py-2.5 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <p className="text-[9px] font-black leading-tight">Limit tercapai hari ini!</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Tab scroll bar ── */}
+        <div className="bg-white border-b border-slate-100 shadow-sm">
+          <div className="flex overflow-x-auto scrollbar-none px-2 py-1 gap-1.5">
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-[11px] whitespace-nowrap shrink-0 transition-all ${
+                    isActive
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  <TabIcon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{tab.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Search bar ── */}
+        <div className="px-4 py-3 bg-white border-b border-slate-100">
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary focus:bg-white focus:border-primary transition-all outline-none"
+              placeholder={`Cari berkas...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* ── File list ── */}
+        <div className="flex-1 px-4 py-3 space-y-2.5">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
+            </div>
+          ) : filteredTabFiles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+              <div className="p-5 bg-slate-100 rounded-3xl">
+                <Sliders className="w-10 h-10 text-slate-300" />
+              </div>
+              <p className="text-xs font-bold text-slate-400 max-w-[200px] leading-relaxed">
+                Belum ada berkas di penyimpanan ini.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Select all header */}
+              <div
+                className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 cursor-pointer"
+                onClick={handleToggleSelectAll}
+              >
+                <input
+                  type="checkbox"
+                  checked={filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])}
+                  onChange={handleToggleSelectAll}
+                  onClick={e => e.stopPropagation()}
+                  className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary cursor-pointer"
+                />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pilih Semua ({filteredTabFiles.length} berkas)</span>
+              </div>
+
+              {/* File cards */}
+              {filteredTabFiles.map(file => {
+                const isChecked = !!selectedFiles[file.id];
+                const isTooLarge = file.size > config.maxFileSizeBytes;
+                return (
+                  <div
+                    key={file.id}
+                    onClick={() => handleToggleFile(file)}
+                    className={`bg-white border rounded-2xl p-4 cursor-pointer transition-all shadow-sm ${
+                      isChecked
+                        ? 'border-primary/40 bg-primary/5 shadow-primary/10'
+                        : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Checkbox */}
+                      <div onClick={e => e.stopPropagation()} className="mt-0.5 shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleFile(file)}
+                          className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary cursor-pointer"
+                        />
+                      </div>
+
+                      {/* File icon */}
+                      <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
+                        file.provider === 'GOOGLE_DRIVE' ? 'bg-sky-50' : 'bg-primary/10'
+                      }`}>
+                        {file.provider === 'GOOGLE_DRIVE'
+                          ? <HardDrive className="w-5 h-5 text-sky-500" />
+                          : <Database className="w-5 h-5 text-primary" />
+                        }
+                      </div>
+
+                      {/* File info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-800 truncate leading-tight">{file.originalFileName}</p>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                            file.provider === 'GOOGLE_DRIVE'
+                              ? 'bg-sky-100 text-sky-600'
+                              : 'bg-primary/10 text-primary'
+                          }`}>
+                            {file.provider === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Storage Node'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-semibold">{formatSize(file.size)}</span>
+                          {file.createdAt && (
+                            <span className="text-[10px] text-slate-400">
+                              {new Date(file.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+                        {isTooLarge && (
+                          <div className="mt-1.5 inline-flex items-center gap-1 bg-red-50 border border-red-100 text-red-500 rounded-full px-2 py-0.5">
+                            <ShieldAlert className="w-3 h-3" />
+                            <span className="text-[9px] font-black">Melebihi batas ({formatSize(config.maxFileSizeBytes)})</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+
+        {/* ── Bottom notes ── */}
+        <div className="px-4 pb-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2.5">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Catatan & Ketentuan</p>
+            <div className="flex gap-2.5 items-start">
+              <Clock className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] font-medium text-slate-500 leading-relaxed">Reset kuota harian dilakukan otomatis saat hari berganti (pukul 00.00).</p>
+            </div>
+            <div className="flex gap-2.5 items-start">
+              <ShieldAlert className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] font-medium text-slate-500 leading-relaxed">Batas harian dihitung dari total berkas yang dimigrasikan, bukan jumlah inisiasi.</p>
+            </div>
+          </div>
+
+          {/* Admin config (mobile) */}
+          {isAdmin && (
+            <div className="mt-3 bg-surface-container-low border border-surface-variant rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-primary" />
+                <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Config</h4>
+              </div>
+              <form onSubmit={handleUpdateConfig} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
+                    <input type="number" value={adminMaxMb} onChange={(e) => setAdminMaxMb(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Daily Limit</label>
+                    <input type="number" value={adminDailyLimit} onChange={(e) => setAdminDailyLimit(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                  </div>
+                </div>
+                <button type="submit" disabled={isUpdatingConfig} className="w-full bg-primary text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isUpdatingConfig ? (<><Loader2 className="w-4 h-4 animate-spin" />Memperbarui...</>) : 'Terapkan'}
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Floating bottom action bar (mobile only, appears on file selection) ── */}
+      {selectedCount > 0 && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
+              <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleClearSelection}
-                className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all"
-                title="Kosongkan Pilihan"
+                className="p-2.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 transition-all"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-              
               <button
                 type="button"
                 disabled={hasTooLargeFiles || isDailyLimitReached}
                 onClick={() => setIsModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Migrasikan</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <RefreshCw className="w-4 h-4" />
+                Migrasikan
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Main Files Table list */}
-      <div className="migration-content-box bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
-        {isLoading ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
-          </div>
-        ) : filteredTabFiles.length === 0 ? (
-          <div className="py-12 md:py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
-            <Sliders className="w-10 h-10 md:w-12 md:h-12 text-slate-200" />
-            <span className="max-w-[220px] leading-relaxed text-[11px] md:text-xs">Belum ada berkas di dalam penyimpanan ini.</span>
-          </div>
-        ) : (
-          <>
-          {/* Desktop table view - hidden on mobile */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50/60 border-b border-slate-100 text-slate-400 font-black tracking-wider uppercase">
-                  <th className="py-3 px-5 w-10 text-center">
-                    <input 
-                      type="checkbox"
-                      checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])}
-                      onChange={handleToggleSelectAll}
-                      className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
-                    />
-                  </th>
-                  <th className="py-3 px-4">Nama Berkas</th>
-                  <th className="py-3 px-4">Ukuran</th>
-                  <th className="py-3 px-4">Provider</th>
-                  <th className="py-3 px-4">Tanggal Dibuat</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                {filteredTabFiles.map(file => {
-                  const isChecked = !!selectedFiles[file.id];
-                  const isTooLarge = file.size > config.maxFileSizeBytes;
-
-                  return (
-                    <tr 
-                      key={file.id} 
-                      className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${
-                        isChecked ? 'bg-primary/5' : ''
-                      }`}
-                      onClick={() => handleToggleFile(file)}
-                    >
-                      <td className="py-3.5 px-5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <input 
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleToggleFile(file)}
-                          className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
-                        />
-                      </td>
-                      <td className="py-3.5 px-4 font-bold max-w-sm">
-                        <div className="flex items-center gap-2.5">
-                          <File className="w-4.5 h-4.5 text-slate-400 shrink-0" />
-                          <span className="truncate" title={file.originalFileName}>{file.originalFileName}</span>
-                          {isTooLarge && (
-                            <span className="text-[8px] font-black bg-error-container text-error px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-                              <ShieldAlert className="w-2.5 h-2.5" />
-                              Premium limit exceeded ({formatSize(config.maxFileSizeBytes)})
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500">{formatSize(file.size)}</td>
-                      <td className="py-3.5 px-4 text-on-surface-variant uppercase font-black">{file.provider}</td>
-                      <td className="py-3.5 px-4 text-slate-400">
-                        {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile card view - shown only on mobile */}
-          <div className="md:hidden p-3 space-y-2 bg-slate-50/60">
-            {/* Select all row for mobile */}
-            <div
-              className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-2.5 shadow-sm cursor-pointer"
-              onClick={handleToggleSelectAll}
-            >
-              <input
-                type="checkbox"
-                checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])}
-                onChange={handleToggleSelectAll}
-                onClick={(e) => e.stopPropagation()}
-                className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
-              />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pilih Semua</span>
-            </div>
-            {filteredTabFiles.map(file => {
-              const isChecked = !!selectedFiles[file.id];
-              const isTooLarge = file.size > config.maxFileSizeBytes;
-              return (
-                <div
-                  key={file.id}
-                  onClick={() => handleToggleFile(file)}
-                  className={`flex items-center gap-3 bg-white border rounded-2xl px-4 py-3 cursor-pointer transition-all shadow-sm ${
-                    isChecked
-                      ? 'border-primary/40 bg-primary/5 shadow-primary/10'
-                      : 'border-slate-100 hover:border-slate-200 hover:shadow-md'
-                  }`}
-                >
-                  <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => handleToggleFile(file)}
-                      className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 w-8 h-8 bg-slate-100 rounded-xl justify-center">
-                    <File className="w-4.5 h-4.5 text-slate-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-slate-800 truncate block">{file.originalFileName}</span>
-                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                      <span className="text-[10px] font-semibold text-slate-400">{formatSize(file.size)}</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-[10px] font-black text-primary/70 uppercase bg-primary/5 px-1.5 py-0.5 rounded-full">{file.provider === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Storage Node'}</span>
-                      {file.createdAt && (
-                        <>
-                          <span className="text-slate-300">•</span>
-                          <span className="text-[10px] text-slate-400">{new Date(file.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                        </>
-                      )}
-                    </div>
-                    {isTooLarge && (
-                      <div className="mt-1.5">
-                        <span className="text-[9px] font-black bg-red-50 text-red-500 px-2 py-0.5 rounded-full inline-flex items-center gap-1 border border-red-100">
-                          <ShieldAlert className="w-2.5 h-2.5" />
-                          Melebihi batas ukuran ({formatSize(config.maxFileSizeBytes)})
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          </>
-        )}
-      </div>
-
-      {/* Warnings & Admin Dashboard settings */}
-      <div className="grid md:grid-cols-2 gap-6">
-        
-        {/* User limits warning info */}
-        <div className="migration-notes-box bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Catatan & Ketentuan Premium</span>
-            <div className="space-y-2 text-xs font-semibold text-on-surface-variant leading-relaxed">
-              <div className="migration-note-item flex gap-2.5 items-start">
-                <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span className="migration-note-text">Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
-              </div>
-              <div className="migration-note-item flex gap-2.5 items-start">
-                <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span className="migration-note-text">Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
-              </div>
-            </div>
-          </div>
-          
-          {isDailyLimitReached && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-[11px] font-bold flex items-start gap-2 animate-pulse mt-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>Batas harian migrasi Anda hari ini telah terlampaui. Silakan coba kembali besok!</span>
-            </div>
-          )}
-        </div>
-
-        {/* Admin Configuration Board */}
-        {isAdmin && (
-          <div className="bg-surface-container-low text-on-surface p-5 rounded-3xl border border-surface-variant space-y-4">
-            <div className="flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-primary" />
-              <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Migration Config</h4>
-            </div>
-
-            <form onSubmit={handleUpdateConfig} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
-                  <input
-                    type="number"
-                    value={adminMaxMb}
-                    onChange={(e) => setAdminMaxMb(e.target.value)}
-                    className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Daily Limit (Files)</label>
-                  <input
-                    type="number"
-                    value={adminDailyLimit}
-                    onChange={(e) => setAdminDailyLimit(e.target.value)}
-                    className="w-full bg-white border border-outline-variant rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
-                    required
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isUpdatingConfig}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
-              >
-                {isUpdatingConfig ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Memperbarui...
-                  </>
-                ) : (
-                  'Terapkan Konfigurasi'
-                )}
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
-
-      {/* Migration Target & Configuration Dialog */}
+      {/* Migration Modal */}
       <MigrationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -819,6 +941,6 @@ export default function Migration() {
         }))}
         onSuccess={handleMigrationStarted}
       />
-    </div>
+    </>
   );
 }
