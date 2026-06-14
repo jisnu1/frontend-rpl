@@ -18,6 +18,17 @@ export interface UserInfo {
   avatarUrl?: string;
   phoneNumber?: string;
   storageQuota?: number;
+  subscriptionTier?: string;
+  subscriptionExpiresAt?: string;
+}
+
+export interface SubscriptionRequest {
+  id: number;
+  userId: number;
+  requestedTier: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LoginResponse {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Cpu, Lock, Unlock, RefreshCw } from 'lucide-react';
+import { Database, Cpu, Lock, Unlock, RefreshCw, CreditCard } from 'lucide-react';
 import { AdminUserResponse } from '../../../api/admin';
 
 interface UsersTableProps {
@@ -8,6 +8,7 @@ interface UsersTableProps {
   onOpenQuotaModal: (user: AdminUserResponse) => void;
   onOpenAiLimitModal: (user: AdminUserResponse) => void;
   onOpenMigrationLimitModal: (user: AdminUserResponse) => void;
+  onOpenSubscriptionModal: (user: AdminUserResponse) => void;
   onToggleStatus: (user: AdminUserResponse) => void;
 }
 
@@ -17,6 +18,7 @@ export default function UsersTable({
   onOpenQuotaModal,
   onOpenAiLimitModal,
   onOpenMigrationLimitModal,
+  onOpenSubscriptionModal,
   onToggleStatus
 }: UsersTableProps) {
   return (
@@ -26,6 +28,7 @@ export default function UsersTable({
           <tr className="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             <th className="py-3 px-4">Pengguna</th>
             <th className="py-3 px-4">Hak Akses</th>
+            <th className="py-3 px-4">Paket</th>
             <th className="py-3 px-4">Penyimpanan Terpakai</th>
             <th className="py-3 px-4">Limit AI Harian</th>
             <th className="py-3 px-4">Limit Migrasi</th>
@@ -56,6 +59,28 @@ export default function UsersTable({
                       {r}
                     </span>
                   ))}
+                </div>
+              </td>
+              <td className="py-3 px-4">
+                <div className="flex flex-col">
+                  <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wide border ${
+                    user.subscriptionTier === 'PREMIUM_INDIVIDUAL'
+                      ? 'bg-amber-100 text-amber-800 border-amber-200'
+                      : user.subscriptionTier === 'PREMIUM_ACADEMIC'
+                      ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
+                      : 'bg-slate-100 text-slate-800 border-slate-200'
+                  }`}>
+                    {user.subscriptionTier === 'PREMIUM_INDIVIDUAL'
+                      ? 'Premium Individual'
+                      : user.subscriptionTier === 'PREMIUM_ACADEMIC'
+                      ? 'Premium Academic'
+                      : 'Freemium'}
+                  </span>
+                  {user.subscriptionExpiresAt && (
+                    <span className="text-[8px] text-slate-400 mt-0.5 font-bold">
+                      Exp: {new Date(user.subscriptionExpiresAt).toLocaleDateString('id-ID')}
+                    </span>
+                  )}
                 </div>
               </td>
               <td className="py-3 px-4">
@@ -113,6 +138,13 @@ export default function UsersTable({
                     className="p-1.5 text-slate-500 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/50"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onOpenSubscriptionModal(user)}
+                    title="Ubah Paket Langganan"
+                    className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200/50"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
                   </button>
 
                   {/* Protect self-deactivation */}

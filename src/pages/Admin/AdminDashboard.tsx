@@ -19,16 +19,23 @@ import {
   fetchAiTokenStats,
   updateUserMigrationLimit,
   updateUserMigrationMaxSize,
+  fetchSubscriptionRequests,
+  approveSubscriptionRequest,
+  rejectSubscriptionRequest,
+  directUpdateUserSubscription,
   AppSetting,
   AdminUserResponse,
   UserActivity,
   AiTokenStats
 } from '../../api/admin';
 
+import { SubscriptionRequest } from '../../types/auth.types';
+
 // Import Modular Components
 import QuotaModal from './components/QuotaModal';
 import AiLimitModal from './components/AiLimitModal';
 import MigrationLimitModal from './components/MigrationLimitModal';
+import SubscriptionModal from './components/SubscriptionModal';
 import StatsTab from './components/StatsTab';
 import UsersTab from './components/UsersTab';
 import LogsTab from './components/LogsTab';
@@ -40,6 +47,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<AdminUserResponse[]>([]);
   const [activities, setActivities] = useState<UserActivity[]>([]);
   const [tokenStats, setTokenStats] = useState<AiTokenStats | null>(null);
+  const [pendingRequests, setPendingRequests] = useState<SubscriptionRequest[]>([]);
   
   // Pagination for logs
   const [logPage, setLogPage] = useState(0);
@@ -54,6 +62,7 @@ export default function AdminDashboard() {
   const [quotaModalOpen, setQuotaModalOpen] = useState(false);
   const [aiLimitModalOpen, setAiLimitModalOpen] = useState(false);
   const [migrationLimitModalOpen, setMigrationLimitModalOpen] = useState(false);
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [newMigrationDailyLimit, setNewMigrationDailyLimit] = useState<number>(3);
   const [newMigrationMaxSizeValue, setNewMigrationMaxSizeValue] = useState<string>('256');
   const [newMigrationMaxSizeUnit, setNewMigrationMaxSizeUnit] = useState<'MB' | 'GB' | 'TB'>('MB');
@@ -78,8 +87,12 @@ export default function AdminDashboard() {
         const stats = await fetchAiTokenStats();
         setTokenStats(stats);
       } else if (activeTab === 'users') {
-        const usersList = await fetchAdminUsers();
+        const [usersList, pendingList] = await Promise.all([
+          fetchAdminUsers(),
+          fetchSubscriptionRequests()
+        ]);
         setUsers(usersList);
+        setPendingRequests(pendingList);
       } else if (activeTab === 'logs') {
         const logsList = await fetchUserActivities(logPage, 20);
         setActivities(logsList);
@@ -216,6 +229,43 @@ export default function AdminDashboard() {
     }
   };
 
+  const openSubscriptionModal = (user: AdminUserResponse) => {
+    setEditingUser(user);
+    setSubscriptionModalOpen(true);
+  };
+
+  const handleUpdateSubscription = async (newTier: string) => {
+    if (!editingUser) return;
+    try {
+      await directUpdateUserSubscription(editingUser.id, newTier);
+      showMessage(`Paket langganan user ${editingUser.username} berhasil diperbarui.`, 'success');
+      setSubscriptionModalOpen(false);
+      loadData();
+    } catch (err) {
+      showMessage('Gagal memperbarui paket langganan user.', 'error');
+    }
+  };
+
+  const handleApproveRequest = async (id: number) => {
+    try {
+      await approveSubscriptionRequest(id);
+      showMessage('Permintaan upgrade berhasil disetujui.', 'success');
+      loadData();
+    } catch (err) {
+      showMessage('Gagal menyetujui permintaan upgrade.', 'error');
+    }
+  };
+
+  const handleRejectRequest = async (id: number) => {
+    try {
+      await rejectSubscriptionRequest(id);
+      showMessage('Permintaan upgrade berhasil ditolak.', 'success');
+      loadData();
+    } catch (err) {
+      showMessage('Gagal menolak permintaan upgrade.', 'error');
+    }
+  };
+
   // AI Settings Actions
   const handleAiFormChange = (key: string, value: string) => {
     setAiForm(prev => ({ ...prev, [key]: value }));
@@ -339,11 +389,15 @@ export default function AdminDashboard() {
         {!loading && activeTab === 'users' && (
           <UsersTab
             users={users}
+            pendingRequests={pendingRequests}
             formatBytes={formatBytes}
             onOpenQuotaModal={openQuotaModal}
             onOpenAiLimitModal={openAiLimitModal}
             onOpenMigrationLimitModal={openMigrationLimitModal}
+            onOpenSubscriptionModal={openSubscriptionModal}
             onToggleStatus={handleToggleStatus}
+            onApproveRequest={handleApproveRequest}
+            onRejectRequest={handleRejectRequest}
           />
         )}
 
@@ -402,6 +456,15 @@ export default function AdminDashboard() {
         onMaxFileSizeValueChange={setNewMigrationMaxSizeValue}
         onMaxFileSizeUnitChange={setNewMigrationMaxSizeUnit}
         onSave={handleUpdateMigrationLimits}
+      />
+
+      {/* Subscription Tier Modification Modal */}
+      <SubscriptionModal
+        isOpen={subscriptionModalOpen}
+        onClose={() => setSubscriptionModalOpen(false)}
+        username={editingUser?.username || ''}
+        currentTier={editingUser?.subscriptionTier || 'FREEMIUM'}
+        onSave={handleUpdateSubscription}
       />
     </div>
   );

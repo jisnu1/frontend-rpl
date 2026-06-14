@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { RegisterRequest, LoginRequest, LoginResponse, RefreshResponse, UserInfo } from '../types/auth.types';
+import { RegisterRequest, LoginRequest, LoginResponse, RefreshResponse, UserInfo, SubscriptionRequest } from '../types/auth.types';
 
 export interface UpdateProfileRequest {
   fullName: string;
@@ -59,5 +59,20 @@ export async function updatePassword(data: UpdatePasswordRequest): Promise<void>
 
 export async function logoutUser(): Promise<void> {
   await apiClient.post('/auth/logout');
+}
+
+export async function requestSubscriptionUpgrade(tier: string): Promise<SubscriptionRequest> {
+  const response = await apiClient.post<SubscriptionRequest>('/users/me/subscription-request', null, {
+    params: { tier }
+  });
+  return response.data;
+}
+
+export async function fetchMySubscriptionRequest(): Promise<SubscriptionRequest | null> {
+  const response = await apiClient.get<SubscriptionRequest>('/users/me/subscription-request');
+  if (response.status === 204 || !response.data) {
+    return null;
+  }
+  return response.data;
 }
 

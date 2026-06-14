@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { SubscriptionRequest } from '../types/auth.types';
 
 export interface AppSetting {
   id: number;
@@ -20,6 +21,8 @@ export interface AdminUserResponse {
   roles: string[];
   migrationDailyLimit: number;
   migrationMaxFileSize: number;
+  subscriptionTier: string;
+  subscriptionExpiresAt?: string;
 }
 
 export interface UserActivity {
@@ -92,4 +95,23 @@ export async function fetchUserActivities(page = 0, size = 20): Promise<UserActi
 export async function fetchAiTokenStats(): Promise<AiTokenStats> {
   const response = await apiClient.get<AiTokenStats>('/admin/ai/token-stats');
   return response.data;
+}
+
+export async function fetchSubscriptionRequests(): Promise<SubscriptionRequest[]> {
+  const response = await apiClient.get<SubscriptionRequest[]>('/admin/subscription-requests');
+  return response.data;
+}
+
+export async function approveSubscriptionRequest(requestId: number): Promise<void> {
+  await apiClient.post(`/admin/subscription-requests/${requestId}/approve`);
+}
+
+export async function rejectSubscriptionRequest(requestId: number): Promise<void> {
+  await apiClient.post(`/admin/subscription-requests/${requestId}/reject`);
+}
+
+export async function directUpdateUserSubscription(userId: number, tier: string): Promise<void> {
+  await apiClient.put(`/admin/users/${userId}/subscription`, null, {
+    params: { tier }
+  });
 }
