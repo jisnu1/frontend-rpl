@@ -405,6 +405,40 @@
     padding-right: 0.5rem !important;
     gap: 0.5rem !important;
   }
+
+  /* 4. DROPDOWN FILTER OPTIMIZATION FOR MOBILE */
+  /* Backdrop overlay semi-transparan dengan efek blur lembut */
+  .filter-dropdown-backdrop {
+    background-color: rgba(15, 23, 42, 0.35) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    z-index: 40 !important;
+  }
+  
+  /* Popover filter diposisikan di tengah layar secara responsif */
+  .filter-dropdown-menu {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    max-width: 320px !important;
+    margin-top: 0 !important;
+    border-radius: 1.5rem !important;
+    border: 1px solid #f1f5f9 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    z-index: 50 !important;
+    padding: 0.5rem !important;
+  }
+  
+  /* Jarak sentuh tombol filter di dalam popover disesuaikan ukuran jari di HP */
+  .filter-dropdown-menu button {
+    padding: 0.8rem 1rem !important;
+    border-radius: 1rem !important;
+    margin: 0.15rem 0 !important;
+  }
 }
 
 

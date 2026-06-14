@@ -20,7 +20,7 @@ interface SharedProps {
 }
 
 export default function Shared({ searchQuery = '' }: SharedProps) {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>(window.innerWidth < 768 ? 'grid' : 'list');
   const [activeTab, setActiveTab] = useState<'with-me' | 'by-me'>('with-me');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [withMeFiles, setWithMeFiles] = useState<SharedFileDto[]>([]);
@@ -190,10 +190,10 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
             {isFilterDropdownOpen && (
               <>
                 {/* Backdrop to handle clicks outside the dropdown */}
-                <div className="fixed inset-0 z-20" onClick={() => setIsFilterDropdownOpen(false)} />
+                <div className="fixed inset-0 z-20 filter-dropdown-backdrop" onClick={() => setIsFilterDropdownOpen(false)} />
                 
                 {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-100 shadow-[0px_10px_30px_rgba(15,23,42,0.1)] py-2 z-30 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-100 shadow-[0px_10px_30px_rgba(15,23,42,0.1)] py-2 z-30 animate-fadeIn filter-dropdown-menu">
                   <div className="px-4 py-2 border-b border-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400">
                     Pilih Jenis Berkas
                   </div>
@@ -237,7 +237,7 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
           </div>
           
           {/* View Mode Toggle */}
-          <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
+          <div className="bg-slate-100 p-1 rounded-xl hidden md:flex gap-1">
             <button
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-lg transition-all ${
