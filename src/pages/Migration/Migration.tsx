@@ -483,7 +483,7 @@ export default function Migration() {
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
       
       {/* Title & Top Description Banner */}
-      <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-md border border-primary/10 flex flex-col gap-3 md:flex-row md:justify-between md:items-center relative overflow-hidden">
+      <div className="migration-banner bg-gradient-to-r from-primary to-[#0053db] text-white rounded-2xl md:rounded-3xl p-3 md:p-6 shadow-md border border-primary/10 flex flex-col gap-3 md:flex-row md:justify-between md:items-center relative overflow-hidden">
         <div className="space-y-0.5 z-10 w-full">
           <h2 className="text-sm md:text-xl font-black tracking-tight flex items-center gap-2">
             One-Click Multi-Cloud Migration
@@ -494,12 +494,12 @@ export default function Migration() {
         </div>
         
         {/* Dynamic statistics block */}
-        <div className="grid grid-cols-2 md:flex md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
-          <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+        <div className="migration-banner-stats grid grid-cols-2 md:flex md:flex-row gap-2 md:gap-4 z-10 w-full md:w-auto">
+          <div className="migration-banner-stat-card bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian</span>
             <span className="text-xs md:text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit}</span>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
+          <div className="migration-banner-stat-card bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
             <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maks. Ukuran</span>
             <span className="text-xs md:text-sm font-black">{formatSize(config.maxFileSizeBytes)}</span>
           </div>
@@ -507,8 +507,8 @@ export default function Migration() {
       </div>
 
       {/* Tabs list */}
-      <div className="w-full" style={{minWidth: 0}}>
-        <div className="border-b border-slate-100 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth -mx-4 md:mx-0 px-4 md:px-0">
+      <div className="migration-tabs-wrapper w-full" style={{minWidth: 0}}>
+        <div className="migration-tabs-container border-b border-slate-100 flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth -mx-4 md:mx-0 px-4 md:px-0">
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
@@ -532,8 +532,8 @@ export default function Migration() {
       </div>
 
       {/* Search Input Container */}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center w-full">
-        <div className="relative w-full md:max-w-md group">
+      <div className="migration-search-container flex flex-col md:flex-row gap-4 justify-between items-center w-full">
+        <div className="migration-search-input-wrapper relative w-full md:max-w-md group">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
             <Search className="w-4 h-4" />
           </span>
@@ -581,7 +581,7 @@ export default function Migration() {
       )}
 
       {/* Main Files Table list */}
-      <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
+      <div className="migration-content-box bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
         {isLoading ? (
           <div className="py-24 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -696,7 +696,7 @@ export default function Migration() {
                     />
                   </div>
                   <div className="flex items-center gap-2 shrink-0 w-8 h-8 bg-slate-100 rounded-xl justify-center">
-                    <File className="w-4 h-4 text-slate-500" />
+                    <File className="w-4.5 h-4.5 text-slate-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-bold text-slate-800 truncate block">{file.originalFileName}</span>
@@ -732,17 +732,17 @@ export default function Migration() {
       <div className="grid md:grid-cols-2 gap-6">
         
         {/* User limits warning info */}
-        <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
+        <div className="migration-notes-box bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
           <div className="space-y-1.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Catatan & Ketentuan Premium</span>
             <div className="space-y-2 text-xs font-semibold text-on-surface-variant leading-relaxed">
-              <div className="flex gap-2.5 items-start">
+              <div className="migration-note-item flex gap-2.5 items-start">
                 <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span>Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
+                <span className="migration-note-text">Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
               </div>
-              <div className="flex gap-2.5 items-start">
+              <div className="migration-note-item flex gap-2.5 items-start">
                 <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span>Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
+                <span className="migration-note-text">Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
               </div>
             </div>
           </div>
