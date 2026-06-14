@@ -20,7 +20,16 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    document.title = 'Create Account - Horizon Cloud';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Daftar akun Horizon Cloud baru secara gratis untuk mengelola cloud storage personal dan mendapatkan VPS Storage Node 1 GB.');
+    }
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
+
     e.preventDefault();
     setError('');
     

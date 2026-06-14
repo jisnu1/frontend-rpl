@@ -17,10 +17,19 @@ export default function Login() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    document.title = 'Sign In - Horizon Cloud';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Masuk ke akun Horizon Cloud Anda untuk mengelola penyimpanan, melakukan migrasi data, dan menggunakan asisten AI.');
+    }
+  }, []);
+
+  React.useEffect(() => {
     if (isAuthenticated) {
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
