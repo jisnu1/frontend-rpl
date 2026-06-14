@@ -184,7 +184,7 @@ export default function Settings() {
 
       const client = window.google.accounts.oauth2.initCodeClient({
         client_id: clientId,
-        scope: 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email',
+        scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
         ux_mode: 'popup',
         callback: async (response: any) => {
           if (response.error) {
