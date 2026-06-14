@@ -134,19 +134,19 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
       {/* Backdrop click closer */}
       <div className="absolute inset-0" onClick={isSubmitting ? undefined : onClose} />
 
-      <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10 transition-all duration-300">
+      <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10 transition-all duration-300 flex flex-col max-h-[90vh] md:max-h-[85vh]">
         
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-surface-container-low text-primary">
-              <RefreshCw className="w-5 h-5" />
+        <div className="px-4 py-3.5 md:px-6 md:py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+          <div className="flex items-center gap-2 md:gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-surface-container-low text-primary shrink-0">
+              <RefreshCw className="w-4.5 h-4.5 md:w-5 md:h-5" />
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-800">
+            <div className="min-w-0">
+              <h3 className="text-sm md:text-base font-bold text-slate-800 truncate">
                 {showConfirmStep ? 'Konfirmasi Migrasi Berkas' : 'One-Click Cloud Migration'}
               </h3>
-              <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
+              <p className="text-[10px] md:text-[11px] font-semibold text-slate-400 mt-0.5">
                 {selectedFiles.length} berkas terpilih ({formatSize(totalBytesToMigrate)})
               </p>
             </div>
@@ -154,29 +154,29 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-all disabled:opacity-50"
+            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-all disabled:opacity-50 shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3">
+          <div className="py-20 flex flex-col items-center justify-center gap-3 flex-1">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
             <p className="text-xs font-bold text-slate-400">Memuat data penyimpanan...</p>
           </div>
         ) : !showConfirmStep ? (
           /* STEP 1: OPTIONS */
-          <div className="p-6 space-y-5">
+          <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto flex-1 custom-scrollbar">
             
             {/* Target Provider Choice */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Penyimpanan Tujuan</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5 md:gap-3">
                 <button
                   type="button"
                   onClick={() => setTargetProvider('STORAGE_NODE')}
-                  className={`p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-200 ${
+                  className={`p-3 md:p-4 rounded-2xl border text-left flex flex-col gap-0.5 md:gap-1 transition-all duration-200 ${
                     targetProvider === 'STORAGE_NODE'
                       ? 'border-primary bg-primary/5 ring-2 ring-primary/10'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
@@ -189,7 +189,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
                 <button
                   type="button"
                   onClick={() => setTargetProvider('GOOGLE_DRIVE')}
-                  className={`p-4 rounded-2xl border text-left flex flex-col gap-1 transition-all duration-200 ${
+                  className={`p-3 md:p-4 rounded-2xl border text-left flex flex-col gap-0.5 md:gap-1 transition-all duration-200 ${
                     targetProvider === 'GOOGLE_DRIVE'
                       ? 'border-primary bg-primary/5 ring-2 ring-primary/10'
                       : 'border-slate-200 hover:border-slate-300 bg-white'
@@ -226,7 +226,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
 
             {/* Quota Progress Visualization (For STORAGE_NODE target) */}
             {targetProvider === 'STORAGE_NODE' && personalStorage && (
-              <div className="p-4 bg-slate-50 rounded-2xl space-y-2 border border-slate-100">
+              <div className="p-3 md:p-4 bg-slate-50 rounded-2xl space-y-2 border border-slate-100">
                 <div className="flex justify-between text-xs font-bold text-slate-700">
                   <span>Estimasi Penggunaan Kuota</span>
                   <span>{formatSize(usedBytes + totalBytesToMigrate)} / {formatSize(quotaBytes)}</span>
@@ -257,7 +257,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
             )}
 
             {/* Delete Source Option Toggle */}
-            <div className="p-4 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-100">
+            <div className="p-3 md:p-4 bg-slate-50 rounded-2xl flex items-center justify-between border border-slate-100">
               <div className="min-w-0 pr-4">
                 <span className="text-xs font-black text-slate-800 block">Hapus berkas sumber (Move)</span>
                 <span className="text-[10px] font-bold text-slate-400">Menghapus berkas asli dari penyimpanan asal setelah berhasil dimigrasikan</span>
@@ -279,7 +279,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
 
             {/* Self-migration Warnings */}
             {hasSelfMigration && (
-              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-bold flex items-start gap-2.5">
+              <div className="p-3 md:p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-bold flex items-start gap-2 md:gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
                 <div className="space-y-1">
                   <span className="block font-black text-amber-900">Peringatan Self-Migration</span>
@@ -297,7 +297,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
 
             {/* Quota Exceeded Warnings */}
             {isQuotaExceeded && (
-              <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-start gap-2.5">
+              <div className="p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-start gap-2 md:gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
                 <div>
                   <span className="block font-black text-red-900">Kapasitas Tidak Mencukupi</span>
@@ -309,7 +309,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
@@ -329,8 +329,8 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
           </div>
         ) : (
           /* STEP 2: DOUBLE CONFIRMATION */
-          <div className="p-6 space-y-5">
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="p-3 md:p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <p className="text-xs font-bold text-slate-500 mb-2">Daftar berkas yang akan dimigrasikan:</p>
               <div className="max-h-40 overflow-y-auto custom-scrollbar pr-1 divide-y divide-slate-150/60">
                 {selectedFiles.map((file) => (
@@ -358,7 +358,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
 
             {/* Critical Delete Warning */}
             {deleteSource && (
-              <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-start gap-2.5">
+              <div className="p-3 md:p-3.5 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-xs font-bold flex items-start gap-2 md:gap-2.5">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-error" />
                 <div>
                   <span className="font-black text-red-950 block">⚠️ Perhatian Khusus</span>
@@ -370,7 +370,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-2 shrink-0">
               <button
                 type="button"
                 disabled={isSubmitting}
