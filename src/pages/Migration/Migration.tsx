@@ -149,6 +149,7 @@ export default function Migration() {
   );
 
   const formatSize = (bytes: number) => {
+    if (bytes === -1) return 'Tanpa Batas';
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -274,9 +275,9 @@ export default function Migration() {
   const selectedSize = selectedFilesList.reduce((acc, f) => acc + f.size, 0);
 
   // Check if any selected files exceed config limit
-  const hasTooLargeFiles = selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
+  const hasTooLargeFiles = config.maxFileSizeBytes !== -1 && selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
 
-  const isDailyLimitReached = config.todayTasksCount >= config.maxDailyLimit;
+  const isDailyLimitReached = config.maxDailyLimit !== -1 && config.todayTasksCount >= config.maxDailyLimit;
 
   // Add a full-page loading spinner if isLoading is true
   if (isLoading) {
@@ -499,7 +500,7 @@ export default function Migration() {
           <div className="flex flex-row gap-4 z-10">
             <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
               <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Batas Harian</span>
-              <span className="text-sm font-black">{config.todayTasksCount} / {config.maxDailyLimit}</span>
+              <span className="text-sm font-black">{config.maxDailyLimit === -1 ? `${config.todayTasksCount} / ∞` : `${config.todayTasksCount} / ${config.maxDailyLimit}`}</span>
             </div>
             <div className="bg-white/10 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 space-y-0.5">
               <span className="text-[9px] font-black text-white/70 uppercase block tracking-wider">Maks. Ukuran</span>
@@ -604,7 +605,7 @@ export default function Migration() {
                 <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
                   {filteredTabFiles.map(file => {
                     const isChecked = !!selectedFiles[file.id];
-                    const isTooLarge = file.size > config.maxFileSizeBytes;
+                    const isTooLarge = config.maxFileSizeBytes !== -1 && file.size > config.maxFileSizeBytes;
                     return (
                       <tr key={file.id} className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${isChecked ? 'bg-primary/5' : ''}`} onClick={() => handleToggleFile(file)}>
                         <td className="py-3.5 px-5 text-center" onClick={(e) => e.stopPropagation()}>
@@ -703,7 +704,7 @@ export default function Migration() {
           <div className="flex gap-2">
             <div className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-3 py-2.5 text-center">
               <p className="text-[9px] font-black text-white/60 uppercase tracking-wider">Batas Harian</p>
-              <p className="text-sm font-black mt-0.5">{config.todayTasksCount} / {config.maxDailyLimit}</p>
+              <p className="text-sm font-black mt-0.5">{config.maxDailyLimit === -1 ? `${config.todayTasksCount} / ∞` : `${config.todayTasksCount} / ${config.maxDailyLimit}`}</p>
             </div>
             <div className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-3 py-2.5 text-center">
               <p className="text-[9px] font-black text-white/60 uppercase tracking-wider">Maks. Ukuran</p>
@@ -792,7 +793,7 @@ export default function Migration() {
               {/* File cards */}
               {filteredTabFiles.map(file => {
                 const isChecked = !!selectedFiles[file.id];
-                const isTooLarge = file.size > config.maxFileSizeBytes;
+                const isTooLarge = config.maxFileSizeBytes !== -1 && file.size > config.maxFileSizeBytes;
                 return (
                   <div
                     key={file.id}
