@@ -3,10 +3,11 @@ import axios from 'axios';
 import apiClient from '../api/apiClient';
 import { getDownloadUrl } from '../api/files';
 import { useToast } from './ToastContext';
+import { startMigration, fetchMigrationTasks } from '../api/migrations';
 
 export interface BackgroundActivity {
   id: string;
-  type: 'upload' | 'download';
+  type: 'upload' | 'download' | 'migration';
   name: string;
   progress: number;
   status: 'running' | 'success' | 'error';
@@ -15,11 +16,12 @@ export interface BackgroundActivity {
 
 export interface ActivityNotification {
   id: string;
-  type: 'upload' | 'download';
+  type: 'upload' | 'download' | 'migration';
   name: string;
   status: 'success' | 'error';
   timestamp: string;
   isRead: boolean;
+  errorMessage?: string;
 }
 
 interface ActivityContextType {
@@ -31,6 +33,13 @@ interface ActivityContextType {
   cancelActivity: (id: string) => Promise<void>;
   markAllNotificationsAsRead: () => void;
   clearNotifications: () => void;
+  migrateFiles: (
+    fileIds: string[],
+    fileNamesMap: Record<string, string>,
+    targetProvider: string,
+    targetExternalAccountId: number | null,
+    deleteSource: boolean
+  ) => Promise<{ success: boolean; batchId: string }>;
 }
 
 const ActivityContext = createContext<ActivityContextType | undefined>(undefined);
@@ -63,14 +72,15 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('horizon_notifications', JSON.stringify(updated));
   };
 
-  const addNotification = useCallback((type: 'upload' | 'download', name: string, status: 'success' | 'error') => {
+  const addNotification = useCallback((type: 'upload' | 'download' | 'migration', name: string, status: 'success' | 'error', errorMessage?: string) => {
     const newNotif: ActivityNotification = {
       id: Math.random().toString(36).substring(2, 9),
       type,
       name,
       status,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isRead: false
+      isRead: false,
+      errorMessage
     };
     setNotifications(prev => {
       const updated = [newNotif, ...prev].slice(0, 50); // limit to 50 items
@@ -325,6 +335,91 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     activeTasksRef.current.delete(actId);
   }, [updateActivityStatus, addNotification]);
 
+  const migrateFiles = useCallback(async (
+    fileIds: string[],
+    fileNamesMap: Record<string, string>,
+    targetProvider: string,
+    targetExternalAccountId: number | null,
+    deleteSource: boolean
+  ) => {
+    const res = await startMigration({
+      fileIds,
+      targetProvider,
+      targetExternalAccountId,
+      deleteSource
+    });
+
+    if (res.success && res.batchId) {
+      const batchId = res.batchId;
+      
+      const newActivities = fileIds.map(fileId => {
+        const name = fileNamesMap[fileId] || 'File';
+        return {
+          id: `migration_${fileId}_${batchId}`,
+          type: 'migration' as const,
+          name,
+          progress: 0,
+          status: 'running' as const,
+        };
+      });
+
+      setActivities(prev => [...prev, ...newActivities]);
+
+      // Start polling
+      const pollInterval = setInterval(async () => {
+        try {
+          const tasks = await fetchMigrationTasks(batchId);
+          let allFinished = true;
+
+          tasks.forEach(task => {
+            const actId = `migration_${task.fileId}_${batchId}`;
+            const percentage = Math.round(task.progress || 0);
+
+            if (task.status === 'SUCCESS') {
+              setActivities(prev => {
+                const act = prev.find(a => a.id === actId);
+                if (act && act.status === 'running') {
+                  addNotification('migration', task.fileName || fileNamesMap[task.fileId] || 'File', 'success');
+                  setTimeout(() => {
+                    setActivities(p => p.filter(a => a.id !== actId));
+                  }, 4000);
+                  return prev.map(a => a.id === actId ? { ...a, status: 'success' as const, progress: 100 } : a);
+                }
+                return prev;
+              });
+            } else if (task.status === 'FAILED') {
+              const errorMsg = task.errorMessage || 'Migrasi gagal.';
+              setActivities(prev => {
+                const act = prev.find(a => a.id === actId);
+                if (act && act.status === 'running') {
+                  addNotification('migration', task.fileName || fileNamesMap[task.fileId] || 'File', 'error', errorMsg);
+                  setTimeout(() => {
+                    setActivities(p => p.filter(a => a.id !== actId));
+                  }, 6000);
+                  return prev.map(a => a.id === actId ? { ...a, status: 'error' as const, errorMessage: errorMsg } : a);
+                }
+                return prev;
+              });
+            } else {
+              setActivities(prev =>
+                prev.map(a => a.id === actId ? { ...a, progress: percentage } : a)
+              );
+              allFinished = false;
+            }
+          });
+
+          if (allFinished) {
+            clearInterval(pollInterval);
+          }
+        } catch (err) {
+          console.error('Failed to poll migration tasks', err);
+        }
+      }, 2000);
+    }
+
+    return res;
+  }, [addNotification]);
+
   return (
     <ActivityContext.Provider
       value={{
@@ -336,6 +431,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
         cancelActivity,
         markAllNotificationsAsRead,
         clearNotifications,
+        migrateFiles,
       }}
     >
       {children}

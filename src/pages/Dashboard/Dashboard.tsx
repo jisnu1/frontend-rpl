@@ -39,6 +39,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [confirmDeleteFile, setConfirmDeleteFile] = useState<FileResponse | null>(null);
+  const [confirmDownloadFile, setConfirmDownloadFile] = useState<FileResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeShareFile, setActiveShareFile] = useState<FileResponse | null>(null);
   const [activePreviewFile, setActivePreviewFile] = useState<FileResponse | null>(null);
@@ -148,6 +149,37 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             onClick={handleDelete}
           >
             Hapus Permanen
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Modal Konfirmasi Unduh Berkas */}
+      <Modal
+        isOpen={confirmDownloadFile !== null}
+        onClose={() => setConfirmDownloadFile(null)}
+        title="Unduh Berkas?"
+        icon={Download}
+      >
+        <p className="text-sm text-slate-550 leading-relaxed font-semibold">
+          Apakah Anda yakin ingin mengunduh berkas <strong className="text-slate-800 font-bold">"{confirmDownloadFile?.originalFileName}"</strong> ({confirmDownloadFile ? formatSize(confirmDownloadFile.size) : ''}) ke perangkat Anda?
+        </p>
+        <div className="flex gap-3 justify-end mt-6">
+          <Button
+            variant="secondary"
+            onClick={() => setConfirmDownloadFile(null)}
+          >
+            Batal
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (confirmDownloadFile) {
+                downloadFile(confirmDownloadFile.id, confirmDownloadFile.originalFileName, confirmDownloadFile.provider, confirmDownloadFile.size);
+                setConfirmDownloadFile(null);
+              }
+            }}
+          >
+            Unduh
           </Button>
         </div>
       </Modal>
@@ -395,7 +427,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  downloadFile(file.id, file.originalFileName, file.provider, file.size);
+                                  setConfirmDownloadFile(file);
                                 }}
                                 className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all border border-transparent hover:border-slate-100 cursor-pointer"
                                 title="Unduh Berkas"
@@ -519,7 +551,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                              <button
                                onClick={(e) => {
                                  e.stopPropagation();
-                                 downloadFile(file.id, file.originalFileName, file.provider, file.size);
+                                 setConfirmDownloadFile(file);
                                }}
                                className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer"
                                title="Download"

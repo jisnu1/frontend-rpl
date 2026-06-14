@@ -11,7 +11,8 @@ import {
   FileUp,
   FileDown,
   X,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 import { useActivity } from '../context/ActivityContext';
 import { useToast } from '../context/ToastContext';
@@ -37,7 +38,7 @@ export default function Header({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  const activeDownloads = activities.filter(act => act.type === 'download' && act.status === 'running');
+  const runningActivities = activities.filter(act => (act.type === 'download' || act.type === 'migration') && act.status === 'running');
 
   return (
     <header className="relative bg-white flex justify-between items-center h-16 px-6 w-full sticky top-0 border-b border-slate-100 z-30">
@@ -141,10 +142,10 @@ export default function Header({
             }}
             className="p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors relative"
           >
-            <Bell className={`w-5 h-5 ${activeDownloads.length > 0 ? 'animate-bounce text-indigo-650' : ''}`} />
-            {activeDownloads.length > 0 ? (
+            <Bell className={`w-5 h-5 ${runningActivities.length > 0 ? 'animate-bounce text-indigo-650' : ''}`} />
+            {runningActivities.length > 0 ? (
               <span className="absolute top-1 right-1 bg-indigo-600 text-white rounded-full text-[9px] font-black h-4.5 w-4.5 flex items-center justify-center border-2 border-white animate-pulse">
-                {activeDownloads.length}
+                {runningActivities.length}
               </span>
             ) : unreadCount > 0 ? (
               <span className="absolute top-1 right-1 bg-red-500 text-white rounded-full text-[9px] font-black h-4.5 w-4.5 flex items-center justify-center border-2 border-white">
@@ -173,32 +174,38 @@ export default function Header({
                 </div>
                 
                 <div className="overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-3 max-h-80">
-                  {/* Unduhan Aktif */}
-                  {activeDownloads.length > 0 && (
+                  {/* Aktivitas Berjalan */}
+                  {runningActivities.length > 0 && (
                     <div className="px-4 py-2 flex flex-col gap-2 bg-indigo-50/40 border-b border-slate-100">
-                      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block">Unduhan Berjalan ({activeDownloads.length})</span>
+                      <span className="text-[10px] font-black text-indigo-650 uppercase tracking-wider block">Aktivitas Berjalan ({runningActivities.length})</span>
                       <div className="flex flex-col gap-2">
-                        {activeDownloads.map((act) => (
+                        {runningActivities.map((act) => (
                           <div key={act.id} className="flex flex-col gap-1.5 p-2 bg-white rounded-xl border border-indigo-100/50 shadow-sm">
                             <div className="flex justify-between items-center gap-2">
                               <div className="flex items-center gap-2 min-w-0">
-                                <FileDown className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                {act.type === 'migration' ? (
+                                  <RefreshCw className="w-3.5 h-3.5 text-indigo-655 shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                                ) : (
+                                  <FileDown className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                )}
                                 <span className="text-xs font-bold text-slate-700 truncate" title={act.name}>
                                   {act.name}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
-                                <span className="text-[10px] font-black text-indigo-600">{act.progress}%</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cancelActivity(act.id);
-                                  }}
-                                  className="text-slate-400 hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-slate-100"
-                                  title="Batalkan Unduhan"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
+                                <span className="text-[10px] font-black text-indigo-655">{act.progress}%</span>
+                                {act.type !== 'migration' && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      cancelActivity(act.id);
+                                    }}
+                                    className="text-slate-400 hover:text-red-500 transition-colors p-0.5 rounded-full hover:bg-slate-100"
+                                    title="Batalkan Unduhan"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
                               </div>
                             </div>
                             <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
@@ -212,10 +219,10 @@ export default function Header({
                       </div>
                     </div>
                   )}
-
+ 
                   {/* Riwayat Notifikasi */}
                   <div className="flex-1">
-                    {notifications.length === 0 && activeDownloads.length === 0 ? (
+                    {notifications.length === 0 && runningActivities.length === 0 ? (
                       <div className="px-4 py-8 text-center text-slate-400 font-semibold text-xs flex flex-col items-center gap-2 select-none">
                         <Bell className="w-8 h-8 text-slate-200" />
                         Belum ada aktivitas terpantau.
@@ -224,21 +231,41 @@ export default function Header({
                       <div className="divide-y divide-slate-50">
                         {notifications.map((notif) => {
                           const isSuccess = notif.status === 'success';
+                          const isError = notif.status === 'error';
                           const isUpload = notif.type === 'upload';
+                          const isMigration = notif.type === 'migration';
+                          
+                          let typeLabel = 'Unduh';
+                          if (isUpload) typeLabel = 'Unggah';
+                          else if (isMigration) typeLabel = 'Migrasi';
+ 
                           return (
-                            <div key={notif.id} className="px-4 py-3 hover:bg-slate-50/50 flex gap-3 items-start transition-colors">
+                            <div key={notif.id} className={`px-4 py-3 hover:bg-slate-50/50 flex gap-3 items-start transition-colors ${
+                              isError && isMigration ? 'bg-red-50/30' : ''
+                            }`}>
                               <div className={`p-1.5 rounded-lg shrink-0 ${
-                                isSuccess ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                                isSuccess ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-650'
                               }`}>
-                                {isUpload ? <FileUp className="w-3.5 h-3.5" /> : <FileDown className="w-3.5 h-3.5" />}
+                                {isMigration ? (
+                                  <RefreshCw className="w-3.5 h-3.5" />
+                                ) : isUpload ? (
+                                  <FileUp className="w-3.5 h-3.5" />
+                                ) : (
+                                  <FileDown className="w-3.5 h-3.5" />
+                                )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-700 truncate" title={notif.name}>
+                                <p className={`text-xs font-bold truncate ${isError && isMigration ? 'text-red-750 font-black' : 'text-slate-700'}`} title={notif.name}>
                                   {notif.name}
                                 </p>
                                 <p className="text-[9px] font-semibold text-slate-450 mt-0.5">
-                                  {isUpload ? 'Unggah' : 'Unduh'} • {isSuccess ? 'Berhasil' : 'Gagal'} • {notif.timestamp}
+                                  {typeLabel} • {isSuccess ? 'Berhasil' : 'Gagal'} • {notif.timestamp}
                                 </p>
+                                {isError && notif.errorMessage && (
+                                  <p className="text-[10px] font-bold text-red-600 mt-1 leading-normal">
+                                    Alasan: {notif.errorMessage}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           );

@@ -1,0 +1,712 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  RefreshCw, 
+  Search, 
+  Database, 
+  HardDrive, 
+  CheckCircle2, 
+  AlertTriangle, 
+  ArrowRight, 
+  Trash2, 
+  Loader2, 
+  Sliders, 
+  Terminal, 
+  Clock, 
+  File,
+  ShieldAlert,
+  ChevronRight
+} from 'lucide-react';
+import { fetchMyFiles, FileResponse } from '../../api/files';
+import { fetchExternalAccounts, ExternalAccountDto } from '../../api/externalAccounts';
+import { 
+  fetchMigrationConfig, 
+  updateMigrationConfig, 
+  fetchMigrationTasks, 
+  MigrationConfig, 
+  MigrationTaskDto 
+} from '../../api/migrations';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import MigrationModal from '../../components/MigrationModal';
+
+interface TabConfig {
+  id: string;
+  name: string;
+  provider: 'STORAGE_NODE' | 'GOOGLE_DRIVE';
+  accountId: number | null;
+  email?: string;
+}
+
+export default function Migration() {
+  const { user } = useAuth();
+  const { error: toastError, success: toastSuccess } = useToast();
+
+  const [files, setFiles] = useState<FileResponse[]>([]);
+  const [externalAccounts, setExternalAccounts] = useState<ExternalAccountDto[]>([]);
+  const [config, setConfig] = useState<MigrationConfig>({ maxFileSizeBytes: 268435456, maxDailyLimit: 3 });
+  const [todayTasksCount, setTodayTasksCount] = useState(0);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<Record<string, FileResponse>>({});
+  const [activeTab, setActiveTab] = useState<string>('STORAGE_NODE');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Admin settings edit state
+  const isAdmin = user?.roles?.includes('ADMIN') || user?.roles?.includes('ROLE_ADMIN') || user?.username === 'admin';
+  const [adminMaxMb, setAdminMaxMb] = useState('256');
+  const [adminDailyLimit, setAdminDailyLimit] = useState('3');
+  const [isUpdatingConfig, setIsUpdatingConfig] = useState(false);
+
+  // Migration running states
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
+  const [batchTasks, setBatchTasks] = useState<MigrationTaskDto[]>([]);
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const consoleEndRef = useRef<HTMLDivElement>(null);
+
+  // Load initial data
+  const loadInitialData = async () => {
+    setIsLoading(true);
+    try {
+      const [allFiles, accounts, migrationConf, tasks] = await Promise.all([
+        fetchMyFiles(),
+        fetchExternalAccounts(),
+        fetchMigrationConfig(),
+        fetchMigrationTasks()
+      ]);
+
+      setFiles(allFiles || []);
+      const googleAccs = accounts.filter(a => a.provider.toUpperCase() === 'GOOGLE');
+      setExternalAccounts(googleAccs);
+      setConfig(migrationConf);
+
+      // Initialize admin settings inputs
+      setAdminMaxMb((migrationConf.maxFileSizeBytes / 1024 / 1024).toString());
+      setAdminDailyLimit(migrationConf.maxDailyLimit.toString());
+
+      // Calculate daily usage from user's history tasks (only count created_at today)
+      const startOfToday = new Date();
+      startOfToday.setHours(0,0,0,0);
+      const todayTasks = tasks.filter(t => new Date(t.createdAt) >= startOfToday);
+      setTodayTasksCount(todayTasks.length);
+
+    } catch (err) {
+      console.error('Failed to load migration data', err);
+      toastError('Gagal memuat informasi migrasi.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  // Set up Tabs
+  const tabs: TabConfig[] = [
+    { id: 'STORAGE_NODE', name: 'Storage Node VPS', provider: 'STORAGE_NODE', accountId: null },
+    ...externalAccounts.map(acc => ({
+      id: `GOOGLE_DRIVE_${acc.id}`,
+      name: `Google Drive`,
+      provider: 'GOOGLE_DRIVE' as const,
+      accountId: acc.id,
+      email: acc.email
+    }))
+  ];
+
+  // Filter files based on current tab
+  const getTabFiles = (tab: TabConfig) => {
+    return files.filter(file => {
+      if (tab.provider === 'STORAGE_NODE') {
+        return file.provider.toUpperCase() === 'STORAGE_NODE';
+      } else {
+        return file.provider.toUpperCase() === 'GOOGLE_DRIVE' && file.externalAccountId === tab.accountId;
+      }
+    });
+  };
+
+  const currentTabConfig = tabs.find(t => t.id === activeTab) || tabs[0];
+  const tabFiles = currentTabConfig ? getTabFiles(currentTabConfig) : [];
+
+  // Filter tab files by search query
+  const filteredTabFiles = tabFiles.filter(file => 
+    file.originalFileName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  // Toggle selection
+  const handleToggleFile = (file: FileResponse) => {
+    setSelectedFiles(prev => {
+      const updated = { ...prev };
+      if (updated[file.id]) {
+        delete updated[file.id];
+      } else {
+        updated[file.id] = file;
+      }
+      return updated;
+    });
+  };
+
+  // Select all visible files in active tab
+  const handleToggleSelectAll = () => {
+    const allSelectedInTab = filteredTabFiles.every(file => selectedFiles[file.id]);
+    setSelectedFiles(prev => {
+      const updated = { ...prev };
+      if (allSelectedInTab) {
+        // Unselect all in tab
+        filteredTabFiles.forEach(file => {
+          delete updated[file.id];
+        });
+      } else {
+        // Select all in tab
+        filteredTabFiles.forEach(file => {
+          updated[file.id] = file;
+        });
+      }
+      return updated;
+    });
+  };
+
+  // Clear all selections
+  const handleClearSelection = () => {
+    setSelectedFiles({});
+  };
+
+  // Triggered when modal starts migration successfully
+  const handleMigrationStarted = (batchId: string) => {
+    setSelectedFiles({});
+    setActiveBatchId(batchId);
+    setConsoleLogs([
+      `[${new Date().toLocaleTimeString()}] Menghubungkan ke layanan migrasi massal...`,
+      `[${new Date().toLocaleTimeString()}] Menginisialisasi Batch ID: ${batchId}`,
+      `[${new Date().toLocaleTimeString()}] Memindahkan file ke worker thread pool...`
+    ]);
+  };
+
+  // Polling migration progress
+  useEffect(() => {
+    if (!activeBatchId) return;
+
+    let previousStatuses: Record<string, string> = {};
+
+    const poll = async () => {
+      try {
+        const tasks = await fetchMigrationTasks(activeBatchId);
+        setBatchTasks(tasks);
+
+        const newLogs: string[] = [];
+        let allFinished = true;
+
+        tasks.forEach(task => {
+          const prevStatus = previousStatuses[task.id];
+          const currentStatus = task.status;
+          
+          if (prevStatus !== currentStatus) {
+            previousStatuses[task.id] = currentStatus;
+            const time = new Date().toLocaleTimeString();
+            if (currentStatus === 'RUNNING') {
+              newLogs.push(`[${time}] 🚀 Memulai migrasi untuk: ${task.fileName || task.fileId}`);
+            } else if (currentStatus === 'SUCCESS') {
+              newLogs.push(`[${time}] ✅ Sukses memindahkan: ${task.fileName || task.fileId}`);
+            } else if (currentStatus === 'FAILED') {
+              newLogs.push(`[${time}] ❌ Gagal memindahkan: ${task.fileName || task.fileId} (${task.errorMessage || 'Unknown Error'})`);
+            }
+          }
+
+          if (currentStatus === 'PENDING' || currentStatus === 'RUNNING') {
+            allFinished = false;
+          }
+        });
+
+        if (newLogs.length > 0) {
+          setConsoleLogs(prev => [...prev, ...newLogs]);
+        }
+
+        if (allFinished && tasks.length > 0) {
+          clearInterval(interval);
+          setSuccessModalOpen(true);
+          // Reload daily limits and stats
+          loadInitialData();
+        }
+
+      } catch (err) {
+        console.error('Failed to poll active migration', err);
+      }
+    };
+
+    poll(); // Run immediately first
+    const interval = setInterval(poll, 2000);
+
+    return () => clearInterval(interval);
+  }, [activeBatchId]);
+
+  // Scroll console to bottom
+  useEffect(() => {
+    consoleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [consoleLogs]);
+
+  // Handle Admin Config Update
+  const handleUpdateConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdatingConfig(true);
+    try {
+      const bytes = Number(adminMaxMb) * 1024 * 1024;
+      await updateMigrationConfig({
+        'migration.max_file_size_bytes': bytes.toString(),
+        'migration.max_daily_limit': adminDailyLimit
+      });
+      toastSuccess('Konfigurasi migrasi berhasil diperbarui!');
+      loadInitialData();
+    } catch (err) {
+      console.error(err);
+      toastError('Gagal memperbarui konfigurasi.');
+    } finally {
+      setIsUpdatingConfig(false);
+    }
+  };
+
+  const selectedFilesList = Object.values(selectedFiles);
+  const selectedCount = selectedFilesList.length;
+  const selectedSize = selectedFilesList.reduce((acc, f) => acc + f.size, 0);
+
+  // Check if any selected files exceed config limit
+  const hasTooLargeFiles = selectedFilesList.some(f => f.size > config.maxFileSizeBytes);
+
+  const isDailyLimitReached = todayTasksCount >= config.maxDailyLimit;
+
+  // Render Progress Dashboard Screen
+  if (activeBatchId) {
+    const completedCount = batchTasks.filter(t => t.status === 'SUCCESS').length;
+    const failedCount = batchTasks.filter(t => t.status === 'FAILED').length;
+    const runningCount = batchTasks.filter(t => t.status === 'RUNNING').length;
+    const totalCount = batchTasks.length;
+    const overallProgress = totalCount > 0 
+      ? Math.round((batchTasks.reduce((acc, t) => acc + (t.progress || 0), 0) / (totalCount * 100)) * 100)
+      : 0;
+
+    return (
+      <div className="p-8 max-w-5xl mx-auto w-full flex flex-col gap-8 min-h-[calc(100vh-4rem)] animate-fadeIn">
+        
+        {/* Success Modal Overlay */}
+        {successModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl w-full max-w-md p-6 border border-slate-100 shadow-2xl space-y-4">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-full">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-black text-slate-800">Migrasi Selesai!</h3>
+                <p className="text-xs font-semibold text-slate-500 max-w-sm">
+                  Proses migrasi batch Anda telah diselesaikan oleh antrean latar belakang.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs font-bold text-slate-600 space-y-1.5">
+                <div className="flex justify-between">
+                  <span>Total Berkas:</span>
+                  <span className="text-slate-800">{totalCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Berhasil:</span>
+                  <span className="text-emerald-600">{completedCount}</span>
+                </div>
+                {failedCount > 0 && (
+                  <div className="flex justify-between">
+                    <span>Gagal:</span>
+                    <span className="text-red-500">{failedCount}</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  setSuccessModalOpen(false);
+                  setActiveBatchId(null);
+                  setBatchTasks([]);
+                }}
+                className="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-colors shadow-md"
+              >
+                Kembali ke Daftar Berkas
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-650 animate-pulse">
+              <RefreshCw className="w-6 h-6 animate-spin" style={{ animationDuration: '4s' }} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-850">Dashboard Progress Migrasi</h2>
+              <p className="text-xs font-semibold text-slate-400">Batch ID: {activeBatchId}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Progress Card */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
+          <div className="flex-1 space-y-2 w-full">
+            <div className="flex justify-between text-sm font-bold text-slate-700">
+              <span>Progres Keseluruhan</span>
+              <span>{overallProgress}%</span>
+            </div>
+            <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300 ease-out"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+            <div className="flex gap-4 text-[10px] font-bold text-slate-400 pt-1">
+              <span>Berhasil: {completedCount}/{totalCount}</span>
+              {runningCount > 0 && <span className="animate-pulse text-indigo-600">Berjalan: {runningCount}</span>}
+              {failedCount > 0 && <span className="text-red-500">Gagal: {failedCount}</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* List of files in progress */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Berkas Migrasi</h3>
+          <div className="grid gap-3">
+            {batchTasks.map(task => {
+              const isSuccess = task.status === 'SUCCESS';
+              const isFailed = task.status === 'FAILED';
+              const isRunning = task.status === 'RUNNING';
+
+              return (
+                <div key={task.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-2.5">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <File className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="text-xs font-black text-slate-700 truncate" title={task.fileName || task.fileId}>
+                        {task.fileName || task.fileId}
+                      </span>
+                    </div>
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
+                      isSuccess ? 'bg-emerald-100 text-emerald-700' :
+                      isFailed ? 'bg-red-100 text-red-700' :
+                      isRunning ? 'bg-blue-100 text-blue-700 animate-pulse' :
+                      'bg-slate-100 text-slate-500'
+                    }`}>
+                      {task.status}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-300 ${isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-primary'}`}
+                        style={{ width: `${task.progress || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-500 shrink-0">{Math.round(task.progress || 0)}%</span>
+                  </div>
+
+                  {isFailed && task.errorMessage && (
+                    <div className="text-[10px] font-bold text-red-600 bg-red-50/50 border border-red-100 p-2.5 rounded-xl mt-0.5 leading-relaxed">
+                      Error: {task.errorMessage}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Live log Terminal */}
+        <div className="space-y-3 flex-1 flex flex-col min-h-60">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <Terminal className="w-4 h-4" />
+            <span>Console Live Logs</span>
+          </div>
+          <div className="flex-1 bg-slate-950 rounded-2xl p-4 border border-slate-900 shadow-inner font-mono text-[10px] leading-relaxed text-emerald-400 overflow-y-auto max-h-80 select-text">
+            {consoleLogs.map((logLine, i) => (
+              <div key={i}>{logLine}</div>
+            ))}
+            <div ref={consoleEndRef} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex flex-col relative">
+      
+      {/* Title & Top Description Banner */}
+      <div className="bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-950 text-white rounded-3xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+        <div className="space-y-1 z-10">
+          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+            One-Click Multi-Cloud Migration
+          </h2>
+          <p className="text-xs text-indigo-200 font-semibold max-w-xl">
+            Pindahkan atau salin berkas Anda secara massal antarsumber penyimpanan dengan aman.
+          </p>
+        </div>
+        
+        {/* Dynamic statistics block */}
+        <div className="flex gap-4 z-10 flex-wrap">
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/5 space-y-0.5">
+            <span className="text-[9px] font-black text-indigo-300 uppercase block tracking-wider">Batas Harian hari ini</span>
+            <span className="text-xs font-black">{todayTasksCount} / {config.maxDailyLimit} migrated</span>
+          </div>
+          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/5 space-y-0.5">
+            <span className="text-[9px] font-black text-indigo-300 uppercase block tracking-wider">Maksimal Ukuran File</span>
+            <span className="text-xs font-black">{formatSize(config.maxFileSizeBytes)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs list */}
+      <div className="border-b border-slate-100 pb-px flex gap-2 overflow-x-auto custom-scrollbar">
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          const TabIcon = tab.provider === 'STORAGE_NODE' ? Database : HardDrive;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap ${
+                isActive
+                  ? 'border-primary text-primary bg-indigo-50/20'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50/50'
+              }`}
+            >
+              <TabIcon className="w-4 h-4 shrink-0" />
+              <span>{tab.name}</span>
+              {tab.email && <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search Input Container */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="relative w-full max-w-md group">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+            <Search className="w-4 h-4" />
+          </span>
+          <input
+            className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
+            placeholder={`Cari berkas di ${currentTabConfig?.name}...`}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Floating Action Bar (selection actions) */}
+      {selectedCount > 0 && (
+        <div className="sticky top-20 z-20 flex justify-center animate-fadeIn">
+          <div className="bg-white/85 backdrop-blur-md border border-indigo-100 shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-slate-800">{selectedCount} Berkas Terpilih</span>
+              <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleClearSelection}
+                className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all"
+                title="Kosongkan Pilihan"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              
+              <button
+                type="button"
+                disabled={hasTooLargeFiles || isDailyLimitReached}
+                onClick={() => setIsModalOpen(true)}
+                className="bg-primary hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Migrasikan</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Files Table list */}
+      <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
+        {isLoading ? (
+          <div className="py-24 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
+          </div>
+        ) : filteredTabFiles.length === 0 ? (
+          <div className="py-24 text-center text-slate-400 font-bold text-xs flex flex-col items-center gap-2 select-none">
+            <Sliders className="w-12 h-12 text-slate-200" />
+            Belum ada berkas di dalam penyimpanan ini.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/60 border-b border-slate-100 text-slate-400 font-black tracking-wider uppercase">
+                  <th className="py-3 px-5 w-10 text-center">
+                    <input 
+                      type="checkbox"
+                      checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])}
+                      onChange={handleToggleSelectAll}
+                      className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
+                    />
+                  </th>
+                  <th className="py-3 px-4">Nama Berkas</th>
+                  <th className="py-3 px-4">Ukuran</th>
+                  <th className="py-3 px-4">Provider</th>
+                  <th className="py-3 px-4">Tanggal Dibuat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                {filteredTabFiles.map(file => {
+                  const isChecked = !!selectedFiles[file.id];
+                  const isTooLarge = file.size > config.maxFileSizeBytes;
+
+                  return (
+                    <tr 
+                      key={file.id} 
+                      className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${
+                        isChecked ? 'bg-indigo-50/10' : ''
+                      }`}
+                      onClick={() => handleToggleFile(file)}
+                    >
+                      <td className="py-3.5 px-5 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleFile(file)}
+                          className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
+                        />
+                      </td>
+                      <td className="py-3.5 px-4 font-bold max-w-sm">
+                        <div className="flex items-center gap-2.5">
+                          <File className="w-4.5 h-4.5 text-slate-400 shrink-0" />
+                          <span className="truncate" title={file.originalFileName}>{file.originalFileName}</span>
+                          {isTooLarge && (
+                            <span className="text-[8px] font-black bg-red-100 text-red-650 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                              <ShieldAlert className="w-2.5 h-2.5" />
+                              Premium limit exceeded ({formatSize(config.maxFileSizeBytes)})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500">{formatSize(file.size)}</td>
+                      <td className="py-3.5 px-4 text-slate-450 uppercase font-black">{file.provider}</td>
+                      <td className="py-3.5 px-4 text-slate-400">
+                        {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : '-'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Warnings & Admin Dashboard settings */}
+      <div className="grid md:grid-cols-2 gap-6">
+        
+        {/* User limits warning info */}
+        <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 space-y-3 flex flex-col justify-between">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Catatan & Ketentuan Premium</span>
+            <div className="space-y-2 text-xs font-semibold text-slate-555 leading-relaxed">
+              <div className="flex gap-2.5 items-start">
+                <Clock className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <span>Reset kuota harian dilakukan secara otomatis saat hari berganti (pukul 00.00 waktu sistem).</span>
+              </div>
+              <div className="flex gap-2.5 items-start">
+                <ShieldAlert className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                <span>Batas harian migrasi adalah total berkas yang dimigrasikan dalam satu hari, bukan total inisiasi migrasi.</span>
+              </div>
+            </div>
+          </div>
+          
+          {isDailyLimitReached && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-[11px] font-bold flex items-start gap-2 animate-pulse mt-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>Batas harian migrasi Anda hari ini telah terlampaui. Silakan coba kembali besok!</span>
+            </div>
+          )}
+        </div>
+
+        {/* Admin Configuration Board */}
+        {isAdmin && (
+          <div className="bg-indigo-950/5 text-indigo-950 p-5 rounded-3xl border border-indigo-950/10 space-y-4">
+            <div className="flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-indigo-700" />
+              <h4 className="text-xs font-black uppercase tracking-wider text-indigo-900">Admin Migration Config</h4>
+            </div>
+
+            <form onSubmit={handleUpdateConfig} className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-indigo-900/60 uppercase">Max Size (MB)</label>
+                  <input
+                    type="number"
+                    value={adminMaxMb}
+                    onChange={(e) => setAdminMaxMb(e.target.value)}
+                    className="w-full bg-white border border-indigo-950/10 rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-indigo-900/60 uppercase">Daily Limit (Files)</label>
+                  <input
+                    type="number"
+                    value={adminDailyLimit}
+                    onChange={(e) => setAdminDailyLimit(e.target.value)}
+                    className="w-full bg-white border border-indigo-950/10 rounded-xl px-3 py-1.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isUpdatingConfig}
+                className="w-full bg-indigo-900 hover:bg-indigo-950 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+              >
+                {isUpdatingConfig ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Memperbarui...
+                  </>
+                ) : (
+                  'Terapkan Konfigurasi'
+                )}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* Migration Target & Configuration Dialog */}
+      <MigrationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedFiles={selectedFilesList.map(f => ({
+          id: f.id,
+          name: f.originalFileName,
+          size: f.size,
+          provider: f.provider,
+          externalAccountId: f.externalAccountId
+        }))}
+        onSuccess={handleMigrationStarted}
+      />
+    </div>
+  );
+}

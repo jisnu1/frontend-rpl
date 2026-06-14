@@ -10,7 +10,8 @@ import {
   TrendingUp,
   LogOut,
   Settings,
-  HardDrive
+  HardDrive,
+  RefreshCw
 } from 'lucide-react';
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
@@ -91,6 +92,7 @@ export default function Sidebar({
   const navLinks = [
     { name: 'My Drive', path: '/', icon: FolderOpen },
     { name: 'Shared', path: '/shared', icon: Users },
+    { name: 'Migration', path: '/migration', icon: RefreshCw },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
