@@ -171,7 +171,17 @@ export default function Register() {
             </Link>
           </div>
         </Card>
+
+        {/* Subtle Footer Links (Sitemap) */}
+        <div className="mt-8 flex items-center justify-center gap-4 text-xs text-slate-400 font-semibold">
+          <Link to="/" className="hover:text-slate-600 transition-colors">Home</Link>
+          <span>•</span>
+          <a href="/privacy-policy.txt" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
+          <span>•</span>
+          <a href="/terms-of-service.txt" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Terms of Service</a>
+        </div>
       </div>
     </div>
   );
 }
+
