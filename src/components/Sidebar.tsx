@@ -324,7 +324,7 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop Drawer Navigation */}
-      <nav className={`hidden md:flex bg-primary h-screen rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-40 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
+      <nav className={`hidden md:flex bg-primary h-screen rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-40 transition-all duration-300 ${
         isMinimized ? 'w-20' : 'w-[280px]'
       }`}>
         {sidebarContent(false)}
@@ -338,7 +338,7 @@ export default function Sidebar({
         onClick={onCloseMobile}
       >
         <nav
-          className={`bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl overflow-y-auto sidebar-scrollbar ${
+          className={`bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl ${
             isMobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
