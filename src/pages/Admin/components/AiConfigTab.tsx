@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, Activity, Clock, Save } from 'lucide-react';
 import ServiceConfigCard from './ServiceConfigCard';
-import PromptAccordion from './PromptAccordion';
+import PromptConfigCard from './PromptConfigCard';
 
 interface AiConfigTabProps {
   aiForm: Record<string, string>;
@@ -29,6 +29,8 @@ export default function AiConfigTab({
           modelKey="ai.summary.primary.model"
           fallbackProviderKey="ai.summary.fallback.provider"
           fallbackModelKey="ai.summary.fallback.model"
+          fallback2ProviderKey="ai.summary.fallback.provider.two"
+          fallback2ModelKey="ai.summary.fallback.model.two"
           formData={aiForm}
           onChange={onFormChange}
         />
@@ -41,15 +43,25 @@ export default function AiConfigTab({
           modelKey="ai.chat.primary.model"
           fallbackProviderKey="ai.chat.fallback.provider"
           fallbackModelKey="ai.chat.fallback.model"
+          fallback2ProviderKey="ai.chat.fallback.provider.two"
+          fallback2ModelKey="ai.chat.fallback.model.two"
           formData={aiForm}
           onChange={onFormChange}
         />
       </div>
 
-      {/* Quota Settings & Prompt Accordion */}
+      {/* Quota Settings & Prompt Editors */}
       <div className="space-y-6">
+        {/* System Prompt Cards (Direct Edit - Labael & Textarea) */}
+        <PromptConfigCard
+          summaryPrompt={aiForm['ai.summary.system_prompt'] || ''}
+          chatPrompt={aiForm['ai.chat.system_prompt'] || ''}
+          onSummaryPromptChange={(val) => onFormChange('ai.summary.system_prompt', val)}
+          onChatPromptChange={(val) => onFormChange('ai.chat.system_prompt', val)}
+        />
+
         {/* Default AI Limit */}
-        <div className="border border-slate-200/80 rounded-2xl p-6 bg-slate-50/30 max-w-md space-y-4">
+        <div className="border border-slate-200/80 rounded-2xl p-6 bg-slate-50/30 max-w-md space-y-4 shadow-sm">
           <div className="flex items-center gap-2 text-slate-800 font-bold border-b border-slate-200/50 pb-3">
             <Clock className="w-4 h-4 text-violet-600" />
             <span>Batas AI Harian Default (Sistem)</span>
@@ -65,19 +77,11 @@ export default function AiConfigTab({
               placeholder="Masukkan limit"
               className="w-32 px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
             />
-            <p className="text-[10px] text-slate-400 font-bold mt-1">
+            <p className="text-[10px] text-slate-400 font-semibold mt-1">
               Digunakan sebagai cadangan apabila batas limit individual user bernilai kosong.
             </p>
           </div>
         </div>
-
-        {/* System Prompt Accordion */}
-        <PromptAccordion
-          value={aiForm['ai.system_prompt'] || ''}
-          onChange={(val) => onFormChange('ai.system_prompt', val)}
-          isOpen={promptAccordionOpen}
-          onToggle={() => setPromptAccordionOpen(!promptAccordionOpen)}
-        />
       </div>
 
       {/* Save Buttons */}
