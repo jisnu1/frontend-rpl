@@ -233,8 +233,8 @@ export default function Sidebar({
               </div>
               
               {/* Storage Details Content List */}
-              <div className={`space-y-3 transition-all duration-300 overflow-hidden ${
-                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[300px] opacity-100 mb-4'
+              <div className={`space-y-3 transition-all duration-300 overflow-y-auto sidebar-scrollbar pr-1 ${
+                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[160px] opacity-100 mb-4'
               }`}>
                 {/* Personal Storage */}
                 <div className="space-y-1">
@@ -324,7 +324,7 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop Drawer Navigation */}
-      <nav className={`hidden md:flex bg-primary h-screen rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-40 transition-all duration-300 ${
+      <nav className={`hidden md:flex bg-primary h-screen rounded-r-3xl flex-col shadow-md fixed left-0 top-0 bottom-0 py-8 z-40 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
         isMinimized ? 'w-20' : 'w-[280px]'
       }`}>
         {sidebarContent(false)}
@@ -338,7 +338,7 @@ export default function Sidebar({
         onClick={onCloseMobile}
       >
         <nav
-          className={`bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl ${
+          className={`bg-primary h-full w-[280px] flex flex-col py-8 transition-transform duration-300 transform shadow-2xl overflow-y-auto sidebar-scrollbar ${
             isMobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           onClick={(e) => e.stopPropagation()}
