@@ -110,109 +110,107 @@ export default function Sidebar({
     
     return (
       <>
-        {/* Brand */}
-        <div className={`mb-8 flex items-center justify-between transition-all duration-300 ${
-          isMinimizedState ? 'px-4 flex-col gap-4' : 'px-8'
-        }`}>
-          <div className="flex items-center gap-3">
-            <img src={logoUrl} className="w-10 h-10 object-contain shrink-0" alt="Horizon Drive Logo" />
-            {!isMinimizedState && (
-              <div className="flex flex-col animate-fadeIn">
-                <span className="text-lg font-bold tracking-tight text-white">Horizon Cloud</span>
-                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage</span>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                    user?.subscriptionTier === 'PREMIUM_INDIVIDUAL'
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 shadow-sm shadow-amber-500/10'
-                      : user?.subscriptionTier === 'PREMIUM_ACADEMIC'
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-sm shadow-cyan-500/10'
-                      : 'bg-white/10 text-white/90 border border-white/20'
-                  }`}>
-                    {user?.subscriptionTier === 'PREMIUM_INDIVIDUAL' ? 'Premium' : user?.subscriptionTier === 'PREMIUM_ACADEMIC' ? 'Academic' : 'Freemium'}
-                  </span>
+        <div className={`sidebar-content flex-1 flex flex-col overflow-y-auto min-h-0 ${isMinimizedState ? 'no-scrollbar' : ''}`}>
+          {/* Brand */}
+          <div className={`mb-8 flex items-center justify-between transition-all duration-300 ${
+            isMinimizedState ? 'px-4 flex-col gap-4' : 'px-8'
+          }`}>
+            <div className="flex items-center gap-3">
+              <img src={logoUrl} className="w-10 h-10 object-contain shrink-0" alt="Horizon Drive Logo" />
+              {!isMinimizedState && (
+                <div className="flex flex-col animate-fadeIn">
+                  <span className="text-lg font-bold tracking-tight text-white">Horizon Cloud</span>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] text-white/60 font-semibold uppercase tracking-wider">Multi Storage</span>
+                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      user?.subscriptionTier === 'PREMIUM_INDIVIDUAL'
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 shadow-sm shadow-amber-500/10'
+                        : user?.subscriptionTier === 'PREMIUM_ACADEMIC'
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-sm shadow-cyan-500/10'
+                        : 'bg-white/10 text-white/90 border border-white/20'
+                    }`}>
+                      {user?.subscriptionTier === 'PREMIUM_INDIVIDUAL' ? 'Premium' : user?.subscriptionTier === 'PREMIUM_ACADEMIC' ? 'Academic' : 'Freemium'}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
+            </div>
+
+            {/* Toggle Button for desktop minimize/maximize */}
+            {!isMobile && onToggleMinimize && (
+              <button 
+                onClick={onToggleMinimize} 
+                className={`hidden md:flex p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer select-none ${
+                  isMinimizedState ? 'mt-2' : ''
+                }`}
+                title={isMinimizedState ? "Maximize Sidebar" : "Minimize Sidebar"}
+              >
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-300 ${isMinimizedState ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {isMobile && (
+              <button onClick={onCloseMobile} className="text-white hover:opacity-80 md:hidden p-1 rounded-full hover:bg-white/5">
+                <X className="w-5 h-5" />
+              </button>
             )}
           </div>
 
-          {/* Toggle Button for desktop minimize/maximize */}
-          {!isMobile && onToggleMinimize && (
-            <button 
-              onClick={onToggleMinimize} 
-              className={`hidden md:flex p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer select-none ${
-                isMinimizedState ? 'mt-2' : ''
+          {/* CTA */}
+          <div className={`mb-8 transition-all duration-300 ${isMinimizedState ? 'px-4' : 'px-6'}`}>
+            <Button
+              variant="secondary"
+              className={`bg-white text-primary hover:shadow-lg font-bold hover:scale-[1.02] transition-all duration-300 flex items-center justify-center ${
+                isMinimizedState ? 'w-12 h-12 p-0 rounded-full mx-auto' : 'w-full'
               }`}
-              title={isMinimizedState ? "Maximize Sidebar" : "Minimize Sidebar"}
+              icon={Plus}
+              onClick={() => {
+                onUploadClick();
+                if (isMobile) onCloseMobile();
+              }}
             >
-              <svg 
-                className={`w-4 h-4 transition-transform duration-300 ${isMinimizedState ? 'rotate-180' : ''}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
+              {!isMinimizedState && <span>Upload New File</span>}
+            </Button>
+          </div>
 
-          {isMobile && (
-            <button onClick={onCloseMobile} className="text-white hover:opacity-80 md:hidden p-1 rounded-full hover:bg-white/5">
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+          {/* Main Nav */}
+          <div className={`flex flex-col gap-1.5 transition-all duration-300 ${
+            isMinimizedState ? 'px-2 items-center' : 'px-4'
+          }`}>
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              const LinkIcon = link.icon;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={isMobile ? onCloseMobile : undefined}
+                  className={`flex items-center rounded-xl font-bold transition-all duration-250 ${
+                    isMinimizedState ? 'p-3 justify-center w-12 h-12' : 'gap-3 px-4 py-3 text-xs w-full'
+                  } ${
+                    isActive
+                      ? 'text-white bg-white/10 shadow-sm'
+                      : 'text-white/70 hover:text-white hover:bg-white/5'
+                  }`}
+                  title={isMinimizedState ? link.name : undefined}
+                >
+                  <LinkIcon className="w-5 h-5 shrink-0" />
+                  {!isMinimizedState && <span className="text-xs">{link.name}</span>}
+                </Link>
+              );
+            })}
+          </div>
 
-        {/* CTA */}
-        <div className={`mb-8 transition-all duration-300 ${isMinimizedState ? 'px-4' : 'px-6'}`}>
-          <Button
-            variant="secondary"
-            className={`bg-white text-primary hover:shadow-lg font-bold hover:scale-[1.02] transition-all duration-300 flex items-center justify-center ${
-              isMinimizedState ? 'w-12 h-12 p-0 rounded-full mx-auto' : 'w-full'
-            }`}
-            icon={Plus}
-            onClick={() => {
-              onUploadClick();
-              if (isMobile) onCloseMobile();
-            }}
-          >
-            {!isMinimizedState && <span>Upload New File</span>}
-          </Button>
-        </div>
-
-        {/* Main Nav */}
-        <div className={`flex-1 flex flex-col gap-1.5 transition-all duration-300 ${
-          isMinimizedState ? 'px-2 items-center' : 'px-4'
-        }`}>
-          {navLinks.map((link) => {
-            const isActive = location.pathname === link.path;
-            const LinkIcon = link.icon;
-            return (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={isMobile ? onCloseMobile : undefined}
-                className={`flex items-center rounded-xl font-bold transition-all duration-250 ${
-                  isMinimizedState ? 'p-3 justify-center w-12 h-12' : 'gap-3 px-4 py-3 text-xs w-full'
-                } ${
-                  isActive
-                    ? 'text-white bg-white/10 shadow-sm'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-                title={isMinimizedState ? link.name : undefined}
-              >
-                <LinkIcon className="w-5 h-5 shrink-0" />
-                {!isMinimizedState && <span className="text-xs">{link.name}</span>}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Footer Nav */}
-        <div className={`mt-auto border-t border-white/10 pt-6 flex flex-col gap-2 transition-all duration-300 ${
-          isMinimizedState ? 'px-2 items-center pb-4' : 'px-4 pb-6'
-        }`}>
+          {/* Storage Details */}
           {!isMinimizedState ? (
-            <div className="px-4 mb-2">
+            <div className="px-8 mt-6">
               {/* Storage Details Header with collapse toggle */}
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[10px] font-bold text-white/55 uppercase tracking-wider">Storage Details</p>
@@ -233,8 +231,8 @@ export default function Sidebar({
               </div>
               
               {/* Storage Details Content List */}
-              <div className={`space-y-3 transition-all duration-300 overflow-y-auto sidebar-scrollbar pr-1 ${
-                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[160px] opacity-100 mb-4'
+              <div className={`space-y-3 transition-all duration-300 overflow-hidden pr-1 ${
+                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[500px] opacity-100 mb-4'
               }`}>
                 {/* Personal Storage */}
                 <div className="space-y-1">
@@ -280,7 +278,12 @@ export default function Sidebar({
               </div>
             </div>
           ) : null}
-          
+        </div>
+
+        {/* Footer Nav / Action Buttons */}
+        <div className={`sidebar-footer mt-auto border-t border-white/10 pt-6 flex flex-col gap-2 transition-all duration-300 ${
+          isMinimizedState ? 'px-2 items-center pb-4' : 'px-4 pb-6'
+        }`}>
           {!isMinimizedState ? (
             <button
               onClick={(e) => {

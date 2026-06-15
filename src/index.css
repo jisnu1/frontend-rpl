@@ -568,14 +568,17 @@
 }
 
 /* Hide scrollbar for sidebar components */
-.sidebar-scrollbar::-webkit-scrollbar {
+.sidebar-scrollbar::-webkit-scrollbar,
+.sidebar-content::-webkit-scrollbar {
   display: none;
 }
 
-.sidebar-scrollbar {
+.sidebar-scrollbar,
+.sidebar-content {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
 
 
 
