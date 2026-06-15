@@ -12,6 +12,7 @@ interface UsersTabProps {
   onOpenMigrationLimitModal: (user: AdminUserResponse) => void;
   onOpenSubscriptionModal: (user: AdminUserResponse) => void;
   onToggleStatus: (user: AdminUserResponse) => void;
+  onDeleteUser: (user: AdminUserResponse) => void;
   onApproveRequest: (id: number) => void;
   onRejectRequest: (id: number) => void;
 }
@@ -25,6 +26,7 @@ export default function UsersTab({
   onOpenMigrationLimitModal,
   onOpenSubscriptionModal,
   onToggleStatus,
+  onDeleteUser,
   onApproveRequest,
   onRejectRequest
 }: UsersTabProps) {
@@ -85,6 +87,7 @@ export default function UsersTab({
         onOpenMigrationLimitModal={onOpenMigrationLimitModal}
         onOpenSubscriptionModal={onOpenSubscriptionModal}
         onToggleStatus={onToggleStatus}
+        onDeleteUser={onDeleteUser}
       />
     </div>
   );

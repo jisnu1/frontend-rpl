@@ -23,6 +23,7 @@ import {
   approveSubscriptionRequest,
   rejectSubscriptionRequest,
   directUpdateUserSubscription,
+  deleteUser,
   AppSetting,
   AdminUserResponse,
   UserActivity,
@@ -123,6 +124,18 @@ export default function AdminDashboard() {
       loadData();
     } catch (err) {
       showMessage('Gagal mengubah status aktif user.', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (user: AdminUserResponse) => {
+    const confirmed = window.confirm(`Apakah Anda yakin ingin menghapus user ${user.username || user.fullName}?\n\nTindakan ini bersifat PERMANEN dan akan menghapus berkas fisik miliknya di storage node serta memutuskan koneksi Google Drive.`);
+    if (!confirmed) return;
+    try {
+      await deleteUser(user.id);
+      showMessage(`User ${user.username} berhasil dihapus beserta seluruh berkas & koneksi awannya.`, 'success');
+      loadData();
+    } catch (err) {
+      showMessage('Gagal menghapus user.', 'error');
     }
   };
 
@@ -396,6 +409,7 @@ export default function AdminDashboard() {
             onOpenMigrationLimitModal={openMigrationLimitModal}
             onOpenSubscriptionModal={openSubscriptionModal}
             onToggleStatus={handleToggleStatus}
+            onDeleteUser={handleDeleteUser}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
           />

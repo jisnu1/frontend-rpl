@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Cpu, Lock, Unlock, RefreshCw, CreditCard } from 'lucide-react';
+import { Database, Cpu, Lock, Unlock, RefreshCw, CreditCard, Trash2 } from 'lucide-react';
 import { AdminUserResponse } from '../../../api/admin';
 
 interface UsersTableProps {
@@ -10,6 +10,7 @@ interface UsersTableProps {
   onOpenMigrationLimitModal: (user: AdminUserResponse) => void;
   onOpenSubscriptionModal: (user: AdminUserResponse) => void;
   onToggleStatus: (user: AdminUserResponse) => void;
+  onDeleteUser: (user: AdminUserResponse) => void;
 }
 
 export default function UsersTable({
@@ -19,7 +20,8 @@ export default function UsersTable({
   onOpenAiLimitModal,
   onOpenMigrationLimitModal,
   onOpenSubscriptionModal,
-  onToggleStatus
+  onToggleStatus,
+  onDeleteUser
 }: UsersTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -151,17 +153,26 @@ export default function UsersTable({
                   {user.roles.includes('ADMIN') ? (
                     <div className="w-8 h-8"></div>
                   ) : (
-                    <button
-                      onClick={() => onToggleStatus(user)}
-                      title={user.isActive ? 'Blokir User' : 'Aktifkan User'}
-                      className={`p-1.5 rounded-lg border transition-all hover:scale-105 ${
-                        user.isActive
-                          ? 'text-rose-600 border-rose-200 hover:bg-rose-50'
-                          : 'text-emerald-600 border-emerald-200 hover:bg-emerald-50'
-                      }`}
-                    >
-                      {user.isActive ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => onToggleStatus(user)}
+                        title={user.isActive ? 'Blokir User' : 'Aktifkan User'}
+                        className={`p-1.5 rounded-lg border transition-all hover:scale-105 ${
+                          user.isActive
+                            ? 'text-rose-600 border-rose-200 hover:bg-rose-50'
+                            : 'text-emerald-600 border-emerald-200 hover:bg-emerald-50'
+                        }`}
+                      >
+                        {user.isActive ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                      </button>
+                      <button
+                        onClick={() => onDeleteUser(user)}
+                        title="Hapus User"
+                        className="p-1.5 text-rose-600 border border-rose-200 hover:bg-rose-50 rounded-lg transition-all hover:scale-105"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
                   )}
                 </div>
               </td>

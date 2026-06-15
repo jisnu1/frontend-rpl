@@ -117,3 +117,7 @@ export async function directUpdateUserSubscription(userId: number, tier: string)
     params: { tier }
   });
 }
+
+export async function deleteUser(userId: number): Promise<void> {
+  await apiClient.delete(`/users/${userId}`);
+}
