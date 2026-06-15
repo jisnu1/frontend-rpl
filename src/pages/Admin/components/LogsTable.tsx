@@ -53,7 +53,16 @@ export default function LogsTable({
                 </div>
               </td>
               <td className="py-3 px-4 font-bold text-slate-500">
-                {act.userId ? `ID: ${act.userId}` : 'Anonim'}
+                {act.email ? (
+                  <div className="flex flex-col">
+                    <span className="text-slate-800 font-bold">{act.username}</span>
+                    <span className="text-[10px] text-slate-400 font-medium">{act.email}</span>
+                  </div>
+                ) : act.userId ? (
+                  `ID: ${act.userId}`
+                ) : (
+                  'Anonim'
+                )}
               </td>
               <td className="py-3 px-4 text-right text-slate-400 font-semibold">
                 {formatDate(act.createdAt)}

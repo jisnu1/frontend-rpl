@@ -28,6 +28,8 @@ export interface AdminUserResponse {
 export interface UserActivity {
   id: number;
   userId: number;
+  username?: string;
+  email?: string;
   activityType: string;
   description: string;
   ipAddress: string;
