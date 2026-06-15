@@ -76,18 +76,53 @@ export default function Settings() {
   const [reportDescription, setReportDescription] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [isReportSubmitted, setIsReportSubmitted] = useState(false);
+  const [reportRemainingAttempts, setReportRemainingAttempts] = useState<number | null>(null);
+  const [reportLockoutTime, setReportLockoutTime] = useState<number>(0);
+
+  useEffect(() => {
+    if (reportLockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setReportLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [reportLockoutTime]);
+
+  const formatReportTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (reportDescription.trim().length < 5) return;
+    if (reportDescription.trim().length < 5 || reportLockoutTime > 0) return;
     
     setIsSubmittingReport(true);
     try {
       await submitBugReport(reportDescription);
       setIsReportSubmitted(true);
+      setReportRemainingAttempts(null);
       toastSuccess('Laporan bug berhasil dikirim. Terima kasih!');
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setReportRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setReportLockoutTime(Number(reset));
+          } else {
+            setReportLockoutTime(3600); // 1 jam fallback
+          }
+        }
+      }
+
       const msg = err.response?.data?.message || err.message || 'Gagal mengirimkan laporan bug.';
       toastError(msg);
     } finally {
@@ -730,6 +765,20 @@ export default function Settings() {
               </div>
             ) : (
               <form onSubmit={handleReportSubmit} className="space-y-5">
+                {reportLockoutTime > 0 && (
+                  <div className="p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+                    <span>Terlalu banyak mengirim laporan. Coba lagi dalam {formatReportTime(reportLockoutTime)}.</span>
+                  </div>
+                )}
+
+                {reportRemainingAttempts !== null && reportRemainingAttempts > 0 && reportRemainingAttempts <= 2 && reportLockoutTime <= 0 && (
+                  <div className="p-4 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                    <span>Tersisa {reportRemainingAttempts} kali pengiriman laporan lagi dalam jam ini.</span>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Deskripsi Kendala
@@ -739,7 +788,8 @@ export default function Settings() {
                     value={reportDescription}
                     onChange={(e) => setReportDescription(e.target.value.substring(0, 500))}
                     placeholder="Ceritakan secara singkat kendala apa yang terjadi, langkah untuk mereproduksi masalah, dan hasil yang diharapkan..."
-                    className="w-full resize-none border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-700 placeholder-slate-350 bg-slate-50/35 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all leading-relaxed"
+                    disabled={isSubmittingReport || reportLockoutTime > 0}
+                    className="w-full resize-none border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-700 placeholder-slate-350 bg-slate-50/35 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all leading-relaxed disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                     required
                   />
                   <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
@@ -754,12 +804,12 @@ export default function Settings() {
                   <Button
                     type="submit"
                     variant="primary"
-                    disabled={reportDescription.trim().length < 5 || isSubmittingReport}
+                    disabled={reportDescription.trim().length < 5 || isSubmittingReport || reportLockoutTime > 0}
                     isLoading={isSubmittingReport}
                     className="px-6 rounded-full font-bold shadow-md hover:shadow-lg transition-all"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    Kirim Laporan
+                    {reportLockoutTime > 0 ? `Terkunci (${formatReportTime(reportLockoutTime)})` : 'Kirim Laporan'}
                   </Button>
                 </div>
               </form>

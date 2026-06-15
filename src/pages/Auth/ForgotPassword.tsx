@@ -18,11 +18,29 @@ export default function ForgotPassword() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [lockoutTime, setLockoutTime] = useState<number>(0);
+
+  React.useEffect(() => {
+    if (lockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutTime]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const handleRequestOtp = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (lockoutTime > 0) return;
 
     if (!email.trim()) {
       setError('Email wajib diisi.');
@@ -33,9 +51,29 @@ export default function ForgotPassword() {
     try {
       await requestForgotPassword(email);
       setSuccess('Kode OTP telah dikirimkan ke email Anda.');
+      setRemainingAttempts(null);
+      setLockoutTime(0);
       setStep(2);
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       setError(
         err.response?.data?.message || 
         'Gagal mengirimkan permintaan reset password. Pastikan email Anda terdaftar.'
@@ -49,6 +87,8 @@ export default function ForgotPassword() {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (lockoutTime > 0) return;
 
     if (!otp.trim()) {
       setError('Kode OTP wajib diisi.');
@@ -74,6 +114,24 @@ export default function ForgotPassword() {
       }, 2500);
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       setError(
         err.response?.data?.message || 
         'Gagal mereset password. Kode OTP salah atau sudah kedaluwarsa.'
@@ -104,7 +162,14 @@ export default function ForgotPassword() {
               : 'Masukkan kode OTP dan buat kata sandi baru Anda.'}
           </p>
           
-          {error && (
+          {lockoutTime > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+              <span>Terlalu banyak percobaan. Silakan coba lagi dalam {formatTime(lockoutTime)}.</span>
+            </div>
+          )}
+
+          {error && lockoutTime <= 0 && (
             <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
               <span>{error}</span>
@@ -118,6 +183,13 @@ export default function ForgotPassword() {
             </div>
           )}
 
+          {remainingAttempts !== null && remainingAttempts > 0 && remainingAttempts <= 3 && lockoutTime <= 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span>Tersisa {remainingAttempts} kali percobaan sebelum terblokir.</span>
+            </div>
+          )}
+
           {step === 1 ? (
             <form onSubmit={handleRequestOtp} className="space-y-4">
               <Input
@@ -127,15 +199,16 @@ export default function ForgotPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 leftIcon={Mail}
-                disabled={isSubmitting}
+                disabled={isSubmitting || lockoutTime > 0}
               />
 
               <Button
                 type="submit"
                 className="w-full mt-2"
                 isLoading={isSubmitting}
+                disabled={lockoutTime > 0}
               >
-                Minta OTP
+                {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Minta OTP'}
               </Button>
             </form>
           ) : (
@@ -157,7 +230,7 @@ export default function ForgotPassword() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 leftIcon={ShieldCheck}
-                disabled={isSubmitting}
+                disabled={isSubmitting || lockoutTime > 0}
               />
 
               <Input
@@ -167,7 +240,7 @@ export default function ForgotPassword() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 leftIcon={Lock}
-                disabled={isSubmitting}
+                disabled={isSubmitting || lockoutTime > 0}
               />
 
               <Input
@@ -177,15 +250,16 @@ export default function ForgotPassword() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 leftIcon={Lock}
-                disabled={isSubmitting}
+                disabled={isSubmitting || lockoutTime > 0}
               />
 
               <Button
                 type="submit"
                 className="w-full mt-2"
                 isLoading={isSubmitting}
+                disabled={lockoutTime > 0}
               >
-                Reset Password
+                {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Reset Password'}
               </Button>
             </form>
           )}
@@ -195,7 +269,7 @@ export default function ForgotPassword() {
             {step === 2 && (
               <button 
                 type="button" 
-                onClick={() => setStep(1)} 
+                onClick={() => { setStep(1); setRemainingAttempts(null); setLockoutTime(0); }} 
                 className="text-primary hover:underline font-bold"
               >
                 Kembali

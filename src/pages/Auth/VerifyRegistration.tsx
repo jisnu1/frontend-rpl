@@ -19,6 +19,8 @@ export default function VerifyRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [lockoutTime, setLockoutTime] = useState<number>(0);
 
   useEffect(() => {
     if (resendCountdown <= 0) return;
@@ -27,6 +29,20 @@ export default function VerifyRegistration() {
     }, 1000);
     return () => clearInterval(timer);
   }, [resendCountdown]);
+
+  useEffect(() => {
+    if (lockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutTime]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   useEffect(() => {
     // Ambil email dari state router jika ditransfer dari halaman Register
@@ -45,6 +61,8 @@ export default function VerifyRegistration() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (lockoutTime > 0) return;
 
     if (!email.trim()) {
       setError('Email tidak boleh kosong.');
@@ -65,6 +83,24 @@ export default function VerifyRegistration() {
       }, 2000);
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       setError(
         err.response?.data?.message || 
         'Verifikasi gagal. Kode OTP salah atau sudah kedaluwarsa.'
@@ -75,7 +111,7 @@ export default function VerifyRegistration() {
   };
 
   const handleResendOtp = async () => {
-    if (!email) return;
+    if (!email || lockoutTime > 0) return;
     setError('');
     setIsResending(true);
     try {
@@ -84,6 +120,24 @@ export default function VerifyRegistration() {
       toastSuccess('Kode OTP baru berhasil dikirim ke email Anda.');
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       const msg = err.response?.data?.message || 'Gagal mengirim ulang kode OTP. Silakan coba lagi.';
       setError(msg);
       toastError(msg);
@@ -111,7 +165,14 @@ export default function VerifyRegistration() {
             Masukkan kode OTP yang dikirimkan ke email Anda untuk mengaktifkan akun.
           </p>
           
-          {error && (
+          {lockoutTime > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+              <span>Terlalu banyak percobaan verifikasi. Silakan coba lagi dalam {formatTime(lockoutTime)}.</span>
+            </div>
+          )}
+
+          {error && lockoutTime <= 0 && (
             <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
               <span>{error}</span>
@@ -122,6 +183,13 @@ export default function VerifyRegistration() {
             <div className="mb-6 p-4 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-250 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
               <span>Verifikasi berhasil! Mengarahkan Anda ke halaman login...</span>
+            </div>
+          )}
+
+          {remainingAttempts !== null && remainingAttempts > 0 && remainingAttempts <= 3 && lockoutTime <= 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span>Tersisa {remainingAttempts} kali percobaan verifikasi sebelum terblokir.</span>
             </div>
           )}
 
@@ -143,16 +211,16 @@ export default function VerifyRegistration() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               leftIcon={ShieldCheck}
-              disabled={isSubmitting || success || !email}
+              disabled={isSubmitting || success || !email || lockoutTime > 0}
             />
 
             <Button
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
-              disabled={success || !email}
+              disabled={success || !email || lockoutTime > 0}
             >
-              Verifikasi
+              {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Verifikasi'}
             </Button>
           </form>
 
@@ -161,7 +229,7 @@ export default function VerifyRegistration() {
             <button
               type="button"
               onClick={handleResendOtp}
-              disabled={isResending || resendCountdown > 0 || !email}
+              disabled={isResending || resendCountdown > 0 || !email || lockoutTime > 0}
               className="text-primary hover:underline font-bold disabled:text-slate-400 disabled:no-underline cursor-pointer disabled:cursor-not-allowed bg-transparent border-none p-0 inline"
             >
               {resendCountdown > 0 ? `Kirim Ulang (${resendCountdown}s)` : 'Kirim Ulang OTP'}
