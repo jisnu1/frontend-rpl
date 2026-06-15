@@ -12,6 +12,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [lockoutTime, setLockoutTime] = useState<number>(0);
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -30,10 +32,25 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
+  React.useEffect(() => {
+    if (lockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutTime]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (lockoutTime > 0) return;
 
     if (!email.trim() || !password.trim()) {
       setError('Email dan Password wajib diisi.');
@@ -45,6 +62,24 @@ export default function Login() {
       await login({ email, password });
     } catch (err: any) {
       console.error(err);
+      
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       setError(
         err.response?.data?.message ||
         'Login gagal. Periksa kembali email dan password Anda.'
@@ -68,10 +103,24 @@ export default function Login() {
         <Card hoverLift={false} className="p-8">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Sign In to Your Account</h2>
 
-          {error && (
+          {lockoutTime > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+              <span>Terlalu banyak percobaan login. Silakan coba lagi dalam {formatTime(lockoutTime)}.</span>
+            </div>
+          )}
+
+          {error && lockoutTime <= 0 && (
             <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
               <span>{error}</span>
+            </div>
+          )}
+
+          {remainingAttempts !== null && remainingAttempts > 0 && remainingAttempts <= 3 && lockoutTime <= 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span>Tersisa {remainingAttempts} kali percobaan login sebelum akun terkunci.</span>
             </div>
           )}
 
@@ -83,7 +132,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               leftIcon={Mail}
-              disabled={isSubmitting}
+              disabled={isSubmitting || lockoutTime > 0}
             />
 
             <Input
@@ -93,7 +142,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               leftIcon={Lock}
-              disabled={isSubmitting}
+              disabled={isSubmitting || lockoutTime > 0}
             />
 
             <div className="flex justify-end text-xs font-semibold">
@@ -106,8 +155,9 @@ export default function Login() {
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
+              disabled={lockoutTime > 0}
             >
-              Sign In
+              {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Sign In'}
             </Button>
           </form>
 

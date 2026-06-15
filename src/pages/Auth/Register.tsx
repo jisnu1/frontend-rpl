@@ -16,6 +16,8 @@ export default function Register() {
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [lockoutTime, setLockoutTime] = useState<number>(0);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -28,10 +30,25 @@ export default function Register() {
     }
   }, []);
 
-  const handleSubmit = async (e: FormEvent) => {
+  React.useEffect(() => {
+    if (lockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutTime]);
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (lockoutTime > 0) return;
     
     if (!username.trim() || !email.trim() || !password.trim()) {
       setError('Semua kolom wajib diisi.');
@@ -52,6 +69,24 @@ export default function Register() {
       }, 2000);
     } catch (err: any) {
       console.error(err);
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setLockoutTime(Number(reset));
+          } else {
+            setLockoutTime(900); // 15 menit fallback
+          }
+        }
+      }
+
       setError(
         err.response?.data?.message || 
         'Pendaftaran gagal. Username atau email mungkin sudah terdaftar.'
@@ -75,7 +110,14 @@ export default function Register() {
         <Card hoverLift={false} className="p-8">
           <h2 className="text-xl font-bold text-slate-900 mb-6">Create New Account</h2>
           
-          {error && (
+          {lockoutTime > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+              <span>Terlalu banyak percobaan registrasi. Silakan coba lagi dalam {formatTime(lockoutTime)}.</span>
+            </div>
+          )}
+
+          {error && lockoutTime <= 0 && (
             <div className="mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-xs font-bold border border-error/20 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-error shrink-0"></span>
               <span>{error}</span>
@@ -89,6 +131,13 @@ export default function Register() {
             </div>
           )}
 
+          {remainingAttempts !== null && remainingAttempts > 0 && remainingAttempts <= 3 && lockoutTime <= 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span>Tersisa {remainingAttempts} kali percobaan registrasi sebelum terblokir.</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Username"
@@ -96,7 +145,7 @@ export default function Register() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               leftIcon={User}
-              disabled={isSubmitting || success}
+              disabled={isSubmitting || success || lockoutTime > 0}
             />
 
             <Input
@@ -106,7 +155,7 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               leftIcon={Mail}
-              disabled={isSubmitting || success}
+              disabled={isSubmitting || success || lockoutTime > 0}
             />
 
             <Input
@@ -116,7 +165,7 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               leftIcon={Lock}
-              disabled={isSubmitting || success}
+              disabled={isSubmitting || success || lockoutTime > 0}
             />
 
             <Input
@@ -126,7 +175,7 @@ export default function Register() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               leftIcon={Lock}
-              disabled={isSubmitting || success}
+              disabled={isSubmitting || success || lockoutTime > 0}
             />
 
             {/* Terms and Privacy Policy Checkbox */}
@@ -137,7 +186,7 @@ export default function Register() {
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
                 className="mt-0.5 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 accent-primary cursor-pointer shrink-0"
-                disabled={isSubmitting || success}
+                disabled={isSubmitting || success || lockoutTime > 0}
               />
               <label htmlFor="agree-terms" className="text-xs text-slate-500 font-semibold leading-relaxed cursor-pointer select-none">
                 Saya setuju dengan{' '}
@@ -166,9 +215,9 @@ export default function Register() {
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
-              disabled={!agreed || success}
+              disabled={!agreed || success || lockoutTime > 0}
             >
-              Sign Up
+              {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Sign Up'}
             </Button>
           </form>
 

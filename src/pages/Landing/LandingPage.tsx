@@ -26,10 +26,27 @@ export default function LandingPage() {
   const [bugDescription, setBugDescription] = useState('');
   const [isSubmittingBug, setIsSubmittingBug] = useState(false);
   const [isBugSubmitted, setIsBugSubmitted] = useState(false);
+  const [bugError, setBugError] = useState('');
+  const [bugRemainingAttempts, setBugRemainingAttempts] = useState<number | null>(null);
+  const [bugLockoutTime, setBugLockoutTime] = useState<number>(0);
 
   // Privacy Policy and Terms of Service modal states
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (bugLockoutTime <= 0) return;
+    const timer = setInterval(() => {
+      setBugLockoutTime(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [bugLockoutTime]);
+
+  const formatBugTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -37,21 +54,44 @@ export default function LandingPage() {
 
   const handleBugSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (bugDescription.trim().length < 5) return;
+    setBugError('');
+    if (bugDescription.trim().length < 5 || bugLockoutTime > 0) return;
     setIsSubmittingBug(true);
     try {
       await submitBugReport(bugDescription);
       setIsSubmittingBug(false);
       setIsBugSubmitted(true);
+      setBugRemainingAttempts(null);
       setTimeout(() => {
         setIsBugModalOpen(false);
         setIsBugSubmitted(false);
         setBugDescription('');
       }, 2500);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setIsSubmittingBug(false);
-      alert('Gagal mengirimkan laporan bug. Silakan coba lagi.');
+
+      const headers = err.response?.headers;
+      if (headers) {
+        const remaining = headers['x-ratelimit-remaining'];
+        if (remaining !== undefined) {
+          setBugRemainingAttempts(Number(remaining));
+        }
+
+        if (err.response?.status === 429) {
+          const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
+          if (reset) {
+            setBugLockoutTime(Number(reset));
+          } else {
+            setBugLockoutTime(3600); // 1 jam fallback
+          }
+        }
+      }
+
+      setBugError(
+        err.response?.data?.message || 
+        'Gagal mengirimkan laporan bug. Silakan coba lagi.'
+      );
     }
   };
 
@@ -472,6 +512,27 @@ export default function LandingPage() {
                 </div>
               ) : (
                 <form onSubmit={handleBugSubmit} className="space-y-5">
+                  {bugLockoutTime > 0 && (
+                    <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>
+                      <span>Terlalu banyak mengirim laporan. Coba lagi dalam {formatBugTime(bugLockoutTime)}.</span>
+                    </div>
+                  )}
+
+                  {bugError && bugLockoutTime <= 0 && (
+                    <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                      <span>{bugError}</span>
+                    </div>
+                  )}
+
+                  {bugRemainingAttempts !== null && bugRemainingAttempts > 0 && bugRemainingAttempts <= 2 && bugLockoutTime <= 0 && (
+                    <div className="p-3 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200/50 flex items-center gap-2 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                      <span>Tersisa {bugRemainingAttempts} kali pengiriman laporan lagi.</span>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Deskripsi Kendala / Masukan
@@ -481,7 +542,8 @@ export default function LandingPage() {
                       value={bugDescription}
                       onChange={(e) => setBugDescription(e.target.value)}
                       placeholder="Jelaskan secara singkat kendala yang Anda alami, langkah terjadinya, atau saran fitur..."
-                      className="w-full resize-none border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all leading-relaxed"
+                      disabled={isSubmittingBug || bugLockoutTime > 0}
+                      className="w-full resize-none border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all leading-relaxed disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                     />
                     <p className={`text-[10px] font-semibold text-right ${
                       bugDescription.length > 0 && bugDescription.length < 5 ? 'text-rose-500 font-bold' : 'text-slate-350'
@@ -500,9 +562,9 @@ export default function LandingPage() {
                     </button>
                     <button
                       type="submit"
-                      disabled={bugDescription.trim().length < 5 || isSubmittingBug}
+                      disabled={bugDescription.trim().length < 5 || isSubmittingBug || bugLockoutTime > 0}
                       className={`flex-[2] px-4 py-2.5 text-white text-sm font-bold flex items-center justify-center gap-2 rounded-xl transition-all cursor-pointer ${
-                        bugDescription.trim().length >= 5 && !isSubmittingBug
+                        bugDescription.trim().length >= 5 && !isSubmittingBug && bugLockoutTime <= 0
                           ? 'bg-primary hover:bg-[#003da3] shadow-md shadow-primary/10'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                       }`}
@@ -515,6 +577,8 @@ export default function LandingPage() {
                           </svg>
                           <span>Mengirim...</span>
                         </>
+                      ) : bugLockoutTime > 0 ? (
+                        <span>Terkunci ({formatBugTime(bugLockoutTime)})</span>
                       ) : (
                         <>
                           <Send className="w-4 h-4" />
