@@ -41,6 +41,7 @@ import StatsTab from './components/StatsTab';
 import UsersTab from './components/UsersTab';
 import LogsTab from './components/LogsTab';
 import AiConfigTab from './components/AiConfigTab';
+import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'logs' | 'ai'>('stats');
@@ -67,6 +68,8 @@ export default function AdminDashboard() {
   const [newMigrationDailyLimit, setNewMigrationDailyLimit] = useState<number>(3);
   const [newMigrationMaxSizeValue, setNewMigrationMaxSizeValue] = useState<string>('256');
   const [newMigrationMaxSizeUnit, setNewMigrationMaxSizeUnit] = useState<'MB' | 'GB' | 'TB'>('MB');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<AdminUserResponse | null>(null);
 
   // AI config form state
   const [aiForm, setAiForm] = useState<Record<string, string>>({});
@@ -127,12 +130,18 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteUser = async (user: AdminUserResponse) => {
-    const confirmed = window.confirm(`Apakah Anda yakin ingin menghapus user ${user.username || user.fullName}?\n\nTindakan ini bersifat PERMANEN dan akan menghapus berkas fisik miliknya di storage node serta memutuskan koneksi Google Drive.`);
-    if (!confirmed) return;
+  const handleDeleteUser = (user: AdminUserResponse) => {
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
     try {
-      await deleteUser(user.id);
-      showMessage(`User ${user.username} berhasil dihapus beserta seluruh berkas & koneksi awannya.`, 'success');
+      await deleteUser(userToDelete.id);
+      showMessage(`User ${userToDelete.username} berhasil dihapus beserta seluruh berkas & koneksi awannya.`, 'success');
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
       loadData();
     } catch (err) {
       showMessage('Gagal menghapus user.', 'error');
@@ -479,6 +488,17 @@ export default function AdminDashboard() {
         username={editingUser?.username || ''}
         currentTier={editingUser?.subscriptionTier || 'FREEMIUM'}
         onSave={handleUpdateSubscription}
+      />
+
+      {/* Delete User Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        username={userToDelete?.username || userToDelete?.fullName || ''}
       />
     </div>
   );

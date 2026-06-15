@@ -97,10 +97,14 @@ export default function UsersTable({
               <td className="py-3 px-4">
                 <div className="flex flex-col">
                   <span className="font-bold text-slate-800">
-                    {user.migrationDailyLimit != null ? user.migrationDailyLimit : 3} kali/hari
+                    {user.migrationDailyLimit === -1 
+                      ? '∞' 
+                      : `${user.migrationDailyLimit != null ? user.migrationDailyLimit : 3} kali/hari`}
                   </span>
                   <span className="text-[10px] text-slate-400 font-semibold">
-                    Maks {formatBytes(user.migrationMaxFileSize != null ? user.migrationMaxFileSize : 268435456)}
+                    Maks {user.migrationMaxFileSize === -1 
+                      ? '∞' 
+                      : formatBytes(user.migrationMaxFileSize != null ? user.migrationMaxFileSize : 268435456)}
                   </span>
                 </div>
               </td>

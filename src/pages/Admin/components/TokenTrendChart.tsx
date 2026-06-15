@@ -36,7 +36,7 @@ export default function TokenTrendChart({
               const maxVal = Math.max(...history.map(h => h.totalTokens), 1);
               const heightPercent = (entry.totalTokens / maxVal) * 100;
               return (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative">
+                <div key={idx} className="flex-1 h-full flex flex-col justify-end items-center gap-2 group relative">
                   {/* Tooltip on hover */}
                   <div className="absolute bottom-full mb-2 bg-slate-800 text-white rounded-xl py-2 px-3 text-[10px] font-bold shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 flex flex-col gap-1 border border-slate-700">
                     <span className="text-slate-300">{formatDate(entry.date).split(',')[0]}</span>
@@ -46,7 +46,7 @@ export default function TokenTrendChart({
                   </div>
 
                   {/* Bar Graphic */}
-                  <div className="w-full bg-slate-200 rounded-t-lg hover:bg-slate-300 transition-colors h-full flex flex-col justify-end overflow-hidden">
+                  <div className="w-full bg-slate-200/50 rounded-t-lg hover:bg-slate-300 transition-colors h-48 flex flex-col justify-end overflow-hidden">
                     <div 
                       className="bg-indigo-500 rounded-t-lg group-hover:bg-indigo-600 transition-all duration-500 shadow-sm shadow-indigo-500/10" 
                       style={{ height: `${Math.max(heightPercent, 2)}%` }}
