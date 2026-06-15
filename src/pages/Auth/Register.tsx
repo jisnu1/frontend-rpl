@@ -17,7 +17,13 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
-  const [lockoutTime, setLockoutTime] = useState<number>(0);
+  const [lockoutTime, setLockoutTime] = useState<number>(() => {
+    const saved = localStorage.getItem('lockout_register');
+    if (!saved) return 0;
+    const expiresAt = Number(saved);
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+    return remaining > 0 ? remaining : 0;
+  });
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -31,9 +37,18 @@ export default function Register() {
   }, []);
 
   React.useEffect(() => {
-    if (lockoutTime <= 0) return;
+    if (lockoutTime <= 0) {
+      localStorage.removeItem('lockout_register');
+      return;
+    }
     const timer = setInterval(() => {
-      setLockoutTime(prev => prev - 1);
+      setLockoutTime(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          localStorage.removeItem('lockout_register');
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, [lockoutTime]);
@@ -79,11 +94,9 @@ export default function Register() {
 
         if (err.response?.status === 429) {
           const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
-          if (reset) {
-            setLockoutTime(Number(reset));
-          } else {
-            setLockoutTime(900); // 15 menit fallback
-          }
+          const resetTime = reset ? Number(reset) : 900;
+          setLockoutTime(resetTime);
+          localStorage.setItem('lockout_register', String(Date.now() + resetTime * 1000));
         }
       }
 

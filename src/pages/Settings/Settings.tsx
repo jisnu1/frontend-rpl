@@ -77,12 +77,27 @@ export default function Settings() {
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [isReportSubmitted, setIsReportSubmitted] = useState(false);
   const [reportRemainingAttempts, setReportRemainingAttempts] = useState<number | null>(null);
-  const [reportLockoutTime, setReportLockoutTime] = useState<number>(0);
+  const [reportLockoutTime, setReportLockoutTime] = useState<number>(() => {
+    const saved = localStorage.getItem('lockout_report');
+    if (!saved) return 0;
+    const expiresAt = Number(saved);
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+    return remaining > 0 ? remaining : 0;
+  });
 
   useEffect(() => {
-    if (reportLockoutTime <= 0) return;
+    if (reportLockoutTime <= 0) {
+      localStorage.removeItem('lockout_report');
+      return;
+    }
     const timer = setInterval(() => {
-      setReportLockoutTime(prev => prev - 1);
+      setReportLockoutTime(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          localStorage.removeItem('lockout_report');
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, [reportLockoutTime]);
@@ -102,6 +117,7 @@ export default function Settings() {
       await submitBugReport(reportDescription);
       setIsReportSubmitted(true);
       setReportRemainingAttempts(null);
+      localStorage.removeItem('lockout_report');
       toastSuccess('Laporan bug berhasil dikirim. Terima kasih!');
     } catch (err: any) {
       console.error(err);
@@ -115,11 +131,9 @@ export default function Settings() {
 
         if (err.response?.status === 429) {
           const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
-          if (reset) {
-            setReportLockoutTime(Number(reset));
-          } else {
-            setReportLockoutTime(3600); // 1 jam fallback
-          }
+          const resetTime = reset ? Number(reset) : 3600;
+          setReportLockoutTime(resetTime);
+          localStorage.setItem('lockout_report', String(Date.now() + resetTime * 1000));
         }
       }
 

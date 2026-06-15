@@ -13,7 +13,13 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
-  const [lockoutTime, setLockoutTime] = useState<number>(0);
+  const [lockoutTime, setLockoutTime] = useState<number>(() => {
+    const saved = localStorage.getItem('lockout_login');
+    if (!saved) return 0;
+    const expiresAt = Number(saved);
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+    return remaining > 0 ? remaining : 0;
+  });
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -33,9 +39,18 @@ export default function Login() {
   }, [isAuthenticated, navigate]);
 
   React.useEffect(() => {
-    if (lockoutTime <= 0) return;
+    if (lockoutTime <= 0) {
+      localStorage.removeItem('lockout_login');
+      return;
+    }
     const timer = setInterval(() => {
-      setLockoutTime(prev => prev - 1);
+      setLockoutTime(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          localStorage.removeItem('lockout_login');
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, [lockoutTime]);
@@ -72,11 +87,9 @@ export default function Login() {
 
         if (err.response?.status === 429) {
           const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
-          if (reset) {
-            setLockoutTime(Number(reset));
-          } else {
-            setLockoutTime(900); // 15 menit fallback
-          }
+          const resetTime = reset ? Number(reset) : 900;
+          setLockoutTime(resetTime);
+          localStorage.setItem('lockout_login', String(Date.now() + resetTime * 1000));
         }
       }
 

@@ -28,16 +28,31 @@ export default function LandingPage() {
   const [isBugSubmitted, setIsBugSubmitted] = useState(false);
   const [bugError, setBugError] = useState('');
   const [bugRemainingAttempts, setBugRemainingAttempts] = useState<number | null>(null);
-  const [bugLockoutTime, setBugLockoutTime] = useState<number>(0);
+  const [bugLockoutTime, setBugLockoutTime] = useState<number>(() => {
+    const saved = localStorage.getItem('lockout_report');
+    if (!saved) return 0;
+    const expiresAt = Number(saved);
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+    return remaining > 0 ? remaining : 0;
+  });
 
   // Privacy Policy and Terms of Service modal states
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
   React.useEffect(() => {
-    if (bugLockoutTime <= 0) return;
+    if (bugLockoutTime <= 0) {
+      localStorage.removeItem('lockout_report');
+      return;
+    }
     const timer = setInterval(() => {
-      setBugLockoutTime(prev => prev - 1);
+      setBugLockoutTime(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          localStorage.removeItem('lockout_report');
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, [bugLockoutTime]);
@@ -62,6 +77,7 @@ export default function LandingPage() {
       setIsSubmittingBug(false);
       setIsBugSubmitted(true);
       setBugRemainingAttempts(null);
+      localStorage.removeItem('lockout_report');
       setTimeout(() => {
         setIsBugModalOpen(false);
         setIsBugSubmitted(false);
@@ -80,11 +96,9 @@ export default function LandingPage() {
 
         if (err.response?.status === 429) {
           const reset = headers['x-ratelimit-reset'] || headers['retry-after'];
-          if (reset) {
-            setBugLockoutTime(Number(reset));
-          } else {
-            setBugLockoutTime(3600); // 1 jam fallback
-          }
+          const resetTime = reset ? Number(reset) : 3600;
+          setBugLockoutTime(resetTime);
+          localStorage.setItem('lockout_report', String(Date.now() + resetTime * 1000));
         }
       }
 
