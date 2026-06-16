@@ -12,7 +12,9 @@ export default function PrivacyPage() {
     { id: 'berkas', label: '3. Berkas & Konten Pengguna' },
     { id: 'keamanan', label: '4. Keamanan & Enkripsi Data' },
     { id: 'pihak-ketiga', label: '5. Layanan Pihak Ketiga' },
-    { id: 'hak-user', label: '6. Hak Asasi Pengguna' }
+    { id: 'hak-user', label: '6. Hak Asasi Pengguna' },
+    { id: 'limited-use', label: '7. Kebijakan Limited Use Google' },
+    { id: 'kontak', label: '8. Informasi Kontak' }
   ];
 
   useEffect(() => {
@@ -414,6 +416,59 @@ export default function PrivacyPage() {
                 <div className="flex gap-3 items-center">
                   <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 text-[10px] font-bold">4</div>
                   <span className="text-xs font-bold text-slate-700">Meminta penghapusan akun secara permanen beserta file fisik di Storage Node (melalui admin).</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 7 */}
+            <section id="limited-use" className="space-y-5 scroll-mt-24">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <span className="text-sm font-black text-primary">07</span>
+                <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide">
+                  Kebijakan Limited Use Google
+                </h2>
+              </div>
+              
+              {/* Highlight callout box - amber */}
+              <div className="bg-amber-50 border border-amber-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-amber-500/5">
+                <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                  Kepatuhan Google API Services User Data Policy
+                </h4>
+                <p className="text-xs font-bold text-amber-700 leading-relaxed">
+                  Penggunaan dan transfer informasi yang diterima dari Google API oleh Horizon Cloud ke aplikasi lain akan sepenuhnya mematuhi <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="underline text-amber-800 hover:text-amber-950 font-bold">Kebijakan Data Pengguna Layanan API Google</a>, termasuk persyaratan Penggunaan Terbatas (<em>Limited Use</em>).
+                </p>
+                <p className="text-[11px] font-bold text-amber-600/90 italic leading-relaxed">
+                  (Horizon Cloud's use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data Policy, including the Limited Use requirements.)
+                </p>
+              </div>
+
+              <p className="text-xs font-semibold leading-relaxed">
+                Kami tidak menggunakan, membagikan, atau mentransfer data yang diperoleh dari Google API untuk tujuan periklanan, pemasaran, atau profiling pengguna. Seluruh data akses token Google Drive digunakan murni secara otomatis oleh sistem untuk memfasilitasi fitur transfer file personal Anda.
+              </p>
+            </section>
+
+            {/* Section 8 */}
+            <section id="kontak" className="space-y-5 scroll-mt-24">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                <span className="text-sm font-black text-primary">08</span>
+                <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide">
+                  Informasi Kontak
+                </h2>
+              </div>
+              <p className="text-xs font-semibold leading-relaxed">
+                Jika Anda memiliki pertanyaan, kendala teknis, atau masukan mengenai Kebijakan Privasi ini, jangan ragu untuk menghubungi tim pengembang kami:
+              </p>
+              <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-3">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-400">Nama Aplikasi:</span>
+                  <span className="text-slate-800">Horizon Cloud</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-slate-400">Email Kontak Developer:</span>
+                  <span className="text-primary hover:underline font-bold">
+                    <a href="mailto:emuyforge@gmail.com">emuyforge@gmail.com</a>
+                  </span>
                 </div>
               </div>
             </section>
