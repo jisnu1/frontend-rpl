@@ -34,7 +34,8 @@ import {
   createGoogleDriveFolder, 
   moveGoogleDriveItem,
   deleteGoogleDriveFolder,
-  FolderResponse
+  FolderResponse,
+  FolderContentResponse
 } from '../../api/folders';
 import { fetchExternalAccounts, getGoogleAuthUrl, ExternalAccountDto } from '../../api/externalAccounts';
 import Button from '../../components/ui/Button';
@@ -49,6 +50,16 @@ import FilePreviewModal from '../../components/FilePreviewModal';
 import { fetchUserStorage, UserStorageResponse } from '../../api/storage';
 import { useAuth } from '../../context/AuthContext';
 import UpgradeModal from '../../components/ui/UpgradeModal';
+
+interface DashboardFolder extends FolderResponse {
+  provider?: 'STORAGE_NODE' | 'GOOGLE_DRIVE';
+  externalAccountId?: number | null;
+  providerLabel?: string;
+}
+
+interface DashboardFile extends FileResponse {
+  providerLabel?: string;
+}
 
 interface DashboardProps {
   uploadTrigger?: number;
@@ -83,21 +94,21 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const [viewMode, setViewMode] = useState<'list' | 'grid'>(window.innerWidth < 768 ? 'grid' : 'list');
   
   // Folder content listings
-  const [folders, setFolders] = useState<FolderResponse[]>([]);
-  const [files, setFiles] = useState<FileResponse[]>([]);
+  const [folders, setFolders] = useState<DashboardFolder[]>([]);
+  const [files, setFiles] = useState<DashboardFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Drag-and-drop target state
   const [draggedOverFolderId, setDraggedOverFolderId] = useState<string | null>(null);
 
   // Modal control states
-  const [confirmDeleteFile, setConfirmDeleteFile] = useState<FileResponse | null>(null);
-  const [confirmDeleteFolder, setConfirmDeleteFolder] = useState<FolderResponse | null>(null);
-  const [confirmDownloadFile, setConfirmDownloadFile] = useState<FileResponse | null>(null);
+  const [confirmDeleteFile, setConfirmDeleteFile] = useState<DashboardFile | null>(null);
+  const [confirmDeleteFolder, setConfirmDeleteFolder] = useState<DashboardFolder | null>(null);
+  const [confirmDownloadFile, setConfirmDownloadFile] = useState<DashboardFile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeShareFile, setActiveShareFile] = useState<FileResponse | null>(null);
-  const [activeShareFolder, setActiveShareFolder] = useState<FolderResponse | null>(null);
-  const [activePreviewFile, setActivePreviewFile] = useState<FileResponse | null>(null);
+  const [activeShareFile, setActiveShareFile] = useState<DashboardFile | null>(null);
+  const [activeShareFolder, setActiveShareFolder] = useState<DashboardFolder | null>(null);
+  const [activePreviewFile, setActivePreviewFile] = useState<DashboardFile | null>(null);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   
@@ -121,6 +132,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
 
   const getFileExtension = (filename: string) => {
     return filename.split('.').pop() || '';
+  };
+
+  const getFolderProvider = (folder: DashboardFolder | null) => {
+    if (!folder) return 'STORAGE_NODE';
+    return folder.provider || (activeTab === 'local' ? 'STORAGE_NODE' : 'GOOGLE_DRIVE');
   };
 
   const filterCategories = [
@@ -218,31 +234,97 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       setStorageInfo(storageData);
 
       if (activeTab === 'all') {
-        // Render virtual folders
-        const virtualFolders: FolderResponse[] = [
-          {
-            id: 'virtual_local',
-            name: 'Storage Node',
-            parentId: null,
-            userId: user?.id || 0,
-            createdAt: new Date().toISOString(),
-          }
-        ];
-        externalAccounts.forEach((acc, index) => {
-          virtualFolders.push({
-            id: `virtual_gdrive_${acc.id}`,
-            name: `Drive ${index + 1} (${acc.email})`,
-            parentId: null,
-            userId: user?.id || 0,
-            createdAt: new Date().toISOString(),
+        // Fetch local root and GDrive roots concurrently
+        const localPromise: Promise<FolderContentResponse> = fetchFolderContents(undefined).catch(err => {
+          console.error("Failed to fetch local contents in ALL tab", err);
+          return { folders: [], files: [] } as FolderContentResponse;
+        });
+
+        const gdrivePromises = externalAccounts.map((acc: ExternalAccountDto) => 
+          fetchGoogleDriveFolderContents(acc.id, undefined)
+            .then(data => ({ acc, data }))
+            .catch(err => {
+              console.error(`Failed to fetch GDrive contents for account ${acc.id} in ALL tab`, err);
+              return { acc, data: { items: [] } };
+            })
+        );
+
+        const [localData, ...gdriveResults] = await Promise.all([localPromise, ...gdrivePromises]);
+
+        const combinedFolders: DashboardFolder[] = [];
+        const combinedFiles: DashboardFile[] = [];
+
+        // Add local contents
+        if (localData.folders) {
+          localData.folders.forEach((f: FolderResponse) => {
+            combinedFolders.push({
+              ...f,
+              provider: 'STORAGE_NODE',
+              externalAccountId: null,
+              providerLabel: 'Personal-Storage'
+            });
+          });
+        }
+        if (localData.files) {
+          localData.files.forEach((f: FileResponse) => {
+            combinedFiles.push({
+              ...f,
+              provider: 'STORAGE_NODE',
+              externalAccountId: null,
+              providerLabel: 'Personal-Storage'
+            });
+          });
+        }
+
+        // Add GDrive contents
+        gdriveResults.forEach((result) => {
+          const acc = result.acc;
+          const data = result.data;
+          data.items?.forEach((item: any) => {
+            const isFolder = item.mimeType === 'application/vnd.google-apps.folder';
+            if (isFolder) {
+              combinedFolders.push({
+                id: item.id,
+                name: item.name,
+                parentId: null,
+                userId: user?.id || 0,
+                createdAt: item.createdTime,
+                provider: 'GOOGLE_DRIVE',
+                externalAccountId: acc.id,
+                providerLabel: `Google Drive (${acc.email})`
+              });
+            } else {
+              combinedFiles.push({
+                id: item.id,
+                originalFileName: item.name,
+                size: item.size || 0,
+                createdAt: item.createdTime,
+                provider: 'GOOGLE_DRIVE',
+                externalAccountId: acc.id,
+                providerLabel: `Google Drive (${acc.email})`
+              });
+            }
           });
         });
-        setFolders(virtualFolders);
-        setFiles([]);
+
+        setFolders(combinedFolders);
+        setFiles(combinedFiles);
       } else if (activeTab === 'local') {
         const data = await fetchFolderContents(folderId);
-        setFolders(data.folders || []);
-        setFiles(data.files || []);
+        const mappedFolders: DashboardFolder[] = (data.folders || []).map(f => ({
+          ...f,
+          provider: 'STORAGE_NODE',
+          externalAccountId: null,
+          providerLabel: 'Personal-Storage'
+        }));
+        const mappedFiles: DashboardFile[] = (data.files || []).map(f => ({
+          ...f,
+          provider: 'STORAGE_NODE',
+          externalAccountId: null,
+          providerLabel: 'Personal-Storage'
+        }));
+        setFolders(mappedFolders);
+        setFiles(mappedFiles);
 
         // Store subfolders names locally for breadcrumbs reconstruction
         const storedNames = JSON.parse(sessionStorage.getItem('horizon_folder_names') || '{}');
@@ -257,8 +339,8 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         if (currentAccount) {
           const data = await fetchGoogleDriveFolderContents(currentAccount.id, gDriveFolderId);
           
-          const mappedFolders: FolderResponse[] = [];
-          const mappedFiles: FileResponse[] = [];
+          const mappedFolders: DashboardFolder[] = [];
+          const mappedFiles: DashboardFile[] = [];
 
           data.items?.forEach(item => {
             const isFolder = item.mimeType === 'application/vnd.google-apps.folder';
@@ -269,6 +351,9 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 parentId: gDriveFolderId || null,
                 userId: user?.id || 0,
                 createdAt: item.createdTime,
+                provider: 'GOOGLE_DRIVE',
+                externalAccountId: currentAccount.id,
+                providerLabel: `Google Drive (${currentAccount.email})`
               });
             } else {
               mappedFiles.push({
@@ -278,6 +363,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 createdAt: item.createdTime,
                 provider: 'GOOGLE_DRIVE',
                 externalAccountId: currentAccount.id,
+                providerLabel: `Google Drive (${currentAccount.email})`
               });
             }
           });
@@ -354,17 +440,36 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   }, [uploadTrigger, folderId, gDriveFolderId, activeTab, activeExternalAccount, externalAccounts]);
 
   // Folder Navigation Actions
-  const handleFolderDoubleClick = (folder: FolderResponse) => {
+  const handleFolderDoubleClick = (folder: DashboardFolder) => {
     if (folder.id === 'virtual_local') {
       handleTabChange('local');
     } else if (folder.id.startsWith('virtual_gdrive_')) {
       const accId = Number(folder.id.replace('virtual_gdrive_', ''));
       handleTabChange(accId);
     } else {
-      if (activeTab === 'local') {
-        navigate(`/my-drive?folderId=${folder.id}`);
+      const targetProvider = folder.provider || (activeTab === 'local' ? 'STORAGE_NODE' : 'GOOGLE_DRIVE');
+      const targetAccountId = folder.externalAccountId || (typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id);
+
+      if (activeTab === 'all') {
+        if (targetProvider === 'STORAGE_NODE') {
+          setActiveTab('local');
+          sessionStorage.setItem('horizon_active_tab', 'local');
+          navigate(`/my-drive?folderId=${folder.id}`);
+        } else if (targetAccountId) {
+          setActiveTab(targetAccountId);
+          sessionStorage.setItem('horizon_active_tab', String(targetAccountId));
+          const matchingAcc = externalAccounts.find(a => a.id === targetAccountId);
+          if (matchingAcc) {
+            setActiveExternalAccount(matchingAcc);
+          }
+          navigate(`/my-drive?gDriveFolderId=${folder.id}&accountId=${targetAccountId}`);
+        }
       } else {
-        navigate(`/my-drive?gDriveFolderId=${folder.id}&accountId=${activeExternalAccount?.id}`);
+        if (activeTab === 'local') {
+          navigate(`/my-drive?folderId=${folder.id}`);
+        } else {
+          navigate(`/my-drive?gDriveFolderId=${folder.id}&accountId=${activeExternalAccount?.id}`);
+        }
       }
     }
   };
@@ -418,11 +523,12 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     if (!confirmDeleteFolder) return;
     setIsDeleting(true);
     try {
-      if (activeTab === 'local') {
+      const provider = confirmDeleteFolder.provider || (activeTab === 'local' ? 'STORAGE_NODE' : 'GOOGLE_DRIVE');
+      if (provider === 'STORAGE_NODE') {
         await deleteFolder(confirmDeleteFolder.id);
         toastSuccess(`Folder "${confirmDeleteFolder.name}" berhasil dihapus beserta isinya.`);
       } else {
-        const accountId = typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id;
+        const accountId = confirmDeleteFolder.externalAccountId || (typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id);
         if (accountId) {
           await deleteGoogleDriveFolder(accountId, confirmDeleteFolder.id);
           toastSuccess(`Folder Google Drive "${confirmDeleteFolder.name}" berhasil dihapus beserta isinya.`);
@@ -881,7 +987,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredFolders.map((folder) => {
                     const isDraggedOver = draggedOverFolderId === folder.id;
-                    const providerStr = activeTab === 'local' ? 'LOCAL' : 'GOOGLE_DRIVE';
+                    const providerStr = folder.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
                     
                     return (
                       <div
@@ -905,36 +1011,41 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           <div className={`p-2.5 rounded-xl ${isDraggedOver ? 'bg-primary text-white animate-pulse' : 'bg-primary/5 text-primary'}`}>
                             <Folder className="w-5 h-5" />
                           </div>
-                          <span className="text-sm font-bold text-slate-800 truncate pr-2" title={folder.name}>
-                            {folder.name}
-                          </span>
+                          <div className="min-w-0 flex flex-col">
+                            <span className="text-sm font-bold text-slate-800 truncate pr-2" title={folder.name}>
+                              {folder.name}
+                            </span>
+                            {folder.providerLabel && (
+                              <span className="text-[10px] text-slate-400 font-medium truncate">
+                                {folder.providerLabel}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Folder Action buttons */}
-                        {activeTab !== 'all' && (
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveShareFolder(folder);
-                              }}
-                              className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer"
-                              title="Bagikan Folder"
-                            >
-                              <Share2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfirmDeleteFolder(folder);
-                              }}
-                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all cursor-pointer"
-                              title="Hapus Folder"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveShareFolder(folder);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer"
+                            title="Bagikan Folder"
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeleteFolder(folder);
+                            }}
+                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all cursor-pointer"
+                            title="Hapus Folder"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -943,8 +1054,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             )}
 
             {/* ───── SECTION 2: FILES ───── */}
-            {activeTab !== 'all' && (
-              <div className="space-y-3">
+            <div className="space-y-3">
                 {filteredFolders.length > 0 && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Berkas</h3>}
               
               <div className="bg-white rounded-[2rem] shadow-[0px_4px_20px_rgba(15,23,42,0.03)] border border-slate-150/80 overflow-hidden">
@@ -994,13 +1104,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                           filteredFiles.map((file) => {
                             const ext = getFileExtension(file.originalFileName);
                             const isPdf = ext.toLowerCase() === 'pdf';
-                            const providerStr = activeTab === 'local' ? 'LOCAL' : 'GOOGLE_DRIVE';
+                            const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
 
                             return (
                               <tr 
                                 key={file.id} 
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, file.id, 'FILE', providerStr)}
+                                draggable={activeTab !== 'all'}
+                                onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, file.id, 'FILE', providerStr) : undefined}
                                 onClick={(e) => {
                                   const target = e.target as HTMLElement;
                                   if (target.closest('button') || target.closest('a')) {
@@ -1029,7 +1139,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                       ? 'bg-amber-50 border-amber-100 text-amber-600' 
                                       : 'bg-blue-50 border-blue-100 text-blue-600'
                                   }`}>
-                                    {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local'}
+                                    {file.providerLabel || (file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local')}
                                   </span>
                                 </td>
 
@@ -1126,13 +1236,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                         {filteredFiles.map((file) => {
                           const ext = getFileExtension(file.originalFileName);
                           const isPdf = ext.toLowerCase() === 'pdf';
-                          const providerStr = activeTab === 'local' ? 'LOCAL' : 'GOOGLE_DRIVE';
+                          const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
 
                           return (
                             <Card 
                               key={file.id} 
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, file.id, 'FILE', providerStr)}
+                              draggable={activeTab !== 'all'}
+                              onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, file.id, 'FILE', providerStr) : undefined}
                               onClick={(e) => {
                                 const target = e.target as HTMLElement;
                                 if (target.closest('button') || target.closest('a')) {
@@ -1151,7 +1261,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                                     ? 'bg-amber-50 border-amber-100 text-amber-600' 
                                     : 'bg-blue-50 border-blue-100 text-blue-600'
                                   }`}>
-                                  {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local'}
+                                  {file.providerLabel || (file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local')}
                                 </span>
                               </div>
 
@@ -1226,7 +1336,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 )}
               </div>
             </div>
-            )}
 
           </div>
         </>
@@ -1250,7 +1359,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           onClose={() => setActiveShareFolder(null)}
           folderId={activeShareFolder.id}
           folderName={activeShareFolder.name}
-          folderType={activeTab === 'local' ? 'LOCAL' : 'GOOGLE_DRIVE'}
+          folderType={getFolderProvider(activeShareFolder) === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE'}
         />
       )}
 

@@ -39,7 +39,8 @@ interface ActivityContextType {
     fileNamesMap: Record<string, string>,
     targetProvider: string,
     targetExternalAccountId: number | null,
-    deleteSource: boolean
+    deleteSource: boolean,
+    folderIds?: string[]
   ) => Promise<{ success: boolean; batchId: string }>;
 }
 
@@ -463,10 +464,12 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     fileNamesMap: Record<string, string>,
     targetProvider: string,
     targetExternalAccountId: number | null,
-    deleteSource: boolean
+    deleteSource: boolean,
+    folderIds?: string[]
   ) => {
     const res = await startMigration({
       fileIds,
+      folderIds,
       targetProvider,
       targetExternalAccountId,
       deleteSource
@@ -475,16 +478,28 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     if (res.success && res.batchId) {
       const batchId = res.batchId;
       
-      const newActivities = fileIds.map(fileId => {
-        const name = fileNamesMap[fileId] || 'File';
-        return {
-          id: `migration_${fileId}_${batchId}`,
-          type: 'migration' as const,
-          name,
-          progress: 0,
-          status: 'running' as const,
-        };
-      });
+      const newActivities = [
+        ...fileIds.map(fileId => {
+          const name = fileNamesMap[fileId] || 'File';
+          return {
+            id: `migration_${fileId}_${batchId}`,
+            type: 'migration' as const,
+            name,
+            progress: 0,
+            status: 'running' as const,
+          };
+        }),
+        ...(folderIds || []).map(folderId => {
+          const name = fileNamesMap[folderId] || 'Folder';
+          return {
+            id: `migration_${folderId}_${batchId}`,
+            type: 'migration' as const,
+            name: `[Folder] ${name}`,
+            progress: 0,
+            status: 'running' as const,
+          };
+        })
+      ];
 
       setActivities(prev => [...prev, ...newActivities]);
       startPollingForBatch(batchId, fileNamesMap);

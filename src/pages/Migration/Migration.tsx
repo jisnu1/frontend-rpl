@@ -14,9 +14,11 @@ import {
   Clock, 
   File,
   ShieldAlert,
-  ChevronRight
+  ChevronRight,
+  Folder
 } from 'lucide-react';
 import { fetchMyFiles, FileResponse } from '../../api/files';
+import { fetchFolderContents, fetchGoogleDriveFolderContents, FolderResponse } from '../../api/folders';
 import { fetchExternalAccounts, ExternalAccountDto } from '../../api/externalAccounts';
 import { 
   fetchMigrationConfig, 
@@ -52,12 +54,16 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   const { user } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
 
+  const [folders, setFolders] = useState<FolderResponse[]>([]);
   const [files, setFiles] = useState<FileResponse[]>([]);
   const [externalAccounts, setExternalAccounts] = useState<ExternalAccountDto[]>([]);
   const [config, setConfig] = useState<MigrationConfig>({ maxFileSizeBytes: 268435456, maxDailyLimit: 3, todayTasksCount: 0 });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<Record<string, FileResponse>>({});
+  const [selectedFolders, setSelectedFolders] = useState<Record<string, FolderResponse & { provider: string; externalAccountId?: number | null }>>({});
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
+  const [folderPath, setFolderPath] = useState<Array<{ id: string; name: string }>>([]);
   const [activeTab, setActiveTab] = useState<string>('STORAGE_NODE');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,14 +94,12 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   const loadInitialData = async () => {
     setIsLoading(true);
     try {
-      const [allFiles, accounts, migrationConf, tasks] = await Promise.all([
-        fetchMyFiles(),
+      const [accounts, migrationConf, tasks] = await Promise.all([
         fetchExternalAccounts(),
         fetchMigrationConfig(),
         fetchMigrationTasks()
       ]);
 
-      setFiles(allFiles || []);
       const googleAccs = accounts.filter(a => a.provider.toUpperCase() === 'GOOGLE');
       setExternalAccounts(googleAccs);
       setConfig(migrationConf);
@@ -128,10 +132,6 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
     }
   };
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
   // Set up Tabs
   const tabs: TabConfig[] = [
     { id: 'STORAGE_NODE', name: 'Storage Node VPS', provider: 'STORAGE_NODE', accountId: null },
@@ -144,21 +144,92 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
     }))
   ];
 
-  // Filter files based on current tab
-  const getTabFiles = (tab: TabConfig) => {
-    return files.filter(file => {
-      if (tab.provider === 'STORAGE_NODE') {
-        return file.provider.toUpperCase() === 'STORAGE_NODE';
-      } else {
-        return file.provider.toUpperCase() === 'GOOGLE_DRIVE' && file.externalAccountId === tab.accountId;
+  const currentTabConfig = tabs.find(t => t.id === activeTab) || tabs[0];
+
+  useEffect(() => {
+    const loadFolderData = async () => {
+      setIsLoading(true);
+      try {
+        if (!currentTabConfig) return;
+
+        if (currentTabConfig.provider === 'STORAGE_NODE') {
+          const data = await fetchFolderContents(currentFolderId);
+          setFolders(data.folders || []);
+          setFiles(data.files || []);
+        } else {
+          const data = await fetchGoogleDriveFolderContents(currentTabConfig.accountId!, currentFolderId);
+          const mappedFolders: FolderResponse[] = [];
+          const mappedFiles: FileResponse[] = [];
+
+          data.items?.forEach(item => {
+            const isFolder = item.mimeType === 'application/vnd.google-apps.folder';
+            if (isFolder) {
+              mappedFolders.push({
+                id: item.id,
+                name: item.name,
+                parentId: currentFolderId || null,
+                userId: user?.id || 0,
+                createdAt: item.createdTime,
+              });
+            } else {
+              mappedFiles.push({
+                id: item.id,
+                originalFileName: item.name,
+                size: item.size || 0,
+                createdAt: item.createdTime,
+                provider: 'GOOGLE_DRIVE',
+                externalAccountId: currentTabConfig.accountId,
+              });
+            }
+          });
+          setFolders(mappedFolders);
+          setFiles(mappedFiles);
+        }
+      } catch (err) {
+        console.error('Failed to load folder contents', err);
+        toastError('Gagal memuat isi folder.');
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    loadFolderData();
+  }, [currentFolderId, activeTab, externalAccounts]);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    setCurrentFolderId(undefined);
+    setFolderPath([]);
+  };
+
+  const handleFolderDoubleClick = (folder: FolderResponse) => {
+    setFolderPath(prev => [...prev, { id: folder.id, name: folder.name }]);
+    setCurrentFolderId(folder.id);
+  };
+
+  const handleToggleFolder = (folder: FolderResponse) => {
+    setSelectedFolders(prev => {
+      const updated = { ...prev };
+      if (updated[folder.id]) {
+        delete updated[folder.id];
+      } else {
+        updated[folder.id] = {
+          ...folder,
+          provider: currentTabConfig.provider,
+          externalAccountId: currentTabConfig.accountId,
+        };
+      }
+      return updated;
     });
   };
 
-  const currentTabConfig = tabs.find(t => t.id === activeTab) || tabs[0];
-  const tabFiles = currentTabConfig ? getTabFiles(currentTabConfig) : [];
+  const tabFiles = files;
+  const tabFolders = folders;
 
-  // Filter tab files by search query
+  // Filter tab folders and files by search query
+  const filteredTabFolders = tabFolders.filter(folder =>
+    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const filteredTabFiles = tabFiles.filter(file => 
     file.originalFileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -185,20 +256,39 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
     });
   };
 
-  // Select all visible files in active tab
+  // Select all visible files and folders in active tab
   const handleToggleSelectAll = () => {
-    const allSelectedInTab = filteredTabFiles.every(file => selectedFiles[file.id]);
+    const allFilesSelected = filteredTabFiles.every(file => selectedFiles[file.id]);
+    const allFoldersSelected = filteredTabFolders.every(folder => selectedFolders[folder.id]);
+    const allSelected = allFilesSelected && allFoldersSelected;
+
     setSelectedFiles(prev => {
       const updated = { ...prev };
-      if (allSelectedInTab) {
-        // Unselect all in tab
+      if (allSelected) {
         filteredTabFiles.forEach(file => {
           delete updated[file.id];
         });
       } else {
-        // Select all in tab
         filteredTabFiles.forEach(file => {
           updated[file.id] = file;
+        });
+      }
+      return updated;
+    });
+
+    setSelectedFolders(prev => {
+      const updated = { ...prev };
+      if (allSelected) {
+        filteredTabFolders.forEach(folder => {
+          delete updated[folder.id];
+        });
+      } else {
+        filteredTabFolders.forEach(folder => {
+          updated[folder.id] = {
+            ...folder,
+            provider: currentTabConfig.provider,
+            externalAccountId: currentTabConfig.accountId,
+          };
         });
       }
       return updated;
@@ -208,6 +298,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   // Clear all selections
   const handleClearSelection = () => {
     setSelectedFiles({});
+    setSelectedFolders({});
   };
 
   // Triggered when modal starts migration successfully
@@ -286,7 +377,8 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   };
 
   const selectedFilesList = Object.values(selectedFiles);
-  const selectedCount = selectedFilesList.length;
+  const selectedFoldersList = Object.values(selectedFolders);
+  const selectedCount = selectedFilesList.length + selectedFoldersList.length;
   const selectedSize = selectedFilesList.reduce((acc, f) => acc + f.size, 0);
 
   // Check if any selected files exceed config limit
@@ -535,7 +627,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`flex items-center gap-1.5 px-4 py-3 border-b-2 font-bold text-xs transition-all whitespace-nowrap shrink-0 ${
                     isActive
                       ? isGDrive
@@ -752,15 +844,14 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           <div className="relative">
             <select
               value={activeTab}
-              onChange={(e) => setActiveTab(e.target.value)}
+              onChange={(e) => handleTabChange(e.target.value)}
               className="w-full bg-slate-100 border border-transparent rounded-2xl py-3 pl-11 pr-10 text-xs font-bold text-slate-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer transition-all"
             >
               {tabs.map(tab => {
-                const tabFileCount = getTabFiles(tab).length;
                 const emailStr = tab.email ? ` (${tab.email.split('@')[0]})` : '';
                 return (
                   <option key={tab.id} value={tab.id}>
-                    {tab.name === 'Google Drive' ? `Google Drive${emailStr}` : tab.name} ({tabFileCount} berkas)
+                    {tab.name === 'Google Drive' ? `Google Drive${emailStr}` : tab.name}
                   </option>
                 );
               })}
@@ -792,18 +883,23 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {filteredTabFiles.length > 0 && (
+          {(filteredTabFiles.length > 0 || filteredTabFolders.length > 0) && (
             <button
               onClick={handleToggleSelectAll}
               className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-2xl font-bold text-xs transition-all border ${
-                filteredTabFiles.every(f => selectedFiles[f.id])
+                ((filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])) &&
+                 (filteredTabFolders.length === 0 || filteredTabFolders.every(folder => selectedFolders[folder.id])))
                   ? 'bg-primary text-white border-primary'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
               }`}
             >
               <input
                 type="checkbox"
-                checked={filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])}
+                checked={
+                  (filteredTabFiles.length > 0 || filteredTabFolders.length > 0) &&
+                  filteredTabFiles.every(f => selectedFiles[f.id]) &&
+                  filteredTabFolders.every(folder => selectedFolders[folder.id])
+                }
                 onChange={handleToggleSelectAll}
                 onClick={e => e.stopPropagation()}
                 className="w-3.5 h-3.5 accent-white cursor-pointer"
@@ -813,29 +909,113 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           )}
         </div>
 
-        {/* ── File list ── */}
-        <div className="flex-1 px-4 py-3 space-y-2">
+        {/* ── File & Folder list ── */}
+        <div className="flex-1 px-4 py-3 space-y-3">
+          {/* Breadcrumb Path */}
+          {folderPath.length > 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold bg-slate-50 p-2 rounded-xl border border-slate-100/80 mb-2">
+              <button 
+                type="button" 
+                onClick={() => {
+                  setCurrentFolderId(undefined);
+                  setFolderPath([]);
+                }}
+                className="hover:text-primary transition-colors"
+              >
+                Root
+              </button>
+              {folderPath.map((p, idx) => (
+                <React.Fragment key={p.id}>
+                  <ChevronRight className="w-3 h-3 text-slate-300" />
+                  <button
+                    type="button"
+                    disabled={idx === folderPath.length - 1}
+                    onClick={() => {
+                      const newPath = folderPath.slice(0, idx + 1);
+                      setFolderPath(newPath);
+                      setCurrentFolderId(p.id);
+                    }}
+                    className={`hover:text-primary transition-colors max-w-[120px] truncate ${idx === folderPath.length - 1 ? 'text-slate-600 font-extrabold cursor-default' : ''}`}
+                  >
+                    {p.name}
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
+              <p className="text-xs font-bold text-slate-400">Memuat konten...</p>
             </div>
-          ) : filteredTabFiles.length === 0 ? (
+          ) : filteredTabFiles.length === 0 && filteredTabFolders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
               <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center shadow-inner">
                 <Sliders className="w-9 h-9 text-slate-300" />
               </div>
               <div>
-                <p className="text-sm font-black text-slate-600">Tidak ada berkas</p>
+                <p className="text-sm font-black text-slate-600">Folder Kosong</p>
                 <p className="text-xs font-medium text-slate-400 mt-1 max-w-[200px] leading-relaxed">
-                  Belum ada berkas di penyimpanan ini.
+                  Tidak ada berkas atau folder di direktori ini.
                 </p>
               </div>
             </div>
           ) : (
-            <>
+            <div className="space-y-3">
+              {/* Folder cards */}
+              {filteredTabFolders.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Folder</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {filteredTabFolders.map(folder => {
+                      const isChecked = !!selectedFolders[folder.id];
+                      return (
+                        <div
+                          key={folder.id}
+                          onDoubleClick={() => handleFolderDoubleClick(folder)}
+                          onClick={() => handleToggleFolder(folder)}
+                          className={`w-full min-w-0 relative rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden border ${
+                            isChecked
+                              ? 'bg-primary/5 border-primary shadow-md shadow-primary/10'
+                              : 'bg-white border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between p-3.5">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`p-2.5 rounded-xl ${isChecked ? 'bg-primary text-white' : 'bg-primary/5 text-primary'}`}>
+                                <Folder className="w-4.5 h-4.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-slate-800 truncate" title={folder.name}>
+                                  {folder.name}
+                                </p>
+                                <p className="text-[9px] text-slate-450 font-semibold mt-0.5">
+                                  Double click untuk membuka folder
+                                </p>
+                              </div>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {}}
+                              onClick={e => e.stopPropagation()}
+                              className="w-4 h-4 accent-primary rounded-lg cursor-pointer shrink-0"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* File cards */}
-              {filteredTabFiles.map(file => {
+              {filteredTabFiles.length > 0 && (
+                <div className="space-y-2">
+                  {filteredTabFolders.length > 0 && <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berkas</h4>}
+                  <div className="space-y-2">
+                    {filteredTabFiles.map(file => {
                 const isChecked = !!selectedFiles[file.id];
                 const isTooLarge = config.maxFileSizeBytes !== -1 && file.size > config.maxFileSizeBytes;
                 const isGDriveFile = file.provider === 'GOOGLE_DRIVE';
@@ -914,7 +1094,10 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                   </div>
                 );
               })}
-            </>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -979,7 +1162,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                   <RefreshCw className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
+                  <p className="text-sm font-black text-slate-800">{selectedCount} item terpilih</p>
                   <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
                 </div>
               </div>
@@ -1014,6 +1197,12 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           id: f.id,
           name: f.originalFileName,
           size: f.size,
+          provider: f.provider,
+          externalAccountId: f.externalAccountId
+        }))}
+        selectedFolders={selectedFoldersList.map(f => ({
+          id: f.id,
+          name: f.name,
           provider: f.provider,
           externalAccountId: f.externalAccountId
         }))}

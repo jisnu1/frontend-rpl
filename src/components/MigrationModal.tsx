@@ -15,6 +15,12 @@ interface MigrationModalProps {
     provider: string;
     externalAccountId?: number | null;
   }>;
+  selectedFolders: Array<{
+    id: string;
+    name: string;
+    provider: string;
+    externalAccountId?: number | null;
+  }>;
   onSuccess: (batchId: string) => void;
 }
 
@@ -81,7 +87,7 @@ function AccountDropdown({ value, accounts, onChange }: AccountDropdownProps) {
   );
 }
 
-export default function MigrationModal({ isOpen, onClose, selectedFiles, onSuccess }: MigrationModalProps) {
+export default function MigrationModal({ isOpen, onClose, selectedFiles, selectedFolders = [], onSuccess }: MigrationModalProps) {
   const { migrateFiles } = useActivity();
   const { error: toastError, success: toastSuccess } = useToast();
 
@@ -96,7 +102,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmStep, setShowConfirmStep] = useState(false);
 
-  // Load destinations
+  // Smart destinations loader
   useEffect(() => {
     if (!isOpen) return;
     
@@ -120,9 +126,10 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
     loadData();
     setShowConfirmStep(false);
     setDeleteSource(false);
-    // Smart default: jika semua file dari VPS, arahkan target ke Google Drive
+    // Smart default: jika semua file/folder dari VPS, arahkan target ke Google Drive
     // agar tidak langsung terkena self-migration block
-    const allFromVps = selectedFiles.length > 0 && selectedFiles.every(f => f.provider.toUpperCase() === 'STORAGE_NODE');
+    const allFromVps = (selectedFiles.length > 0 && selectedFiles.every(f => f.provider.toUpperCase() === 'STORAGE_NODE')) &&
+                      (selectedFolders.length === 0 || selectedFolders.every(f => f.provider.toUpperCase() === 'STORAGE_NODE'));
     setTargetProvider(allFromVps ? 'GOOGLE_DRIVE' : 'STORAGE_NODE');
     setTargetAccountId(null);
   }, [isOpen, toastError]);
@@ -154,7 +161,15 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
     }
   });
 
-  const hasSelfMigration = selfMigrationFiles.length > 0;
+  const selfMigrationFolders = selectedFolders.filter(folder => {
+    if (targetProvider === 'STORAGE_NODE') {
+      return folder.provider.toUpperCase() === 'STORAGE_NODE';
+    } else {
+      return folder.provider.toUpperCase() === 'GOOGLE_DRIVE' && folder.externalAccountId === targetAccountId;
+    }
+  });
+
+  const hasSelfMigration = selfMigrationFiles.length > 0 || selfMigrationFolders.length > 0;
 
   const formatSize = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -168,8 +183,12 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
     setIsSubmitting(true);
     try {
       const fileIds = selectedFiles.map(f => f.id);
+      const folderIds = selectedFolders.map(f => f.id);
       const fileNamesMap: Record<string, string> = {};
       selectedFiles.forEach(f => {
+        fileNamesMap[f.id] = f.name;
+      });
+      selectedFolders.forEach(f => {
         fileNamesMap[f.id] = f.name;
       });
 
@@ -178,7 +197,8 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
         fileNamesMap,
         targetProvider,
         targetAccountId,
-        deleteSource
+        deleteSource,
+        folderIds
       );
 
       if (res.success) {
