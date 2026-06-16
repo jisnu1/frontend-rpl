@@ -553,26 +553,31 @@ export default function Migration() {
           </div>
         </div>
 
-        {/* Floating Action Bar */}
+        {/* Desktop: Floating Bottom Action Bar */}
         {selectedCount > 0 && (
-          <div className="sticky top-20 z-20 flex justify-center animate-fadeIn px-2">
-            <div className="bg-white/85 backdrop-blur-md border border-surface-container shadow-xl rounded-full py-3 px-6 flex items-center justify-between gap-6 max-w-xl w-full">
-              <div className="flex flex-col">
-                <span className="text-xs font-black text-slate-800">{selectedCount} Berkas</span>
-                <span className="text-[10px] font-bold text-slate-500">{formatSize(selectedSize)}</span>
+          <div className="fixed bottom-0 left-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn hidden md:block">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
+                <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
               </div>
               <div className="flex items-center gap-3">
-                <button type="button" onClick={handleClearSelection} className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-all" title="Kosongkan Pilihan">
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="p-2.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 transition-all"
+                  title="Kosongkan Pilihan"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   type="button"
                   disabled={hasTooLargeFiles || isDailyLimitReached}
                   onClick={() => setIsModalOpen(true)}
-                  className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-5 rounded-full text-xs transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-primary hover:bg-primary/90 text-white font-bold py-2.5 px-6 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  <span>Migrasikan</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <RefreshCw className="w-4 h-4" />
+                  Migrasikan
                 </button>
               </div>
             </div>
@@ -906,7 +911,7 @@ export default function Migration() {
         </div>
       </div>
 
-      {/* ── Floating bottom action bar (mobile only, appears on file selection) ── */}
+      {/* ── Floating bottom action bar (mobile, appears on file selection) ── */}
       {selectedCount > 0 && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn">
           <div className="flex items-center justify-between gap-3">
