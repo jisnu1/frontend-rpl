@@ -45,7 +45,7 @@ export default function SecuritySection({
         </div>
       )}
 
-      <form onSubmit={handleSavePassword} className="space-y-4">
+      <form onSubmit={handleSavePassword} className="space-y-4" noValidate>
         <Input
           label="Kata Sandi Lama"
           type="password"

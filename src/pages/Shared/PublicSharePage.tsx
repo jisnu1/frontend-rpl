@@ -34,6 +34,12 @@ const getFileIcon = (category: string) => {
       return <Music className="w-16 h-16 text-emerald-500" />;
     case 'text':
       return <FileText className="w-16 h-16 text-cyan-500" />;
+    case 'spreadsheet':
+      return <FileText className="w-16 h-16 text-emerald-500" />;
+    case 'document':
+      return <FileText className="w-16 h-16 text-blue-600" />;
+    case 'presentation':
+      return <FileText className="w-16 h-16 text-orange-500" />;
     default:
       return <File className="w-16 h-16 text-slate-400" />;
   }
@@ -155,7 +161,13 @@ export default function PublicSharePage() {
     }
 
     const category = getFileCategory(fileInfo.originalFileName);
-    if (category === 'other') return;
+    const ext = fileInfo.originalFileName.split('.').pop()?.toLowerCase() || '';
+    const isOffice = ['xls', 'xlsx', 'ods', 'doc', 'docx', 'ppt', 'pptx', 'odp'].includes(ext);
+    const isCsv = ext === 'csv';
+    const activeProvider = provider || (fileInfo.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local');
+    const isGoogleDrive = activeProvider === 'google' || activeProvider === 'GOOGLE_DRIVE';
+
+    if (category === 'other' && !isOffice) return;
 
     let activeUrl: string | null = null;
     const fetchBlob = async () => {
@@ -163,14 +175,20 @@ export default function PublicSharePage() {
         setIsPreviewLoading(true);
         setPreviewError(null);
         setTextContent(null);
+
+        // Skip fetching blob for Google Drive files or Office files
+        if (isGoogleDrive || isOffice) {
+          setIsPreviewLoading(false);
+          setPreviewError(null);
+          setTextContent(null);
+          return;
+        }
         
-        const activeProvider = provider || (fileInfo.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local');
         const previewUrl = getPublicPreviewUrl(activeShareToken, activeProvider);
-        
         const response = await apiClient.get(previewUrl, { responseType: 'blob' });
         
         const blob = response.data;
-        if (category === 'text') {
+        if (category === 'text' || (category === 'spreadsheet' && isCsv)) {
           const text = await blob.text();
           setTextContent(text);
         } else {
@@ -603,8 +621,66 @@ export default function PublicSharePage() {
   // ───── RENDER 2: SHARED FILE VIEW ─────
   if (!fileInfo) return null;
   const category = getFileCategory(fileInfo.originalFileName);
+  const ext = fileInfo.originalFileName.split('.').pop()?.toLowerCase() || '';
+  const isOffice = ['xls', 'xlsx', 'ods', 'doc', 'docx', 'ppt', 'pptx', 'odp'].includes(ext);
+  const isCsv = ext === 'csv';
   const activeProvider = provider || (fileInfo.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local');
+  const isGoogleDrive = activeProvider === 'google' || activeProvider === 'GOOGLE_DRIVE';
   const downloadUrl = getPublicDownloadUrl(activeShareToken, activeProvider, true);
+
+  const renderCsvTable = (csvText: string) => {
+    const parseCSV = (text: string) => {
+      const lines = text.split(/\r?\n/);
+      return lines
+        .map(line => {
+          const row: string[] = [];
+          let insideQuote = false;
+          let currentCell = '';
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              insideQuote = !insideQuote;
+            } else if (char === ',' && !insideQuote) {
+              row.push(currentCell.replace(/^"|"$/g, '').trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          row.push(currentCell.replace(/^"|"$/g, '').trim());
+          return row;
+        })
+        .filter(row => row.length > 0 && row.some(cell => cell !== ''));
+    };
+
+    const csvRows = parseCSV(csvText);
+    if (csvRows.length === 0) {
+      return <div className="text-slate-405 text-xs py-8 text-center font-bold">Berkas CSV kosong.</div>;
+    }
+
+    return (
+      <div className="w-full max-w-4xl h-[70vh] overflow-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 text-left select-text scrollbar-thin shadow-2xl">
+        <table className="w-full text-left border-collapse text-[10px] font-mono">
+          <thead>
+            <tr className="bg-slate-800 border-b border-slate-700 text-slate-300">
+              {csvRows[0].map((cell, idx) => (
+                <th key={idx} className="p-2.5 font-bold border border-slate-700 bg-slate-800/90 sticky top-0">{cell}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800 text-slate-350">
+            {csvRows.slice(1).map((row, rowIdx) => (
+              <tr key={rowIdx} className="hover:bg-slate-800/40">
+                {row.map((cell, cellIdx) => (
+                  <td key={cellIdx} className="p-2.5 border border-slate-700 max-w-[150px] truncate" title={cell}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="h-[100dvh] w-full bg-slate-50 flex flex-col text-slate-800 overflow-hidden">
@@ -661,9 +737,32 @@ export default function PublicSharePage() {
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && (objectUrl || textContent !== null) && (
+        {!isPreviewLoading && !previewError && (objectUrl || textContent !== null || isOffice || isGoogleDrive) && (
           <div className="w-full h-full flex items-center justify-center overflow-auto">
-            {category === 'image' && objectUrl && (
+            {isGoogleDrive && (
+              <iframe 
+                src={`https://drive.google.com/file/d/${fileInfo.id}/preview`}
+                title={fileInfo.originalFileName}
+                className="w-full h-[75vh] rounded-2xl border border-slate-200 bg-white shadow-xl"
+                allow="autoplay"
+              />
+            )}
+
+            {!isGoogleDrive && isOffice && (
+              <iframe 
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                  getPublicPreviewUrl(activeShareToken, activeProvider, fileInfo.id)
+                )}`}
+                title={fileInfo.originalFileName}
+                className="w-full h-[75vh] rounded-2xl border border-slate-200 bg-white shadow-xl"
+              />
+            )}
+
+            {!isGoogleDrive && !isOffice && isCsv && textContent !== null && (
+              renderCsvTable(textContent)
+            )}
+
+            {!isGoogleDrive && !isOffice && !isCsv && category === 'image' && objectUrl && (
               <img 
                 src={objectUrl} 
                 alt={fileInfo.originalFileName} 
@@ -672,7 +771,7 @@ export default function PublicSharePage() {
               />
             )}
 
-            {category === 'pdf' && objectUrl && (
+            {!isGoogleDrive && !isOffice && !isCsv && category === 'pdf' && objectUrl && (
               isMobile ? (
                 <div className="w-full max-w-md p-8 bg-white border border-slate-200 rounded-3xl text-center shadow-2xl mx-4">
                   <div className="mb-6 flex justify-center">
@@ -699,7 +798,7 @@ export default function PublicSharePage() {
               )
             )}
 
-            {category === 'video' && objectUrl && (
+            {!isGoogleDrive && !isOffice && !isCsv && category === 'video' && objectUrl && (
               <video 
                 src={objectUrl} 
                 controls 
@@ -708,7 +807,7 @@ export default function PublicSharePage() {
               />
             )}
 
-            {category === 'audio' && objectUrl && (
+            {!isGoogleDrive && !isOffice && !isCsv && category === 'audio' && objectUrl && (
               <div className="w-full max-w-md text-center p-8 bg-white border border-slate-200 rounded-3xl shadow-2xl mx-4">
                 <div className="mb-6 flex justify-center">
                   <div className="w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
@@ -728,7 +827,7 @@ export default function PublicSharePage() {
               </div>
             )}
 
-            {category === 'text' && textContent !== null && (
+            {!isGoogleDrive && !isOffice && !isCsv && category === 'text' && textContent !== null && (
               <div className="w-full max-w-4xl h-[75vh] p-6 bg-slate-900 border border-slate-800 rounded-3xl overflow-auto text-left font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-text text-slate-100 shadow-2xl">
                 {textContent}
               </div>
@@ -736,14 +835,14 @@ export default function PublicSharePage() {
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category !== 'other' && (
+        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category !== 'other' && !isOffice && !isGoogleDrive && (
           <div className="text-center text-slate-450 space-y-2 animate-fadeIn">
             <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
             <p className="text-[10px] font-bold uppercase tracking-wider">Menginisialisasi pratinjau...</p>
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category === 'other' && (
+        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category === 'other' && !isGoogleDrive && (
           <div className="w-full max-w-md p-8 bg-white border border-slate-250 rounded-3xl text-center shadow-2xl mx-4 animate-fadeIn">
             <div className="w-24 h-24 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               {getFileIcon(category)}

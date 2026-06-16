@@ -3,13 +3,15 @@ export function getFileExtension(filename: string): string {
   return filename.split('.').pop()?.toLowerCase() || '';
 }
 
-export function getFileCategory(filename: string): 'image' | 'pdf' | 'video' | 'audio' | 'text' | 'spreadsheet' | 'other' {
+export function getFileCategory(filename: string): 'image' | 'pdf' | 'video' | 'audio' | 'text' | 'spreadsheet' | 'document' | 'presentation' | 'other' {
   const ext = getFileExtension(filename);
   if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
   if (['pdf'].includes(ext)) return 'pdf';
   if (['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov'].includes(ext)) return 'video';
   if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
   if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return 'spreadsheet';
+  if (['doc', 'docx', 'rtf', 'odt'].includes(ext)) return 'document';
+  if (['ppt', 'pptx', 'odp'].includes(ext)) return 'presentation';
   if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
   return 'other';
 }
@@ -19,6 +21,7 @@ export function isPdfFile(filename: string): boolean {
 }
 
 export function formatSize(bytes: number): string {
+  if (bytes === -1 || bytes === undefined || bytes === null) return '∞';
   if (bytes === 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];

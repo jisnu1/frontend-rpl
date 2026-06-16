@@ -290,7 +290,7 @@ export default function SharedFoldersByMeTable({ searchQuery }: SharedFoldersByM
           title={`Kelola Tautan: ${editingFolder.folderName}`}
           icon={Globe}
         >
-          <form onSubmit={handleSaveSettings} className="space-y-4">
+          <form onSubmit={handleSaveSettings} className="space-y-4" noValidate>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 Hak Akses Folder

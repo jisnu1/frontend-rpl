@@ -68,7 +68,7 @@ export default function ReportButton() {
               <p className="text-xs text-slate-500">Thank you for helping us improve Horizon.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-500">What went wrong?</label>
                 <textarea

@@ -161,7 +161,7 @@ export default function ShareModal({ isOpen, onClose, fileId, fileName, provider
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Tab Selector */}
             <div className="flex bg-slate-100/80 p-1 rounded-xl border border-slate-200/50">
               <button

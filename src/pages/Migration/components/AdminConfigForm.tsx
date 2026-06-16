@@ -57,7 +57,7 @@ export default function AdminConfigForm({
               <Sliders className="w-5 h-5 text-primary" />
               <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Migration Config</h4>
             </div>
-            <form onSubmit={handleUpdateConfig} className="space-y-3.5">
+            <form onSubmit={handleUpdateConfig} className="space-y-3.5" noValidate>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
@@ -132,7 +132,7 @@ export default function AdminConfigForm({
             </div>
             <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Config</h4>
           </div>
-          <form onSubmit={handleUpdateConfig} className="space-y-3">
+          <form onSubmit={handleUpdateConfig} className="space-y-3" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>

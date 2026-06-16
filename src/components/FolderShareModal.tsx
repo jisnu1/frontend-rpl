@@ -160,7 +160,7 @@ export default function FolderShareModal({
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
               <p className="text-xs text-slate-500 font-semibold mb-3 leading-relaxed">
                 Buat tautan kolaborasi publik untuk folder <strong className="text-slate-800 font-bold">"{folderName}"</strong>.

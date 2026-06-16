@@ -62,7 +62,7 @@ export default function BugReportSection({
           </Button>
         </div>
       ) : (
-        <form onSubmit={handleReportSubmit} className="space-y-5">
+        <form onSubmit={handleReportSubmit} className="space-y-5" noValidate>
           {reportLockoutTime > 0 && (
             <div className="p-4 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200/50 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse"></span>

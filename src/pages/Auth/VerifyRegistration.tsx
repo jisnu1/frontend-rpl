@@ -205,7 +205,7 @@ export default function VerifyRegistration() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <Input
               label="Alamat Email (Tidak Dapat Diubah)"
               type="email"

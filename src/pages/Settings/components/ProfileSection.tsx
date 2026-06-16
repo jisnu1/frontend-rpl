@@ -96,7 +96,7 @@ export default function ProfileSection({
           </div>
         </div>
 
-        <form onSubmit={handleSaveProfile} className="space-y-6">
+        <form onSubmit={handleSaveProfile} className="space-y-6" noValidate>
           {/* Avatar Preset Custom Editor */}
           <div className="space-y-3">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">

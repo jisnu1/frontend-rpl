@@ -27,7 +27,7 @@ export default function FolderCreationModal({
       title="Buat Folder Baru"
       icon={FolderPlus}
     >
-      <form onSubmit={onSubmit} className="space-y-4 animate-fadeIn">
+      <form onSubmit={onSubmit} className="space-y-4 animate-fadeIn" noValidate>
         <div>
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
             Nama Folder

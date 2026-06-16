@@ -83,16 +83,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   const [batchTasks, setBatchTasks] = useState<MigrationTaskDto[]>([]);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
 
-  // Screen size detection for responsive conditional rendering
-  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Load initial data
   const loadInitialData = async () => {
@@ -582,43 +573,163 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
 
   return (
     <>
-      {isLargeScreen ? (
-        /* ============================================================
-            DESKTOP LAYOUT
-            ============================================================ */
-        <div className="hidden lg:flex p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex-col relative animate-fadeIn">
+      {/* ============================================================
+          DESKTOP LAYOUT (hidden on mobile, flex on desktop)
+          ============================================================ */}
+      <div className="hidden lg:flex p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex-col relative animate-fadeIn">
 
-          <MigrationBanner 
-            config={config} 
-            formatSize={formatSize} 
-            isDailyLimitReached={isDailyLimitReached} 
-            isLargeScreen={isLargeScreen} 
-          />
+        <MigrationBanner 
+          config={config} 
+          formatSize={formatSize} 
+          isDailyLimitReached={isDailyLimitReached} 
+          isLargeScreen={true} 
+        />
 
-          <MigrationTabs 
-            tabs={tabs} 
-            activeTab={activeTab} 
-            onTabChange={handleTabChange} 
-            isLargeScreen={isLargeScreen} 
-          />
+        <MigrationTabs 
+          tabs={tabs} 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange} 
+          isLargeScreen={true} 
+        />
 
-          <div className="flex flex-row gap-4 justify-between items-center w-full">
-            <div className="relative max-w-md w-full group">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                <Search className="w-4 h-4" />
-              </span>
-              <input
-                className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
-                placeholder={`Cari berkas di ${currentTabConfig?.name}...`}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+        <div className="flex flex-row gap-4 justify-between items-center w-full">
+          <div className="relative max-w-md w-full group">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+              <Search className="w-4 h-4" />
+            </span>
+            <input
+              className="w-full bg-[#F1F5F9] border-none rounded-full py-2 pl-12 pr-4 text-xs font-semibold focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none"
+              placeholder={`Cari berkas di ${currentTabConfig?.name}...`}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
+        </div>
 
+        {folderPath.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-slate-50 p-3 rounded-2xl border border-slate-100/80 w-fit">
+            <button 
+              type="button" 
+              onClick={() => {
+                setCurrentFolderId(undefined);
+                setFolderPath([]);
+              }}
+              className="hover:text-primary transition-colors cursor-pointer"
+            >
+              Root
+            </button>
+            {folderPath.map((p, idx) => (
+              <React.Fragment key={p.id}>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                <button
+                  type="button"
+                  disabled={idx === folderPath.length - 1}
+                  onClick={() => {
+                    const newPath = folderPath.slice(0, idx + 1);
+                    setFolderPath(newPath);
+                    setCurrentFolderId(p.id);
+                  }}
+                  className={`hover:text-primary transition-colors max-w-[200px] truncate cursor-pointer ${idx === folderPath.length - 1 ? 'text-slate-700 font-extrabold cursor-default' : ''}`}
+                >
+                  {p.name}
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+
+        <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
+          <MigrationFileList 
+            isLoading={isLoading}
+            isLargeScreen={true}
+            filteredTabFolders={filteredTabFolders}
+            filteredTabFiles={filteredTabFiles}
+            selectedFolders={selectedFolders}
+            selectedFiles={selectedFiles}
+            config={config}
+            currentTabConfig={currentTabConfig}
+            handleToggleSelectAll={handleToggleSelectAll}
+            handleToggleFolder={handleToggleFolder}
+            handleToggleFile={handleToggleFile}
+            handleFolderDoubleClick={handleFolderDoubleClick}
+            formatSize={formatSize}
+          />
+        </div>
+
+        <AdminConfigForm 
+          isAdmin={isAdmin}
+          isDailyLimitReached={isDailyLimitReached}
+          adminMaxMb={adminMaxMb}
+          setAdminMaxMb={setAdminMaxMb}
+          adminDailyLimit={adminDailyLimit}
+          setAdminDailyLimit={setAdminDailyLimit}
+          isUpdatingConfig={isUpdatingConfig}
+          handleUpdateConfig={handleUpdateConfig}
+          isLargeScreen={true}
+        />
+
+      </div>
+
+      {/* ============================================================
+          MOBILE LAYOUT (block on mobile, hidden on desktop)
+          ============================================================ */}
+      <div className="lg:hidden flex flex-col min-h-screen bg-slate-50 pb-32 w-full overflow-x-hidden animate-fadeIn">
+
+        <MigrationBanner 
+          config={config} 
+          formatSize={formatSize} 
+          isDailyLimitReached={isDailyLimitReached} 
+          isLargeScreen={false} 
+        />
+
+        <MigrationTabs 
+          tabs={tabs} 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange} 
+          isLargeScreen={false} 
+        />
+
+        <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3 w-full overflow-x-hidden">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              className="w-full bg-slate-55 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary focus:bg-white focus:border-primary transition-all outline-none"
+              placeholder="Cari berkas..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {(filteredTabFiles.length > 0 || filteredTabFolders.length > 0) && (
+            <button
+              onClick={handleToggleSelectAll}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-2xl font-bold text-xs transition-all border cursor-pointer ${
+                ((filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])) &&
+                 (filteredTabFolders.length === 0 || filteredTabFolders.every(folder => selectedFolders[folder.id])))
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  (filteredTabFiles.length > 0 || filteredTabFolders.length > 0) &&
+                  filteredTabFiles.every(f => selectedFiles[f.id]) &&
+                  filteredTabFolders.every(folder => selectedFolders[folder.id])
+                }
+                onChange={handleToggleSelectAll}
+                onClick={e => e.stopPropagation()}
+                className="w-3.5 h-3.5 accent-white cursor-pointer"
+              />
+              <span>Semua</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1 px-4 py-3 space-y-3">
           {folderPath.length > 0 && (
-            <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-slate-50 p-3 rounded-2xl border border-slate-100/80 w-fit">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold bg-slate-50 p-2 rounded-xl border border-slate-100/80 mb-2">
               <button 
                 type="button" 
                 onClick={() => {
@@ -631,7 +742,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
               </button>
               {folderPath.map((p, idx) => (
                 <React.Fragment key={p.id}>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                  <ChevronRight className="w-3 h-3 text-slate-300" />
                   <button
                     type="button"
                     disabled={idx === folderPath.length - 1}
@@ -640,7 +751,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                       setFolderPath(newPath);
                       setCurrentFolderId(p.id);
                     }}
-                    className={`hover:text-primary transition-colors max-w-[200px] truncate cursor-pointer ${idx === folderPath.length - 1 ? 'text-slate-700 font-extrabold cursor-default' : ''}`}
+                    className={`hover:text-primary transition-colors max-w-[120px] truncate cursor-pointer ${idx === folderPath.length - 1 ? 'text-slate-600 font-extrabold cursor-default' : ''}`}
                   >
                     {p.name}
                   </button>
@@ -649,157 +760,35 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
             </div>
           )}
 
-          <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
-            <MigrationFileList 
-              isLoading={isLoading}
-              isLargeScreen={isLargeScreen}
-              filteredTabFolders={filteredTabFolders}
-              filteredTabFiles={filteredTabFiles}
-              selectedFolders={selectedFolders}
-              selectedFiles={selectedFiles}
-              config={config}
-              currentTabConfig={currentTabConfig}
-              handleToggleSelectAll={handleToggleSelectAll}
-              handleToggleFolder={handleToggleFolder}
-              handleToggleFile={handleToggleFile}
-              handleFolderDoubleClick={handleFolderDoubleClick}
-              formatSize={formatSize}
-            />
-          </div>
-
-          <AdminConfigForm 
-            isAdmin={isAdmin}
-            isDailyLimitReached={isDailyLimitReached}
-            adminMaxMb={adminMaxMb}
-            setAdminMaxMb={setAdminMaxMb}
-            adminDailyLimit={adminDailyLimit}
-            setAdminDailyLimit={setAdminDailyLimit}
-            isUpdatingConfig={isUpdatingConfig}
-            handleUpdateConfig={handleUpdateConfig}
-            isLargeScreen={isLargeScreen}
-          />
-
-        </div>
-      ) : (
-        /* ============================================================
-            MOBILE LAYOUT
-            ============================================================ */
-        <div className="lg:hidden flex flex-col min-h-screen bg-slate-50 pb-32 w-full overflow-x-hidden animate-fadeIn">
-
-          <MigrationBanner 
-            config={config} 
-            formatSize={formatSize} 
-            isDailyLimitReached={isDailyLimitReached} 
-            isLargeScreen={isLargeScreen} 
-          />
-
-          <MigrationTabs 
-            tabs={tabs} 
-            activeTab={activeTab} 
-            onTabChange={handleTabChange} 
-            isLargeScreen={isLargeScreen} 
-          />
-
-          <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3 w-full overflow-x-hidden">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                className="w-full bg-slate-55 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary focus:bg-white focus:border-primary transition-all outline-none"
-                placeholder="Cari berkas..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            {(filteredTabFiles.length > 0 || filteredTabFolders.length > 0) && (
-              <button
-                onClick={handleToggleSelectAll}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-2xl font-bold text-xs transition-all border cursor-pointer ${
-                  ((filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])) &&
-                   (filteredTabFolders.length === 0 || filteredTabFolders.every(folder => selectedFolders[folder.id])))
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    (filteredTabFiles.length > 0 || filteredTabFolders.length > 0) &&
-                    filteredTabFiles.every(f => selectedFiles[f.id]) &&
-                    filteredTabFolders.every(folder => selectedFolders[folder.id])
-                  }
-                  onChange={handleToggleSelectAll}
-                  onClick={e => e.stopPropagation()}
-                  className="w-3.5 h-3.5 accent-white cursor-pointer"
-                />
-                <span>Semua</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex-1 px-4 py-3 space-y-3">
-            {folderPath.length > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold bg-slate-50 p-2 rounded-xl border border-slate-100/80 mb-2">
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setCurrentFolderId(undefined);
-                    setFolderPath([]);
-                  }}
-                  className="hover:text-primary transition-colors cursor-pointer"
-                >
-                  Root
-                </button>
-                {folderPath.map((p, idx) => (
-                  <React.Fragment key={p.id}>
-                    <ChevronRight className="w-3 h-3 text-slate-300" />
-                    <button
-                      type="button"
-                      disabled={idx === folderPath.length - 1}
-                      onClick={() => {
-                        const newPath = folderPath.slice(0, idx + 1);
-                        setFolderPath(newPath);
-                        setCurrentFolderId(p.id);
-                      }}
-                      className={`hover:text-primary transition-colors max-w-[120px] truncate cursor-pointer ${idx === folderPath.length - 1 ? 'text-slate-600 font-extrabold cursor-default' : ''}`}
-                    >
-                      {p.name}
-                    </button>
-                  </React.Fragment>
-                ))}
-              </div>
-            )}
-
-            <MigrationFileList 
-              isLoading={isLoading}
-              isLargeScreen={isLargeScreen}
-              filteredTabFolders={filteredTabFolders}
-              filteredTabFiles={filteredTabFiles}
-              selectedFolders={selectedFolders}
-              selectedFiles={selectedFiles}
-              config={config}
-              currentTabConfig={currentTabConfig}
-              handleToggleSelectAll={handleToggleSelectAll}
-              handleToggleFolder={handleToggleFolder}
-              handleToggleFile={handleToggleFile}
-              handleFolderDoubleClick={handleFolderDoubleClick}
-              formatSize={formatSize}
-            />
-          </div>
-
-          <AdminConfigForm 
-            isAdmin={isAdmin}
-            isDailyLimitReached={isDailyLimitReached}
-            adminMaxMb={adminMaxMb}
-            setAdminMaxMb={setAdminMaxMb}
-            adminDailyLimit={adminDailyLimit}
-            setAdminDailyLimit={setAdminDailyLimit}
-            isUpdatingConfig={isUpdatingConfig}
-            handleUpdateConfig={handleUpdateConfig}
-            isLargeScreen={isLargeScreen}
+          <MigrationFileList 
+            isLoading={isLoading}
+            isLargeScreen={false}
+            filteredTabFolders={filteredTabFolders}
+            filteredTabFiles={filteredTabFiles}
+            selectedFolders={selectedFolders}
+            selectedFiles={selectedFiles}
+            config={config}
+            currentTabConfig={currentTabConfig}
+            handleToggleSelectAll={handleToggleSelectAll}
+            handleToggleFolder={handleToggleFolder}
+            handleToggleFile={handleToggleFile}
+            handleFolderDoubleClick={handleFolderDoubleClick}
+            formatSize={formatSize}
           />
         </div>
-      )}
+
+        <AdminConfigForm 
+          isAdmin={isAdmin}
+          isDailyLimitReached={isDailyLimitReached}
+          adminMaxMb={adminMaxMb}
+          setAdminMaxMb={setAdminMaxMb}
+          adminDailyLimit={adminDailyLimit}
+          setAdminDailyLimit={setAdminDailyLimit}
+          isUpdatingConfig={isUpdatingConfig}
+          handleUpdateConfig={handleUpdateConfig}
+          isLargeScreen={false}
+        />
+      </div>
 
       {/* Floating Bottom Action Bar */}
       <MigrationFloatingActionBar 
@@ -808,7 +797,6 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         hasTooLargeFiles={hasTooLargeFiles}
         isDailyLimitReached={isDailyLimitReached}
         isSidebarMinimized={isSidebarMinimized}
-        isLargeScreen={isLargeScreen}
         onClearSelection={handleClearSelection}
         onMigrateClick={() => setIsModalOpen(true)}
         formatSize={formatSize}

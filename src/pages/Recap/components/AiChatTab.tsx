@@ -163,7 +163,7 @@ export default function AiChatTab({ messages = [], isTyping = false, onSendQuest
 
       {/* Input Chat Panel Footer */}
       <div className="p-4 border-t border-slate-100 bg-white">
-        <form onSubmit={handleFormSubmit} className="relative flex items-center">
+        <form onSubmit={handleFormSubmit} className="relative flex items-center" noValidate>
           <input
             type="text"
             value={inputValue}

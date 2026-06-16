@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   X, Download, HardDrive, FileText, Image as ImageIcon,
-  Film, Music, Calendar, ShieldCheck, AlertTriangle
+  Film, Music, Calendar, ShieldCheck, AlertTriangle, Sparkles
 } from 'lucide-react';
 import apiClient from '../api/apiClient';
 import { getPreviewUrl } from '../api/files';
 import { useActivity } from '../context/ActivityContext';
 import { getPublicPreviewUrl, getPublicDownloadUrl } from '../api/shared';
-import { getFileCategory, formatSize, isMobileDevice } from '../utils/fileHelpers';
+import { getFileCategory, formatSize, isMobileDevice, getFileExtension } from '../utils/fileHelpers';
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -38,9 +38,24 @@ export default function FilePreviewModal({
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);  useEffect(() => {
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
     if (!isOpen || !fileId || !provider) {
       setObjectUrl(null);
+      setError(null);
+      setTextContent(null);
+      return;
+    }
+
+    const nameStr = fileName || 'Berkas';
+    const ext = getFileExtension(nameStr);
+    const isGoogleDrive = provider.toUpperCase() === 'GOOGLE_DRIVE';
+    const isOffice = ['xls', 'xlsx', 'ods', 'doc', 'docx', 'ppt', 'pptx', 'odp'].includes(ext);
+
+    // Skip fetching blob for Google Drive files or Office files (rendered via iframe or card)
+    if (isGoogleDrive || isOffice) {
+      setIsLoading(false);
       setError(null);
       setTextContent(null);
       return;
@@ -61,8 +76,8 @@ export default function FilePreviewModal({
         });
         
         const blob = response.data;
-        const cat = getFileCategory(fileName || 'Berkas');
-        if (cat === 'text') {
+        const cat = getFileCategory(nameStr);
+        if (cat === 'text' || (cat === 'spreadsheet' && ext === 'csv')) {
           const text = await blob.text();
           setTextContent(text);
         } else {
@@ -86,7 +101,8 @@ export default function FilePreviewModal({
         URL.revokeObjectURL(activeUrl);
       }
     };
-  }, [isOpen, fileId, provider, fileName]);
+  }, [isOpen, fileId, provider, fileName, shareToken, externalAccountId]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -103,11 +119,15 @@ export default function FilePreviewModal({
   const name = fileName || 'Berkas';
   const size = fileSize || 0;
   const pvd = provider || 'local';
+  const ext = getFileExtension(name);
+  const isGoogleDrive = pvd.toUpperCase() === 'GOOGLE_DRIVE';
+  const isOffice = ['xls', 'xlsx', 'ods', 'doc', 'docx', 'ppt', 'pptx', 'odp'].includes(ext);
+  const isCsv = ext === 'csv';
+  const category = getFileCategory(name);
+  const isMobile = isMobileDevice();
 
-
-
-  const getFileIcon = (category: string) => {
-    switch (category) {
+  const getFileIcon = (cat: string) => {
+    switch (cat) {
       case 'image':
         return <ImageIcon className="w-16 h-16 text-blue-500/80" />;
       case 'pdf':
@@ -118,13 +138,70 @@ export default function FilePreviewModal({
         return <Music className="w-16 h-16 text-emerald-500/80" />;
       case 'text':
         return <FileText className="w-16 h-16 text-cyan-500/80" />;
+      case 'spreadsheet':
+        return <FileText className="w-16 h-16 text-emerald-500/80" />;
+      case 'document':
+        return <FileText className="w-16 h-16 text-blue-600/80" />;
+      case 'presentation':
+        return <FileText className="w-16 h-16 text-orange-500/80" />;
       default:
         return <FileText className="w-16 h-16 text-slate-500/80" />;
     }
   };
 
-  const category = getFileCategory(name);
-  const isMobile = isMobileDevice();
+  const renderCsvTable = (csvText: string) => {
+    const parseCSV = (text: string) => {
+      const lines = text.split(/\r?\n/);
+      return lines
+        .map(line => {
+          const row: string[] = [];
+          let insideQuote = false;
+          let currentCell = '';
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              insideQuote = !insideQuote;
+            } else if (char === ',' && !insideQuote) {
+              row.push(currentCell.replace(/^"|"$/g, '').trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          row.push(currentCell.replace(/^"|"$/g, '').trim());
+          return row;
+        })
+        .filter(row => row.length > 0 && row.some(cell => cell !== ''));
+    };
+
+    const csvRows = parseCSV(csvText);
+    if (csvRows.length === 0) {
+      return <div className="text-slate-400 text-xs py-8 text-center font-bold">Berkas CSV kosong.</div>;
+    }
+
+    return (
+      <div className="w-full h-[320px] md:h-[430px] overflow-auto bg-slate-900 border border-slate-800 rounded-xl p-4 text-left select-text scrollbar-thin">
+        <table className="w-full text-left border-collapse text-[10px] font-mono">
+          <thead>
+            <tr className="bg-slate-800 border-b border-slate-700 text-slate-300">
+              {csvRows[0].map((cell, idx) => (
+                <th key={idx} className="p-2 font-bold border border-slate-700 bg-slate-800/90 sticky top-0">{cell}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800 text-slate-350">
+            {csvRows.slice(1).map((row, rowIdx) => (
+              <tr key={rowIdx} className="hover:bg-slate-800/40">
+                {row.map((cell, cellIdx) => (
+                  <td key={cellIdx} className="p-2 border border-slate-700 max-w-[150px] truncate" title={cell}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-all duration-300 p-4">
@@ -154,9 +231,64 @@ export default function FilePreviewModal({
             </div>
           )}
 
-          {!isLoading && !error && (objectUrl || textContent !== null) && (
+          {!isLoading && !error && (
             <div className="w-full h-full flex items-center justify-center">
-              {category === 'image' && objectUrl && (
+              {/* Case 1: Google Drive File (Universal Viewer) */}
+              {isGoogleDrive && (
+                <iframe
+                  src={`https://drive.google.com/file/d/${fileId}/preview`}
+                  title={name}
+                  className="w-full h-[350px] md:h-[430px] rounded-xl border border-white/10 bg-white"
+                  allow="autoplay"
+                />
+              )}
+
+              {/* Case 2: Public Office File (Excel, Word, PowerPoint via MS Office Viewer) */}
+              {!isGoogleDrive && isOffice && shareToken && (
+                <iframe
+                  src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                    getPublicPreviewUrl(shareToken, pvd, fileId || undefined)
+                  )}`}
+                  title={name}
+                  className="w-full h-[350px] md:h-[430px] rounded-xl border border-white/10 bg-white"
+                />
+              )}
+
+              {/* Case 3: Private Office File (Show Premium Info Card) */}
+              {!isGoogleDrive && isOffice && !shareToken && (
+                <div className="text-center p-6 md:p-8 bg-white/5 border border-white/10 rounded-2xl max-w-sm space-y-4">
+                  <div className="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto text-indigo-400">
+                    <FileText className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-200">Pratinjau Office Terbatas</h4>
+                    <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                      Dokumen Microsoft Office ({ext.toUpperCase()}) yang bersifat privat tidak dapat di-preview secara online demi keamanan data.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => {
+                        if (fileId && provider) {
+                          downloadFile(fileId, name, provider, size, externalAccountId);
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center font-bold rounded-xl bg-primary text-white text-xs py-2.5 px-4 gap-2 cursor-pointer transition-all active:scale-[0.97]"
+                    >
+                      <Download className="w-4 h-4" />
+                      Unduh Berkas untuk Membaca
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Case 4: CSV File */}
+              {!isGoogleDrive && isCsv && textContent !== null && (
+                renderCsvTable(textContent)
+              )}
+
+              {/* Case 5: Standard Image Preview */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'image' && objectUrl && (
                 <img
                   src={objectUrl}
                   alt={name}
@@ -165,7 +297,8 @@ export default function FilePreviewModal({
                 />
               )}
 
-              {category === 'pdf' && objectUrl && (
+              {/* Case 6: Standard PDF Preview */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'pdf' && objectUrl && (
                 isMobile ? (
                   <div className="w-full max-w-sm text-center p-6 bg-white/5 border border-white/10 rounded-2xl">
                     <div className="mb-4 flex justify-center">
@@ -174,7 +307,7 @@ export default function FilePreviewModal({
                     <p className="text-xs font-semibold text-slate-300 mb-4">Pratinjau PDF tidak didukung di browser seluler.</p>
                     <button
                       onClick={() => window.open(objectUrl || '', '_blank')}
-                      className="w-full inline-flex items-center justify-center font-bold rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs py-2.5 px-4 gap-2"
+                      className="w-full inline-flex items-center justify-center font-bold rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs py-2.5 px-4 gap-2 cursor-pointer transition-all active:scale-[0.97]"
                     >
                       Buka PDF di Tab Baru
                     </button>
@@ -188,7 +321,8 @@ export default function FilePreviewModal({
                 )
               )}
 
-              {category === 'video' && objectUrl && (
+              {/* Case 7: Video Preview */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'video' && objectUrl && (
                 <video
                   src={objectUrl}
                   controls
@@ -197,7 +331,8 @@ export default function FilePreviewModal({
                 />
               )}
 
-              {category === 'audio' && objectUrl && (
+              {/* Case 8: Audio Preview */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'audio' && objectUrl && (
                 <div className="w-full max-w-md text-center p-8 bg-white/5 border border-white/10 rounded-2xl">
                   <div className="mb-4 flex justify-center">
                     <Music className="w-14 h-14 text-emerald-400 animate-pulse" />
@@ -211,13 +346,15 @@ export default function FilePreviewModal({
                 </div>
               )}
 
-              {category === 'text' && textContent !== null && (
+              {/* Case 9: Plain Text Preview */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'text' && textContent !== null && (
                 <div className="w-full h-[320px] md:h-[430px] bg-slate-900 text-slate-100 p-4 rounded-xl border border-white/10 overflow-auto font-mono text-[11px] text-left whitespace-pre-wrap leading-relaxed select-text">
                   {textContent}
                 </div>
               )}
 
-              {category === 'other' && (
+              {/* Case 10: Other (Unsupported type) */}
+              {!isGoogleDrive && !isOffice && !isCsv && category === 'other' && (
                 <div className="text-center space-y-4">
                   <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
                     {getFileIcon(category)}
@@ -228,7 +365,7 @@ export default function FilePreviewModal({
             </div>
           )}
 
-          {!isLoading && !error && !objectUrl && textContent === null && (
+          {!isLoading && !error && !objectUrl && textContent === null && !isGoogleDrive && !isOffice && (
             <div className="text-center text-slate-400 space-y-2">
               {getFileIcon(category)}
               <p className="text-xs font-semibold">Menginisialisasi pratinjau...</p>
@@ -254,7 +391,7 @@ export default function FilePreviewModal({
 
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-650 transition-colors p-1.5 rounded-full hover:bg-slate-50 border border-slate-100 shrink-0"
+                className="text-slate-400 hover:text-slate-650 transition-colors p-1.5 rounded-full hover:bg-slate-50 border border-slate-100 shrink-0 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -342,14 +479,14 @@ export default function FilePreviewModal({
                   }
                 }
               }}
-              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-primary text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-primary/20 text-xs py-3 px-6 gap-2"
+              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-primary text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-primary/20 text-xs py-3 px-6 gap-2 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               Unduh Berkas
             </button>
             <button
               onClick={onClose}
-              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs py-2 px-6"
+              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs py-2 px-6 cursor-pointer"
             >
               Tutup
             </button>

@@ -204,7 +204,7 @@ export default function ForgotPassword() {
           )}
 
           {step === 1 ? (
-            <form onSubmit={handleRequestOtp} className="space-y-4">
+            <form onSubmit={handleRequestOtp} className="space-y-4" noValidate>
               <Input
                 label="Alamat Email"
                 type="email"
@@ -225,7 +225,7 @@ export default function ForgotPassword() {
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-4">
+            <form onSubmit={handleResetPassword} className="space-y-4" noValidate>
               <Input
                 label="Alamat Email (Tidak Dapat Diubah)"
                 type="email"

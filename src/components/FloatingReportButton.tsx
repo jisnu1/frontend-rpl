@@ -108,7 +108,7 @@ export default function FloatingReportButton() {
             </div>
           ) : (
             /* Form State */
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {/* Description Textarea */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">

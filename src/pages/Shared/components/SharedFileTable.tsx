@@ -635,7 +635,7 @@ export default function SharedFileTable({
           title={`Kelola Masa Aktif Berkas`}
           icon={Clock}
         >
-          <form onSubmit={handleSaveFileSettings} className="space-y-4">
+          <form onSubmit={handleSaveFileSettings} className="space-y-4" noValidate>
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Berkas</p>
               <h4 className="text-sm font-bold text-slate-700 truncate mt-0.5">{editingFile.originalFileName}</h4>
