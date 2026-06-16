@@ -13,6 +13,7 @@ const getFileCategory = (fileName: string) => {
   if (['pdf'].includes(ext)) return 'pdf';
   if (['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov'].includes(ext)) return 'video';
   if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
+  if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
   return 'other';
 };
 
@@ -26,6 +27,8 @@ const getFileIcon = (category: string) => {
       return <Film className="w-16 h-16 text-indigo-400" />;
     case 'audio':
       return <Music className="w-16 h-16 text-emerald-400" />;
+    case 'text':
+      return <FileText className="w-16 h-16 text-cyan-400" />;
     default:
       return <File className="w-16 h-16 text-slate-400" />;
   }
@@ -39,8 +42,11 @@ export default function PublicSharePage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
   useEffect(() => {
     if (!shareToken) return;
@@ -80,6 +86,7 @@ export default function PublicSharePage() {
     if (!fileInfo || !shareToken) {
       setObjectUrl(null);
       setPreviewError(null);
+      setTextContent(null);
       return;
     }
 
@@ -93,6 +100,7 @@ export default function PublicSharePage() {
       try {
         setIsPreviewLoading(true);
         setPreviewError(null);
+        setTextContent(null);
         
         const activeProvider = provider || (fileInfo.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local');
         const previewUrl = getPublicPreviewUrl(shareToken, activeProvider);
@@ -102,9 +110,14 @@ export default function PublicSharePage() {
         });
         
         const blob = response.data;
-        const url = URL.createObjectURL(blob);
-        activeUrl = url;
-        setObjectUrl(url);
+        if (category === 'text') {
+          const text = await blob.text();
+          setTextContent(text);
+        } else {
+          const url = URL.createObjectURL(blob);
+          activeUrl = url;
+          setObjectUrl(url);
+        }
       } catch (err: any) {
         console.error('Failed to fetch public file for preview:', err);
         setPreviewError('Gagal memuat pratinjau berkas.');
@@ -219,33 +232,54 @@ export default function PublicSharePage() {
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && objectUrl && (
+        {!isPreviewLoading && !previewError && (objectUrl || textContent !== null) && (
           <div className="w-full h-full flex items-center justify-center overflow-auto">
-            {category === 'image' && (
+            {category === 'image' && objectUrl && (
               <img 
                 src={objectUrl} 
                 alt={fileInfo.originalFileName} 
+                onError={() => setPreviewError('Browser gagal memuat gambar ini. Kemungkinan format tidak didukung.')}
                 className="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/10 transition-transform duration-300 hover:scale-[1.01]" 
               />
             )}
 
-            {category === 'pdf' && (
-              <iframe 
-                src={objectUrl} 
-                title={fileInfo.originalFileName}
-                className="w-full h-full rounded-xl border border-white/10 bg-white"
-              />
+            {category === 'pdf' && objectUrl && (
+              isMobile ? (
+                <div className="w-full max-w-md p-8 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl text-center shadow-2xl mx-4">
+                  <div className="mb-6 flex justify-center">
+                    <FileText className="w-16 h-16 text-rose-500 animate-pulse" />
+                  </div>
+                  <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
+                    {fileInfo.originalFileName}
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-6">{formatFileSize(fileInfo.size)}</p>
+                  <p className="text-xs text-slate-350 mb-6 font-semibold">Pratinjau PDF tidak didukung di browser seluler.</p>
+                  <button 
+                    onClick={() => window.open(objectUrl || '', '_blank')}
+                    className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg active:scale-[0.98] bg-rose-650 hover:bg-rose-700 text-white text-sm py-3 px-6 gap-2.5"
+                  >
+                    Buka PDF di Tab Baru
+                  </button>
+                </div>
+              ) : (
+                <iframe 
+                  src={objectUrl} 
+                  title={fileInfo.originalFileName}
+                  className="w-full h-full rounded-xl border border-white/10 bg-white"
+                />
+              )
             )}
 
-            {category === 'video' && (
+            {category === 'video' && objectUrl && (
               <video 
                 src={objectUrl} 
                 controls 
+                onError={() => setPreviewError('Browser tidak dapat memutar video ini. Format/codec video ini kemungkinan tidak didukung oleh browser Anda.')}
                 className="max-w-full max-h-[80vh] rounded-xl shadow-2xl border border-white/10 bg-black"
               />
             )}
 
-            {category === 'audio' && (
+            {category === 'audio' && objectUrl && (
               <div className="w-full max-w-md text-center p-8 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl mx-4">
                 <div className="mb-6 flex justify-center">
                   <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
@@ -256,20 +290,31 @@ export default function PublicSharePage() {
                   {fileInfo.originalFileName}
                 </h3>
                 <p className="text-xs text-slate-400 mb-6">{formatFileSize(fileInfo.size)}</p>
-                <audio src={objectUrl} controls className="w-full" />
+                <audio 
+                  src={objectUrl} 
+                  controls 
+                  onError={() => setPreviewError('Browser tidak dapat memutar audio ini. Format audio tidak didukung.')}
+                  className="w-full" 
+                />
+              </div>
+            )}
+
+            {category === 'text' && textContent !== null && (
+              <div className="w-full max-w-4xl h-[80vh] p-6 backdrop-blur-md bg-slate-900 border border-white/10 rounded-3xl overflow-auto text-left font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-text text-slate-100">
+                {textContent}
               </div>
             )}
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && !objectUrl && category !== 'other' && (
+        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category !== 'other' && (
           <div className="text-center text-slate-400 space-y-2">
             <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
             <p className="text-xs font-semibold">Menginisialisasi pratinjau...</p>
           </div>
         )}
 
-        {!isPreviewLoading && !previewError && category === 'other' && (
+        {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category === 'other' && (
           <div className="w-full max-w-md p-8 backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl text-center shadow-2xl mx-4">
             <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               {getFileIcon(category)}

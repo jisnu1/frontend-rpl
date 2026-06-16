@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Download, HardDrive, FileText, Image as ImageIcon, 
+import {
+  X, Download, HardDrive, FileText, Image as ImageIcon,
   Film, Music, Calendar, ShieldCheck, AlertTriangle
 } from 'lucide-react';
 import apiClient from '../api/apiClient';
@@ -30,13 +30,13 @@ export default function FilePreviewModal({
 }: FilePreviewModalProps) {
   const { downloadFile } = useActivity();
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [error, setError] = useState<string | null>(null);  useEffect(() => {
     if (!isOpen || !fileId || !provider) {
       setObjectUrl(null);
       setError(null);
+      setTextContent(null);
       return;
     }
 
@@ -45,6 +45,7 @@ export default function FilePreviewModal({
       try {
         setIsLoading(true);
         setError(null);
+        setTextContent(null);
         
         const previewUrl = getPreviewUrl(fileId);
         const response = await apiClient.get(previewUrl, {
@@ -52,9 +53,15 @@ export default function FilePreviewModal({
         });
         
         const blob = response.data;
-        const url = URL.createObjectURL(blob);
-        activeUrl = url;
-        setObjectUrl(url);
+        const cat = getFileCategory(fileName || 'Berkas');
+        if (cat === 'text') {
+          const text = await blob.text();
+          setTextContent(text);
+        } else {
+          const url = URL.createObjectURL(blob);
+          activeUrl = url;
+          setObjectUrl(url);
+        }
       } catch (err: any) {
         console.error('Failed to fetch file for preview:', err);
         const errMsg = err.response?.data?.message || err.message || 'Gagal memuat pratinjau berkas.';
@@ -71,8 +78,7 @@ export default function FilePreviewModal({
         URL.revokeObjectURL(activeUrl);
       }
     };
-  }, [isOpen, fileId, provider]);
-
+  }, [isOpen, fileId, provider, fileName]);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -104,6 +110,7 @@ export default function FilePreviewModal({
     if (['pdf'].includes(ext)) return 'pdf';
     if (['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov'].includes(ext)) return 'video';
     if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
+    if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
     return 'other';
   };
 
@@ -117,12 +124,15 @@ export default function FilePreviewModal({
         return <Film className="w-16 h-16 text-indigo-500/80" />;
       case 'audio':
         return <Music className="w-16 h-16 text-emerald-500/80" />;
+      case 'text':
+        return <FileText className="w-16 h-16 text-cyan-500/80" />;
       default:
         return <FileText className="w-16 h-16 text-slate-500/80" />;
     }
   };
 
   const category = getFileCategory(name);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-all duration-300 p-4">
@@ -131,10 +141,10 @@ export default function FilePreviewModal({
 
       {/* Glassmorphic main modal container */}
       <div className="relative bg-white rounded-3xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row shadow-[0px_20px_50px_rgba(15,23,42,0.3)] border border-slate-100 z-10 animate-fadeIn max-h-[90vh]">
-        
+
         {/* Left Side: Preview Area */}
         <div className="md:w-3/5 bg-slate-950/95 flex items-center justify-center p-4 md:p-6 border-b border-slate-800 md:border-b-0 md:border-r border-slate-800 relative min-h-[220px] max-h-[45vh] md:max-h-none md:min-h-[480px]">
-          
+
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-slate-950/95 z-20">
               <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -152,38 +162,66 @@ export default function FilePreviewModal({
             </div>
           )}
 
-          {!isLoading && !error && objectUrl && (
+          {!isLoading && !error && (objectUrl || textContent !== null) && (
             <div className="w-full h-full flex items-center justify-center">
-              {category === 'image' && (
-                <img 
-                  src={objectUrl} 
-                  alt={name} 
-                  className="max-w-full max-h-[70vh] rounded-xl object-contain shadow-lg border border-white/5 transition-transform duration-300 hover:scale-[1.01]" 
+              {category === 'image' && objectUrl && (
+                <img
+                  src={objectUrl}
+                  alt={name}
+                  onError={() => setError('Browser gagal memuat gambar ini. Kemungkinan format tidak didukung.')}
+                  className="max-w-full max-h-[70vh] rounded-xl object-contain shadow-lg border border-white/5 transition-transform duration-300 hover:scale-[1.01]"
                 />
               )}
 
-              {category === 'pdf' && (
-                <iframe 
-                  src={objectUrl} 
-                  title={name}
-                  className="w-full h-[350px] md:h-[430px] rounded-xl border border-white/10 bg-white"
-                />
+              {category === 'pdf' && objectUrl && (
+                isMobile ? (
+                  <div className="w-full max-w-sm text-center p-6 bg-white/5 border border-white/10 rounded-2xl">
+                    <div className="mb-4 flex justify-center">
+                      <FileText className="w-12 h-12 text-rose-400 animate-pulse" />
+                    </div>
+                    <p className="text-xs font-semibold text-slate-300 mb-4">Pratinjau PDF tidak didukung di browser seluler.</p>
+                    <button
+                      onClick={() => window.open(objectUrl || '', '_blank')}
+                      className="w-full inline-flex items-center justify-center font-bold rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs py-2.5 px-4 gap-2"
+                    >
+                      Buka PDF di Tab Baru
+                    </button>
+                  </div>
+                ) : (
+                  <iframe
+                    src={objectUrl}
+                    title={name}
+                    className="w-full h-[350px] md:h-[430px] rounded-xl border border-white/10 bg-white"
+                  />
+                )
               )}
 
-              {category === 'video' && (
-                <video 
-                  src={objectUrl} 
-                  controls 
+              {category === 'video' && objectUrl && (
+                <video
+                  src={objectUrl}
+                  controls
+                  onError={() => setError('Browser tidak dapat memutar video ini. Format/codec video ini kemungkinan tidak didukung oleh browser Anda.')}
                   className="w-full max-h-[70vh] rounded-xl shadow-lg border border-white/5 bg-black"
                 />
               )}
 
-              {category === 'audio' && (
+              {category === 'audio' && objectUrl && (
                 <div className="w-full max-w-md text-center p-8 bg-white/5 border border-white/10 rounded-2xl">
                   <div className="mb-4 flex justify-center">
                     <Music className="w-14 h-14 text-emerald-400 animate-pulse" />
                   </div>
-                  <audio src={objectUrl} controls className="w-full" />
+                  <audio
+                    src={objectUrl}
+                    controls
+                    onError={() => setError('Browser tidak dapat memutar audio ini. Format audio tidak didukung.')}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {category === 'text' && textContent !== null && (
+                <div className="w-full h-[320px] md:h-[430px] bg-slate-900 text-slate-100 p-4 rounded-xl border border-white/10 overflow-auto font-mono text-[11px] text-left whitespace-pre-wrap leading-relaxed select-text">
+                  {textContent}
                 </div>
               )}
 
@@ -198,7 +236,7 @@ export default function FilePreviewModal({
             </div>
           )}
 
-          {!isLoading && !error && !objectUrl && (
+          {!isLoading && !error && !objectUrl && textContent === null && (
             <div className="text-center text-slate-400 space-y-2">
               {getFileIcon(category)}
               <p className="text-xs font-semibold">Menginisialisasi pratinjau...</p>
@@ -209,7 +247,7 @@ export default function FilePreviewModal({
         {/* Right Side: File Info & Download Section */}
         <div className="md:w-2/5 p-6 md:p-8 flex flex-col justify-between bg-white text-slate-800 overflow-y-auto max-h-[45vh] md:max-h-none shrink-0">
           <div className="space-y-6">
-            
+
             {/* Header / Title */}
             <div className="flex justify-between items-start gap-4">
               <div className="min-w-0 flex-1">
@@ -221,8 +259,8 @@ export default function FilePreviewModal({
                   Privat & Aman
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={onClose}
                 className="text-slate-400 hover:text-slate-650 transition-colors p-1.5 rounded-full hover:bg-slate-50 border border-slate-100 shrink-0"
               >
@@ -232,7 +270,7 @@ export default function FilePreviewModal({
 
             {/* Metadata Fields */}
             <div className="space-y-4 pt-4 border-t border-slate-100">
-              
+
               {/* Size */}
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center border border-slate-150/80 shrink-0">
@@ -251,11 +289,10 @@ export default function FilePreviewModal({
                 </div>
                 <div>
                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Penyedia Penyimpanan</div>
-                  <span className={`inline-flex mt-0.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ${
-                    pvd.toUpperCase() === 'GOOGLE_DRIVE' 
-                      ? 'bg-amber-50 border-amber-100 text-amber-600' 
+                  <span className={`inline-flex mt-0.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ${pvd.toUpperCase() === 'GOOGLE_DRIVE'
+                      ? 'bg-amber-50 border-amber-100 text-amber-600'
                       : 'bg-blue-50 border-blue-100 text-blue-600'
-                  }`}>
+                    }`}>
                     {pvd.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
                   </span>
                 </div>
@@ -302,7 +339,7 @@ export default function FilePreviewModal({
 
           {/* Action Button */}
           <div className="pt-6 border-t border-slate-100 mt-6 flex flex-col gap-2">
-            <button 
+            <button
               onClick={() => {
                 if (fileId && provider) {
                   downloadFile(fileId, name, provider, size);
@@ -313,7 +350,7 @@ export default function FilePreviewModal({
               <Download className="w-4 h-4" />
               Unduh Berkas
             </button>
-            <button 
+            <button
               onClick={onClose}
               className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs py-2 px-6"
             >
