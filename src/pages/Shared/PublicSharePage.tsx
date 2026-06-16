@@ -350,81 +350,32 @@ export default function PublicSharePage() {
 
   if (isError || !activeShareToken) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row text-slate-800 relative">
-        {/* Left Side: Branding / Visual (Visible as top section on mobile) */}
-        <div className="w-full md:w-1/2 min-h-[35vh] md:min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative flex flex-col justify-between p-8 md:p-16 border-b md:border-b-0 md:border-r border-slate-200 overflow-hidden select-none shrink-0 text-white">
-          {/* Glowing background circles for rich aesthetics */}
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-blue-500/10 filter blur-[80px] pointer-events-none animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/10 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Glowing background circles for rich aesthetics */}
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-blue-500/5 filter blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/5 filter blur-[100px] pointer-events-none" />
+        
+        {/* Error Details Card */}
+        <div className="max-w-md w-full relative z-10 animate-fadeIn space-y-6 text-center bg-white border border-slate-200/80 shadow-2xl p-8 rounded-[2rem]">
+          <div className="w-20 h-20 bg-rose-50 border border-rose-100 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+            <ShieldAlert className="w-10 h-10 text-rose-500 animate-pulse" />
+          </div>
           
-          {/* Logo Brand */}
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-2xl flex items-center justify-center shadow-lg shadow-[#2563eb]/25">
-              <HardDrive className="w-5.5 h-5.5 text-white" />
-            </div>
-            <span className="text-xl font-black tracking-wider uppercase">
-              Horizon Drive
-            </span>
+          <div className="space-y-2">
+            <h3 className="text-lg md:text-xl font-extrabold tracking-tight text-slate-800 leading-snug">
+              Tautan Berbagi Tidak Valid atau kadaluarsa
+            </h3>
           </div>
 
-          {/* Aesthetic Centerpiece Slogan */}
-          <div className="my-auto py-8 relative z-10">
-            <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-4 max-w-lg">
-              Solusi Cloud Personal <br/>
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
-                Penuh Estetika
-              </span>
-            </h2>
-            <p className="text-xs md:text-sm text-slate-300 max-w-sm font-medium leading-relaxed">
-              Platform penyimpanan mandiri modern yang menggabungkan performa kencang dengan desain visual bertema Horizon yang hidup dan responsif.
-            </p>
-          </div>
-
-          {/* Footer inside Left Panel (only shown on desktop) */}
-          <div className="hidden md:block text-[10px] font-bold text-slate-400 tracking-widest uppercase relative z-10">
-            Horizon Drive &copy; {new Date().getFullYear()}
-          </div>
-        </div>
-
-        {/* Right Side: Error Info */}
-        <div className="w-full md:w-1/2 flex-1 md:min-h-screen bg-slate-50 flex flex-col justify-between p-8 md:p-16 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 filter blur-[120px] pointer-events-none" />
-
-          {/* Spacer for centering on desktop */}
-          <div className="hidden md:block" />
-
-          {/* Error Details Card */}
-          <div className="max-w-md w-full mx-auto my-auto relative z-10 animate-fadeIn space-y-8 text-center md:text-left bg-white border border-slate-200/80 shadow-xl p-8 rounded-3xl">
-            <div className="w-20 h-20 bg-rose-50 border border-rose-100 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
-              <ShieldAlert className="w-10 h-10 text-rose-500 animate-bounce" />
-            </div>
-            
-            <div className="space-y-3">
-              <h3 className="text-2xl md:text-3xl font-black tracking-tight text-slate-800 leading-tight">
-                Tautan Berbagi <br/>
-                <span className="text-rose-600">Tidak Valid atau Kadaluarsa</span>
-              </h3>
-              <p className="text-sm text-slate-505 font-medium leading-relaxed">
-                {errorMessage || 'Tautan pembagian ini tidak dapat diakses kembali karena masa aktifnya telah habis, dibatalkan oleh pemilik, atau tautan tidak valid.'}
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3.5 pt-4">
-              <Button
-                onClick={() => navigate('/')}
-                variant="primary"
-                className="bg-primary text-white font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-              >
-                <Home className="w-4 h-4" />
-                <span>Kembali ke Beranda</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Footer inside Right Panel */}
-          <div className="text-center md:text-right text-[10px] font-bold text-slate-400 tracking-wider uppercase pt-8 md:pt-0">
-            <span className="md:hidden">Horizon Drive &copy; {new Date().getFullYear()} • </span>
-            <span>Aman & Terenkripsi</span>
+          <div className="flex justify-center pt-2">
+            <Button
+              onClick={() => navigate('/')}
+              variant="primary"
+              className="bg-primary text-white font-bold text-xs py-3 px-8 rounded-full shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Home className="w-4 h-4" />
+              <span>Kembali ke Beranda</span>
+            </Button>
           </div>
         </div>
       </div>
