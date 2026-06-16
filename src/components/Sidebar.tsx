@@ -231,8 +231,8 @@ export default function Sidebar({
               </div>
               
               {/* Storage Details Content List */}
-              <div className={`space-y-3 transition-all duration-300 overflow-hidden pr-1 ${
-                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[500px] opacity-100 mb-4'
+              <div className={`space-y-3 transition-all duration-300 overflow-y-auto custom-scrollbar pr-1 ${
+                isStorageCollapsed ? 'max-h-0 opacity-0 mb-0' : 'max-h-[220px] opacity-100 mb-4'
               }`}>
                 {/* Personal Storage */}
                 <div className="space-y-1">
