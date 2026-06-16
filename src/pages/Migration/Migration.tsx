@@ -93,22 +93,31 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
   // Load initial data
   const loadInitialData = async () => {
     setIsLoading(true);
+    
+    // 1. Load External Accounts
     try {
-      const [accounts, migrationConf, tasks] = await Promise.all([
-        fetchExternalAccounts(),
-        fetchMigrationConfig(),
-        fetchMigrationTasks()
-      ]);
-
+      const accounts = await fetchExternalAccounts();
       const googleAccs = accounts.filter(a => a.provider.toUpperCase().startsWith('GOOGLE'));
       setExternalAccounts(googleAccs);
-      setConfig(migrationConf);
+    } catch (err) {
+      console.error('Failed to load external accounts', err);
+      toastError('Gagal memuat akun Google Drive.');
+    }
 
-      // Initialize admin settings inputs
+    // 2. Load Migration Config
+    try {
+      const migrationConf = await fetchMigrationConfig();
+      setConfig(migrationConf);
       setAdminMaxMb((migrationConf.maxFileSizeBytes / 1024 / 1024).toString());
       setAdminDailyLimit(migrationConf.maxDailyLimit.toString());
+    } catch (err) {
+      console.error('Failed to load migration config', err);
+      toastError('Gagal memuat konfigurasi migrasi.');
+    }
 
-      // Restore active migration dashboard using localStorage first, or fall back to any active task in tasks list
+    // 3. Load Migration Tasks
+    try {
+      const tasks = await fetchMigrationTasks();
       const storedBatchId = localStorage.getItem('activeMigrationBatchId');
       if (storedBatchId) {
         setActiveBatchId(storedBatchId);
@@ -123,13 +132,11 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           setBatchTasks(activeBatchTasks);
         }
       }
-
     } catch (err) {
-      console.error('Failed to load migration data', err);
-      toastError('Gagal memuat informasi migrasi.');
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to load migration tasks', err);
     }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
