@@ -132,6 +132,10 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
     }
   };
 
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
   // Set up Tabs
   const tabs: TabConfig[] = [
     { id: 'STORAGE_NODE', name: 'Storage Node VPS', provider: 'STORAGE_NODE', accountId: null },
