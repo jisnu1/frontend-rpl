@@ -120,7 +120,10 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, onSucce
     loadData();
     setShowConfirmStep(false);
     setDeleteSource(false);
-    setTargetProvider('STORAGE_NODE');
+    // Smart default: jika semua file dari VPS, arahkan target ke Google Drive
+    // agar tidak langsung terkena self-migration block
+    const allFromVps = selectedFiles.length > 0 && selectedFiles.every(f => f.provider.toUpperCase() === 'STORAGE_NODE');
+    setTargetProvider(allFromVps ? 'GOOGLE_DRIVE' : 'STORAGE_NODE');
     setTargetAccountId(null);
   }, [isOpen, toastError]);
 
