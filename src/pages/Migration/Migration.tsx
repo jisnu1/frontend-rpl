@@ -489,7 +489,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
       {/* ============================================================
           DESKTOP LAYOUT — hidden on mobile, unchanged
           ============================================================ */}
-      <div className="hidden md:flex p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex-col relative">
+      <div className="hidden lg:flex p-8 max-w-7xl mx-auto w-full flex-1 space-y-8 flex-col relative">
 
         {/* Title & Top Description Banner */}
         <div className="bg-gradient-to-r from-primary to-[#0053db] text-white rounded-3xl p-6 shadow-md border border-primary/10 flex flex-row justify-between items-center relative overflow-hidden">
@@ -560,7 +560,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         {/* Desktop: Floating Bottom Action Bar */}
         {selectedCount > 0 && (
           <div
-            className={`fixed bottom-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn hidden md:block transition-all duration-300 ${
+            className={`fixed bottom-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn hidden lg:block transition-all duration-300 ${
               isSidebarMinimized ? 'left-20' : 'left-[280px]'
             }`}
           >
@@ -703,7 +703,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
       {/* ============================================================
           MOBILE LAYOUT — shown only on mobile (< md), brand new
           ============================================================ */}
-      <div className="md:hidden flex flex-col min-h-screen bg-slate-50 pb-32">
+      <div className="lg:hidden flex flex-col min-h-screen bg-slate-50 pb-32">
 
         {/* ── Banner compact ── */}
         <div className="bg-gradient-to-br from-primary to-[#0041c4] text-white px-4 pt-4 pb-5">
@@ -955,7 +955,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
 
       {/* ── Floating bottom action bar (mobile, appears on file selection) ── */}
       {selectedCount > 0 && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 animate-fadeIn">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 animate-fadeIn">
           <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl px-4 pt-3 pb-6">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
