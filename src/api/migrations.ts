@@ -25,10 +25,12 @@ export interface MigrationTaskDto {
 
 export interface MigrationRequestDto {
   fileIds: string[];
+  folderIds?: string[];
   targetProvider: string;
   targetExternalAccountId: number | null;
   deleteSource: boolean;
 }
+
 
 export async function fetchMigrationConfig(): Promise<MigrationConfig> {
   const response = await apiClient.get<MigrationConfig>('/migrations/config');

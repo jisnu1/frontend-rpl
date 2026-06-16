@@ -9,6 +9,8 @@ interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUploadSuccess?: () => void;
+  folderId?: string;
+  gDriveFolderId?: string;
 }
 
 interface ProviderOption {
@@ -19,7 +21,7 @@ interface ProviderOption {
   storageInfo?: GoogleDriveStorageDto | null;
 }
 
-export default function UploadModal({ isOpen, onClose, onUploadSuccess }: UploadModalProps) {
+export default function UploadModal({ isOpen, onClose, onUploadSuccess, folderId, gDriveFolderId }: UploadModalProps) {
   const { uploadFile } = useActivity();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [providers, setProviders] = useState<ProviderOption[]>([]);
@@ -95,8 +97,10 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess }: Upload
     const provider = providers[selectedProvider];
     if (!provider) return;
 
+    const targetFolder = provider.type === 'GOOGLE_DRIVE' ? gDriveFolderId : folderId;
+
     // Trigger asynchronous background upload
-    uploadFile(selectedFile, provider, onUploadSuccess);
+    uploadFile(selectedFile, provider, onUploadSuccess, targetFolder);
     
     // Close the upload modal immediately
     onClose();

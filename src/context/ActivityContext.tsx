@@ -29,7 +29,7 @@ interface ActivityContextType {
   activities: BackgroundActivity[];
   notifications: ActivityNotification[];
   unreadCount: number;
-  uploadFile: (file: File, provider: any, onUploadSuccess?: () => void) => Promise<void>;
+  uploadFile: (file: File, provider: any, onUploadSuccess?: () => void, folderId?: string) => Promise<void>;
   downloadFile: (fileId: string, fileName: string, provider: string, fileSize: number) => Promise<void>;
   cancelActivity: (id: string) => Promise<void>;
   markAllNotificationsAsRead: () => void;
@@ -116,7 +116,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Asynchronous Upload File Implementation
-  const uploadFile = useCallback(async (file: File, provider: any, onUploadSuccess?: () => void) => {
+  const uploadFile = useCallback(async (file: File, provider: any, onUploadSuccess?: () => void, folderId?: string) => {
     const actId = 'upload_' + Math.random().toString(36).substring(2, 9);
     const newActivity: BackgroundActivity = {
       id: actId,
@@ -140,6 +140,10 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
         totalSize: file.size,
         provider: provider.type,
       };
+
+      if (folderId) {
+        bodyObj.folderId = folderId;
+      }
 
       if (isGDrive) {
         if (!provider.externalAccountId) {

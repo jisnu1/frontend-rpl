@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SharedFileTable from './components/SharedFileTable';
 import SharedByMeTable from './components/SharedByMeTable';
+import SharedFoldersByMeTable from './components/SharedFoldersByMeTable';
 import { fetchSharedWithMe, fetchSharedByMe, SharedFileDto, SharedByMeDto } from '../../api/shared';
 import { 
   Filter, 
@@ -276,15 +277,18 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
           }}
         />
       ) : (
-        <SharedByMeTable
-          files={filteredByMe}
-          isLoading={isLoading}
-          viewMode={viewMode}
-          searchQuery={searchQuery}
-          onRemoveSuccess={(shareId) => {
-            setByMeFiles((prev) => prev.filter((f) => f.id !== shareId));
-          }}
-        />
+        <div className="space-y-8 animate-fadeIn">
+          <SharedByMeTable
+            files={filteredByMe}
+            isLoading={isLoading}
+            viewMode={viewMode}
+            searchQuery={searchQuery}
+            onRemoveSuccess={(shareId) => {
+              setByMeFiles((prev) => prev.filter((f) => f.id !== shareId));
+            }}
+          />
+          <SharedFoldersByMeTable searchQuery={searchQuery} />
+        </div>
       )}
     </div>
   );

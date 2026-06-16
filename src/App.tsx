@@ -178,7 +178,13 @@ export default function App() {
       </div>
 
       {/* Global state-driven Interactive Upload Modal */}
-      <UploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} onUploadSuccess={handleUploadSuccess} />
+      <UploadModal 
+        isOpen={isUploadOpen} 
+        onClose={() => setIsUploadOpen(false)} 
+        onUploadSuccess={handleUploadSuccess} 
+        folderId={new URLSearchParams(location.search).get('folderId') || undefined}
+        gDriveFolderId={new URLSearchParams(location.search).get('gDriveFolderId') || undefined}
+      />
 
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
