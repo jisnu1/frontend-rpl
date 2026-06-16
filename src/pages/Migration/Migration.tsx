@@ -736,110 +736,134 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         </div>
 
         {/* ── Tab scroll bar ── */}
-        <div className="bg-white border-b border-slate-100 shadow-sm">
-          <div className="flex overflow-x-auto scrollbar-none px-2 py-1 gap-1.5">
+        <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10">
+          <div className="flex overflow-x-auto scrollbar-none px-3 py-2.5 gap-2">
             {tabs.map(tab => {
               const isActive = activeTab === tab.id;
               const isGDrive = tab.provider === 'GOOGLE_DRIVE';
               const TabIcon = isGDrive ? HardDrive : Database;
+              const tabFileCount = getTabFiles(tab).length;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-[11px] whitespace-nowrap shrink-0 transition-all ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs whitespace-nowrap shrink-0 transition-all ${
                     isActive
                       ? isGDrive
-                        ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20'
-                        : 'bg-primary text-white shadow-md shadow-primary/20'
-                      : 'bg-slate-100 text-slate-500'
+                        ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25'
+                        : 'bg-primary text-white shadow-md shadow-primary/25'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
                 >
                   <TabIcon className="w-3.5 h-3.5 shrink-0" />
                   <span>{tab.name}</span>
-                  {tab.email && isActive && <span className="text-[9px] font-semibold text-white/70 bg-white/20 px-1.5 py-0.5 rounded-full">{tab.email}</span>}
+                  {tab.email && <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'text-white/70 bg-white/20' : 'text-slate-400 bg-slate-200'}`}>{tab.email.split('@')[0]}</span>}
+                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${isActive ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-500'}`}>{tabFileCount}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* ── Search bar ── */}
-        <div className="px-4 py-3 bg-white border-b border-slate-100">
-          <div className="relative">
+        {/* ── Search + select all bar ── */}
+        <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary focus:bg-white focus:border-primary transition-all outline-none"
-              placeholder={`Cari berkas...`}
+              placeholder="Cari berkas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          {filteredTabFiles.length > 0 && (
+            <button
+              onClick={handleToggleSelectAll}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-2xl font-bold text-xs transition-all border ${
+                filteredTabFiles.every(f => selectedFiles[f.id])
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])}
+                onChange={handleToggleSelectAll}
+                onClick={e => e.stopPropagation()}
+                className="w-3.5 h-3.5 accent-white cursor-pointer"
+              />
+              <span>Semua</span>
+            </button>
+          )}
         </div>
 
         {/* ── File list ── */}
-        <div className="flex-1 px-4 py-3 space-y-2.5">
+        <div className="flex-1 px-4 py-3 space-y-2">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
               <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
             </div>
           ) : filteredTabFiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-              <div className="p-5 bg-slate-100 rounded-3xl">
-                <Sliders className="w-10 h-10 text-slate-300" />
+            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center shadow-inner">
+                <Sliders className="w-9 h-9 text-slate-300" />
               </div>
-              <p className="text-xs font-bold text-slate-400 max-w-[200px] leading-relaxed">
-                Belum ada berkas di penyimpanan ini.
-              </p>
+              <div>
+                <p className="text-sm font-black text-slate-600">Tidak ada berkas</p>
+                <p className="text-xs font-medium text-slate-400 mt-1 max-w-[200px] leading-relaxed">
+                  Belum ada berkas di penyimpanan ini.
+                </p>
+              </div>
             </div>
           ) : (
             <>
-              {/* Select all header */}
-              <div
-                className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 cursor-pointer"
-                onClick={handleToggleSelectAll}
-              >
-                <input
-                  type="checkbox"
-                  checked={filteredTabFiles.length > 0 && filteredTabFiles.every(f => selectedFiles[f.id])}
-                  onChange={handleToggleSelectAll}
-                  onClick={e => e.stopPropagation()}
-                  className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary cursor-pointer"
-                />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pilih Semua ({filteredTabFiles.length} berkas)</span>
-              </div>
-
               {/* File cards */}
               {filteredTabFiles.map(file => {
                 const isChecked = !!selectedFiles[file.id];
                 const isTooLarge = config.maxFileSizeBytes !== -1 && file.size > config.maxFileSizeBytes;
+                const isGDriveFile = file.provider === 'GOOGLE_DRIVE';
                 return (
                   <div
                     key={file.id}
                     onClick={() => handleToggleFile(file)}
-                    className={`bg-white border rounded-2xl p-4 cursor-pointer transition-all shadow-sm ${
+                    className={`relative rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden ${
                       isChecked
-                        ? 'border-primary/40 bg-primary/5 shadow-primary/10'
-                        : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
+                        ? isGDriveFile
+                          ? 'bg-sky-50 border-2 border-sky-400 shadow-md shadow-sky-100'
+                          : 'bg-primary/5 border-2 border-primary shadow-md shadow-primary/10'
+                        : 'bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Checkbox */}
-                      <div onClick={e => e.stopPropagation()} className="mt-0.5 shrink-0">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleToggleFile(file)}
-                          className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary cursor-pointer"
-                        />
+                    {/* Selected indicator strip */}
+                    {isChecked && (
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${isGDriveFile ? 'bg-sky-500' : 'bg-primary'}`} />
+                    )}
+                    <div className="flex items-center gap-3 p-3.5 pl-4">
+                      {/* Custom Checkbox */}
+                      <div onClick={e => e.stopPropagation()} className="shrink-0">
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border-2 transition-all ${
+                            isChecked
+                              ? isGDriveFile ? 'bg-sky-500 border-sky-500' : 'bg-primary border-primary'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                          onClick={() => handleToggleFile(file)}
+                        >
+                          {isChecked && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
 
                       {/* File icon */}
-                      <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center ${
-                        file.provider === 'GOOGLE_DRIVE' ? 'bg-sky-50' : 'bg-primary/10'
+                      <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${
+                        isGDriveFile ? 'bg-sky-100' : 'bg-blue-50'
                       }`}>
-                        {file.provider === 'GOOGLE_DRIVE'
+                        {isGDriveFile
                           ? <HardDrive className="w-5 h-5 text-sky-500" />
                           : <Database className="w-5 h-5 text-primary" />
                         }
@@ -847,14 +871,12 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
 
                       {/* File info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-800 truncate leading-tight">{file.originalFileName}</p>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <p className="text-sm font-bold text-slate-800 truncate leading-snug">{file.originalFileName}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            file.provider === 'GOOGLE_DRIVE'
-                              ? 'bg-sky-100 text-sky-600'
-                              : 'bg-primary/10 text-primary'
+                            isGDriveFile ? 'bg-sky-100 text-sky-600' : 'bg-primary/10 text-primary'
                           }`}>
-                            {file.provider === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Storage Node'}
+                            {isGDriveFile ? 'Google Drive' : 'Storage Node'}
                           </span>
                           <span className="text-[10px] text-slate-400 font-semibold">{formatSize(file.size)}</span>
                           {file.createdAt && (
@@ -870,6 +892,9 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                           </div>
                         )}
                       </div>
+
+                      {/* Chevron */}
+                      <ChevronRight className={`w-4 h-4 shrink-0 transition-all ${isChecked ? (isGDriveFile ? 'text-sky-400' : 'text-primary') : 'text-slate-300'}`} />
                     </div>
                   </div>
                 );
@@ -879,39 +904,48 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         </div>
 
         {/* ── Bottom notes ── */}
-        <div className="px-4 pb-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2.5">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Catatan & Ketentuan</p>
+        <div className="px-4 pb-4 space-y-3">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 space-y-3 shadow-sm">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-1 h-3 bg-primary rounded-full inline-block" />
+              Catatan &amp; Ketentuan
+            </p>
             <div className="flex gap-2.5 items-start">
-              <Clock className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <div className="p-1.5 bg-primary/10 rounded-lg shrink-0">
+                <Clock className="w-3 h-3 text-primary" />
+              </div>
               <p className="text-[11px] font-medium text-slate-500 leading-relaxed">Reset kuota harian dilakukan otomatis saat hari berganti (pukul 00.00).</p>
             </div>
             <div className="flex gap-2.5 items-start">
-              <ShieldAlert className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+              <div className="p-1.5 bg-primary/10 rounded-lg shrink-0">
+                <ShieldAlert className="w-3 h-3 text-primary" />
+              </div>
               <p className="text-[11px] font-medium text-slate-500 leading-relaxed">Batas harian dihitung dari total berkas yang dimigrasikan, bukan jumlah inisiasi.</p>
             </div>
           </div>
 
           {/* Admin config (mobile) */}
           {isAdmin && (
-            <div className="mt-3 bg-surface-container-low border border-surface-variant rounded-2xl p-4 space-y-3">
+            <div className="bg-surface-container-low border border-surface-variant rounded-2xl p-4 space-y-3 shadow-sm">
               <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-primary" />
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                  <Sliders className="w-3.5 h-3.5 text-primary" />
+                </div>
                 <h4 className="text-xs font-black uppercase tracking-wider text-on-surface">Admin Config</h4>
               </div>
               <form onSubmit={handleUpdateConfig} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Max Size (MB)</label>
-                    <input type="number" value={adminMaxMb} onChange={(e) => setAdminMaxMb(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                    <input type="number" value={adminMaxMb} onChange={(e) => setAdminMaxMb(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-on-surface-variant/80 uppercase">Daily Limit</label>
-                    <input type="number" value={adminDailyLimit} onChange={(e) => setAdminDailyLimit(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
+                    <input type="number" value={adminDailyLimit} onChange={(e) => setAdminDailyLimit(e.target.value)} className="w-full bg-white border border-outline-variant rounded-xl px-3 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary" required />
                   </div>
                 </div>
-                <button type="submit" disabled={isUpdatingConfig} className="w-full bg-primary text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50">
-                  {isUpdatingConfig ? (<><Loader2 className="w-4 h-4 animate-spin" />Memperbarui...</>) : 'Terapkan'}
+                <button type="submit" disabled={isUpdatingConfig} className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-primary/20">
+                  {isUpdatingConfig ? (<><Loader2 className="w-4 h-4 animate-spin" />Memperbarui...</>) : 'Terapkan Konfigurasi'}
                 </button>
               </form>
             </div>
@@ -921,29 +955,36 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
 
       {/* ── Floating bottom action bar (mobile, appears on file selection) ── */}
       {selectedCount > 0 && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
-              <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleClearSelection}
-                className="p-2.5 bg-slate-100 rounded-xl text-slate-500 hover:bg-slate-200 transition-all"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                disabled={hasTooLargeFiles || isDailyLimitReached}
-                onClick={() => setIsModalOpen(true)}
-                className="bg-primary text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Migrasikan
-              </button>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 animate-fadeIn">
+          <div className="bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-2xl px-4 pt-3 pb-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <RefreshCw className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
+                  <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-slate-500 transition-all"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={hasTooLargeFiles || isDailyLimitReached}
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-primary text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Migrasikan
+                </button>
+              </div>
             </div>
           </div>
         </div>
