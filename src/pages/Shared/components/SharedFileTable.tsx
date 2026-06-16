@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MoreVertical, ExternalLink, Download, Share2, Copy, 
-  Trash2, ArrowLeft, ArrowRight, SearchX, Sparkles 
+  Trash2, ArrowLeft, ArrowRight, SearchX, Sparkles, Clock, Calendar 
 } from 'lucide-react';
-import { SharedFileDto, unshareFile } from '../../../api/shared';
+import { SharedFileDto, unshareFile, shareFile } from '../../../api/shared';
 import FileIcon from '../../../components/ui/FileIcon';
 import Card from '../../../components/ui/Card';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
+import Modal from '../../../components/ui/Modal';
+import Button from '../../../components/ui/Button';
 import { useActivity } from '../../../context/ActivityContext';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
@@ -26,9 +28,10 @@ interface FileRowProps {
   file: SharedFileDto;
   onPreviewClick: () => void;
   onRemoveAccess: () => void;
+  onManageClick: () => void;
 }
 
-function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
+function FileRow({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileRowProps) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -75,6 +78,14 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden font-medium">
               {formatSize(file.size)} • {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'} • Oleh {file.ownerEmail || 'Shared Owner'}
+              {file.expiresAt && (
+                <>
+                  {' '}•{' '}
+                  <span className={new Date(file.expiresAt) < new Date() ? "text-red-500 font-semibold" : "text-amber-600 font-semibold"}>
+                    {new Date(file.expiresAt) < new Date() ? 'Kadaluarsa' : new Date(file.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -88,6 +99,25 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
           </div>
           <span className="text-sm font-bold text-slate-650 truncate max-w-[180px]">{file.ownerEmail || 'Shared Owner'}</span>
         </div>
+      </td>
+
+      {/* Expiration */}
+      <td className="px-6 py-5 text-xs font-bold hidden sm:table-cell">
+        {file.expiresAt ? (
+          new Date(file.expiresAt) < new Date() ? (
+            <span className="text-red-500 inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              Kadaluarsa
+            </span>
+          ) : (
+            <span className="text-amber-600 inline-flex items-center gap-1" title={new Date(file.expiresAt).toLocaleString('id-ID')}>
+              <Clock className="w-3.5 h-3.5" />
+              {new Date(file.expiresAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+            </span>
+          )
+        ) : (
+          <span className="text-slate-400">Selamanya</span>
+        )}
       </td>
 
       {/* Shared Date */}
@@ -159,6 +189,17 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
                   </button>
                 );
               })}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onManageClick();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-55 transition-colors"
+              >
+                <Clock className="w-4 h-4 text-slate-400" />
+                Kelola Tautan
+              </button>
               <div className="border-t border-slate-100 my-1" />
               <button
                 onClick={(e) => {
@@ -184,9 +225,10 @@ interface FileCardProps {
   file: SharedFileDto;
   onPreviewClick: () => void;
   onRemoveAccess: () => void;
+  onManageClick: () => void;
 }
 
-function FileCard({ file, onPreviewClick, onRemoveAccess }: FileCardProps) {
+function FileCard({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileCardProps) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { downloadFile } = useActivity();
@@ -250,6 +292,17 @@ function FileCard({ file, onPreviewClick, onRemoveAccess }: FileCardProps) {
                   </button>
                 );
               })}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onManageClick();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <Clock className="w-4 h-4 text-slate-400" />
+                Kelola Tautan
+              </button>
               <div className="border-t border-slate-100 my-1" />
               <button
                 onClick={(e) => {
@@ -351,6 +404,70 @@ export default function SharedFileTable({
   const { user } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
 
+  // Expiry states
+  const [editingFile, setEditingFile] = useState<SharedFileDto | null>(null);
+  const [expiresOption, setExpiresOption] = useState<string>('never'); // 'never', '1h', '1d', '7d', 'custom'
+  const [customExpiry, setCustomExpiry] = useState<string>('');
+  const [isSavingExpiry, setIsSavingExpiry] = useState<boolean>(false);
+
+  const handleOpenManageFile = (file: SharedFileDto) => {
+    setEditingFile(file);
+    if (file.expiresAt) {
+      setExpiresOption('custom');
+      const date = new Date(file.expiresAt);
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+      setCustomExpiry(localISOTime);
+    } else {
+      setExpiresOption('never');
+      setCustomExpiry('');
+    }
+  };
+
+  const handleSaveFileSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFile) return;
+
+    setIsSavingExpiry(true);
+    try {
+      let hours: number | undefined = undefined;
+      let days: number | undefined = undefined;
+
+      if (expiresOption === '1h') {
+        hours = 1;
+      } else if (expiresOption === '1d') {
+        days = 1;
+      } else if (expiresOption === '7d') {
+        days = 7;
+      } else if (expiresOption === 'custom' && customExpiry) {
+        const diffMs = new Date(customExpiry).getTime() - Date.now();
+        if (diffMs > 0) {
+          hours = Math.ceil(diffMs / (1000 * 60 * 60));
+        }
+      }
+
+      await shareFile(
+        editingFile.id,
+        {
+          isPublic: false,
+          email: editingFile.ownerEmail || undefined,
+          expiresInDays: days,
+          expiresInHours: hours
+        },
+        editingFile.provider
+      );
+
+      toastSuccess('Masa aktif berkas bersama berhasil diperbarui.');
+      setEditingFile(null);
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err: any) {
+      console.error(err);
+      toastError(err.response?.data?.message || 'Gagal memperbarui masa aktif berkas.');
+    } finally {
+      setIsSavingExpiry(false);
+    }
+  };
+
   const totalPages = Math.ceil(files.length / ITEMS_PER_PAGE);
   const paginatedFiles = files.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
@@ -387,6 +504,7 @@ export default function SharedFileTable({
               <tr className="bg-slate-50/50">
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">File Name</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Owner</th>
+                <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">Kadaluarsa</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden md:table-cell">Shared Date</th>
                 <th className="px-6 py-5 text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:table-cell">File Size</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-right text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aksi</th>
@@ -409,6 +527,7 @@ export default function SharedFileTable({
                     file={file} 
                     onPreviewClick={() => setActivePreviewFile(file)}
                     onRemoveAccess={() => setConfirmRemoveFile(file)}
+                    onManageClick={() => handleOpenManageFile(file)}
                   />
                 ))
               )}
@@ -445,6 +564,7 @@ export default function SharedFileTable({
                   file={file} 
                   onPreviewClick={() => setActivePreviewFile(file)}
                   onRemoveAccess={() => setConfirmRemoveFile(file)}
+                  onManageClick={() => handleOpenManageFile(file)}
                 />
               ))}
             </div>
@@ -507,6 +627,94 @@ export default function SharedFileTable({
         confirmVariant="danger"
         isLoading={isRemoving}
       />
+
+      {editingFile && (
+        <Modal
+          isOpen={editingFile !== null}
+          onClose={() => setEditingFile(null)}
+          title={`Kelola Masa Aktif Berkas`}
+          icon={Clock}
+        >
+          <form onSubmit={handleSaveFileSettings} className="space-y-4">
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Berkas</p>
+              <h4 className="text-sm font-bold text-slate-700 truncate mt-0.5">{editingFile.originalFileName}</h4>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-3">Pemilik Berkas</p>
+              <p className="text-xs font-bold text-slate-650 mt-0.5">{editingFile.ownerEmail}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Pilihan Masa Aktif
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'never', label: 'Selamanya' },
+                  { value: '1h', label: '1 Jam' },
+                  { value: '1d', label: '1 Hari' },
+                  { value: '7d', label: '7 Hari' },
+                  { value: 'custom', label: 'Kustom' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setExpiresOption(opt.value)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-xl border-2 transition-all cursor-pointer ${
+                      expiresOption === opt.value
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-slate-200 bg-white text-slate-650'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {expiresOption === 'custom' && (
+              <div className="space-y-1.5 animate-fadeIn">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Masa Kadaluarsa Kustom
+                  </label>
+                  {customExpiry && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpiresOption('never');
+                        setCustomExpiry('');
+                      }}
+                      className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-all cursor-pointer"
+                    >
+                      Hapus Batas Waktu
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="datetime-local"
+                    value={customExpiry}
+                    onChange={(e) => setCustomExpiry(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 pl-10 pr-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end pt-4 border-t border-slate-150">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setEditingFile(null)}>
+                Batal
+              </Button>
+              <Button type="submit" variant="primary" size="sm" isLoading={isSavingExpiry}>
+                Simpan Perubahan
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

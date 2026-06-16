@@ -344,17 +344,81 @@ export default function PublicSharePage() {
 
   if (isError || !activeShareToken) {
     return (
-      <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4">
-        <div className="backdrop-blur-md bg-[#1c1e26]/80 border border-white/5 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center text-white animate-fadeIn">
-          <div className="w-16 h-16 bg-[#e95678]/10 border border-[#e95678]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-8 h-8 text-[#e95678]" />
+      <div className="min-h-screen bg-[#0f111a] flex flex-col md:flex-row text-white overflow-hidden relative">
+        {/* Left Side: Branding / Visual (Visible as top section on mobile) */}
+        <div className="w-full md:w-1/2 min-h-[35vh] md:min-h-screen bg-gradient-to-br from-[#0f111a] via-[#12131f] to-[#1c1e26] relative flex flex-col justify-between p-8 md:p-16 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden select-none shrink-0">
+          {/* Glowing background circles for rich aesthetics */}
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-[#e95678]/5 filter blur-[80px] pointer-events-none animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[#fab795]/5 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
+          
+          {/* Logo Brand */}
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#e95678] to-[#fab795] rounded-2xl flex items-center justify-center shadow-lg shadow-[#e95678]/25">
+              <HardDrive className="w-5.5 h-5.5 text-[#0f111a]" />
+            </div>
+            <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent uppercase">
+              Horizon Drive
+            </span>
           </div>
-          <h2 className="text-xl font-bold mb-2">Tautan Tidak Valid / Kadaluarsa</h2>
-          <p className="text-xs text-slate-450 mb-6 leading-relaxed">
-            {errorMessage || 'Tautan pembagian ini tidak valid, telah dihapus, atau telah habis masa aktifnya.'}
-          </p>
-          <div className="text-[10px] text-slate-500 border-t border-white/5 pt-4 font-semibold uppercase tracking-wider">
+
+          {/* Aesthetic Centerpiece Slogan */}
+          <div className="my-auto py-8 relative z-10">
+            <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-4 max-w-lg">
+              Solusi Cloud Personal <br/>
+              <span className="bg-gradient-to-r from-[#e95678] via-[#e95678] to-[#fab795] bg-clip-text text-transparent">
+                Penuh Estetika
+              </span>
+            </h2>
+            <p className="text-xs md:text-sm text-slate-400 max-w-sm font-medium leading-relaxed">
+              Platform penyimpanan mandiri modern yang menggabungkan performa kencang dengan desain visual bertema Horizon yang hidup dan responsif.
+            </p>
+          </div>
+
+          {/* Footer inside Left Panel (only shown on desktop) */}
+          <div className="hidden md:block text-[10px] font-bold text-slate-500 tracking-widest uppercase relative z-10">
             Horizon Drive &copy; {new Date().getFullYear()}
+          </div>
+        </div>
+
+        {/* Right Side: Error Info */}
+        <div className="w-full md:w-1/2 flex-1 md:min-h-screen bg-[#0f111a] flex flex-col justify-between p-8 md:p-16 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#e95678]/3 filter blur-[120px] pointer-events-none" />
+
+          {/* Spacer for centering on desktop */}
+          <div className="hidden md:block" />
+
+          {/* Error Details Card */}
+          <div className="max-w-md w-full mx-auto my-auto relative z-10 animate-fadeIn space-y-8 text-center md:text-left">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#e95678]/10 to-[#fab795]/5 border border-[#e95678]/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
+              <ShieldAlert className="w-10 h-10 text-[#e95678] animate-bounce" />
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+                Tautan Berbagi <br/>
+                <span className="text-[#e95678]">Tidak Valid atau Kadaluarsa</span>
+              </h3>
+              <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                {errorMessage || 'Tautan pembagian ini tidak dapat diakses kembali karena masa aktifnya telah habis, dibatalkan oleh pemilik, atau tautan tidak valid.'}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3.5 pt-4">
+              <Button
+                onClick={() => navigate('/')}
+                variant="primary"
+                className="bg-gradient-to-r from-[#e95678] to-[#fab795] text-[#0f111a] font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-[#e95678]/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+              >
+                <Home className="w-4 h-4" />
+                <span>Kembali ke Beranda</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Footer inside Right Panel */}
+          <div className="text-center md:text-right text-[10px] font-bold text-slate-650 tracking-wider uppercase pt-8 md:pt-0">
+            <span className="md:hidden">Horizon Drive &copy; {new Date().getFullYear()} • </span>
+            <span>Aman & Terenkripsi</span>
           </div>
         </div>
       </div>

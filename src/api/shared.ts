@@ -7,6 +7,7 @@ export interface SharedFileDto {
   ownerEmail: string;
   createdAt: string;
   provider: string;
+  expiresAt?: string | null;
 }
 
 export interface ShareFileRequest {
