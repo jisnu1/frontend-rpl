@@ -97,11 +97,12 @@ export default function App() {
     );
   }
 
+  const normalizedPath = location.pathname.replace(/\/$/, '') || '/';
   const isPublicRoute = 
-    location.pathname === '/' || 
-    location.pathname === '/landing' ||
-    location.pathname === '/privacy' ||
-    location.pathname === '/terms';
+    normalizedPath === '/' || 
+    normalizedPath === '/landing' ||
+    normalizedPath === '/privacy' ||
+    normalizedPath === '/terms';
 
   if (!isAuthenticated) {
     if (isPublicRoute) {
