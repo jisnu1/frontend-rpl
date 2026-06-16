@@ -473,8 +473,8 @@ export default function LandingPage() {
                 Terms of Service
               </button>
               {/* Fallback standard links for SEO / Bot discovery */}
-              <a href="/privacy-policy.txt" target="_blank" rel="noopener noreferrer" className="sr-only">Privacy Policy</a>
-              <a href="/terms-of-service.txt" target="_blank" rel="noopener noreferrer" className="sr-only">Terms of Service</a>
+              <Link to="/privacy" className="sr-only">Privacy Policy</Link>
+              <Link to="/terms" className="sr-only">Terms of Service</Link>
             </div>
             <span className="hidden md:inline text-slate-700">|</span>
             <p className="text-slate-500">

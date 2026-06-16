@@ -15,6 +15,8 @@ import VerifyRegistration from './pages/Auth/VerifyRegistration';
 import ForgotPassword from './pages/Auth/ForgotPassword';
 import PublicSharePage from './pages/Shared/PublicSharePage';
 import LandingPage from './pages/Landing/LandingPage';
+import PrivacyPage from './pages/Landing/PrivacyPage';
+import TermsPage from './pages/Landing/TermsPage';
 import { useAuth } from './context/AuthContext';
 import { Construction } from 'lucide-react';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
@@ -95,26 +97,34 @@ export default function App() {
     );
   }
 
+  const isPublicRoute = 
+    location.pathname === '/' || 
+    location.pathname === '/landing' ||
+    location.pathname === '/privacy' ||
+    location.pathname === '/terms';
+
   if (!isAuthenticated) {
-    if (location.pathname === '/' || location.pathname === '/landing') {
+    if (isPublicRoute) {
       return (
-        <>
-          <LandingPage />
-        </>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       );
     }
 
     if (isAuthRoute) {
       return (
-        <>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/verify-registration" element={<VerifyRegistration />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-registration" element={<VerifyRegistration />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
       );
     }
 
@@ -160,6 +170,8 @@ export default function App() {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/landing" element={<Navigate to="/my-drive" replace />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="*" element={<PlaceholderPage title="Not Found" />} />
           </Routes>
         </main>
