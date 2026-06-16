@@ -843,7 +843,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                   <div
                     key={file.id}
                     onClick={() => handleToggleFile(file)}
-                    className={`relative rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden ${
+                    className={`w-full min-w-0 relative rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden ${
                       isChecked
                         ? isGDriveFile
                           ? 'bg-sky-50 border-2 border-sky-400 shadow-md shadow-sky-100'
@@ -855,7 +855,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                     {isChecked && (
                       <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${isGDriveFile ? 'bg-sky-500' : 'bg-primary'}`} />
                     )}
-                    <div className="flex items-center gap-3 p-3.5 pl-4">
+                    <div className="flex items-center gap-3 p-3.5 pl-4 w-full min-w-0">
                       {/* Custom Checkbox */}
                       <div onClick={e => e.stopPropagation()} className="shrink-0">
                         <div
