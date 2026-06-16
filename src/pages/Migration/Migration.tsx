@@ -100,7 +100,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         fetchMigrationTasks()
       ]);
 
-      const googleAccs = accounts.filter(a => a.provider.toUpperCase() === 'GOOGLE');
+      const googleAccs = accounts.filter(a => a.provider.toUpperCase().startsWith('GOOGLE'));
       setExternalAccounts(googleAccs);
       setConfig(migrationConf);
 
@@ -696,6 +696,39 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           </div>
         )}
 
+        {/* Desktop Breadcrumb Path */}
+        {folderPath.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-slate-50 p-3 rounded-2xl border border-slate-100/80 w-fit">
+            <button 
+              type="button" 
+              onClick={() => {
+                setCurrentFolderId(undefined);
+                setFolderPath([]);
+              }}
+              className="hover:text-primary transition-colors"
+            >
+              Root
+            </button>
+            {folderPath.map((p, idx) => (
+              <React.Fragment key={p.id}>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                <button
+                  type="button"
+                  disabled={idx === folderPath.length - 1}
+                  onClick={() => {
+                    const newPath = folderPath.slice(0, idx + 1);
+                    setFolderPath(newPath);
+                    setCurrentFolderId(p.id);
+                  }}
+                  className={`hover:text-primary transition-colors max-w-[200px] truncate ${idx === folderPath.length - 1 ? 'text-slate-700 font-extrabold cursor-default' : ''}`}
+                >
+                  {p.name}
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+
         {/* Main Files Table */}
         <div className="bg-white border border-slate-150/60 rounded-3xl overflow-hidden shadow-sm flex-1">
           {isLoading ? (
@@ -703,10 +736,10 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
               <p className="text-xs font-bold text-slate-400">Memuat berkas...</p>
             </div>
-          ) : filteredTabFiles.length === 0 ? (
+          ) : (filteredTabFiles.length === 0 && filteredTabFolders.length === 0) ? (
             <div className="py-24 px-6 w-full mx-auto text-center text-slate-400 font-bold text-xs flex flex-col items-center justify-center gap-3 select-none">
               <Sliders className="w-12 h-12 text-slate-200" />
-              <span className="max-w-[220px] leading-relaxed">Belum ada berkas di dalam penyimpanan ini.</span>
+              <span className="max-w-[220px] leading-relaxed">Belum ada berkas atau folder di dalam penyimpanan ini.</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -714,15 +747,55 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
                 <thead>
                   <tr className="bg-slate-50/60 border-b border-slate-100 text-slate-400 font-black tracking-wider uppercase">
                     <th className="py-3 px-5 w-10 text-center">
-                      <input type="checkbox" checked={filteredTabFiles.length > 0 && filteredTabFiles.every(file => selectedFiles[file.id])} onChange={handleToggleSelectAll} className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" />
+                      <input 
+                        type="checkbox" 
+                        checked={
+                          (filteredTabFiles.length > 0 || filteredTabFolders.length > 0) && 
+                          filteredTabFiles.every(file => selectedFiles[file.id]) && 
+                          filteredTabFolders.every(folder => selectedFolders[folder.id])
+                        } 
+                        onChange={handleToggleSelectAll} 
+                        className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" 
+                      />
                     </th>
-                    <th className="py-3 px-4">Nama Berkas</th>
+                    <th className="py-3 px-4">Nama</th>
                     <th className="py-3 px-4">Ukuran</th>
                     <th className="py-3 px-4">Provider</th>
                     <th className="py-3 px-4">Tanggal Dibuat</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                  {/* Folders */}
+                  {filteredTabFolders.map(folder => {
+                    const isChecked = !!selectedFolders[folder.id];
+                    return (
+                      <tr 
+                        key={folder.id} 
+                        className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${isChecked ? 'bg-primary/5' : ''}`} 
+                        onClick={() => handleToggleFolder(folder)}
+                        onDoubleClick={() => handleFolderDoubleClick(folder)}
+                      >
+                        <td className="py-3.5 px-5 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked} 
+                            onChange={() => handleToggleFolder(folder)} 
+                            className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary focus:ring-2 cursor-pointer" 
+                          />
+                        </td>
+                        <td className="py-3.5 px-4 font-bold max-w-sm">
+                          <div className="flex items-center gap-2.5">
+                            <Folder className="w-4.5 h-4.5 text-primary shrink-0" />
+                            <span className="truncate" title={folder.name}>{folder.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-400">-</td>
+                        <td className="py-3.5 px-4 text-on-surface-variant uppercase font-black">{currentTabConfig.provider}</td>
+                        <td className="py-3.5 px-4 text-slate-400">{folder.createdAt ? new Date(folder.createdAt).toLocaleDateString() : '-'}</td>
+                      </tr>
+                    );
+                  })}
+                  {/* Files */}
                   {filteredTabFiles.map(file => {
                     const isChecked = !!selectedFiles[file.id];
                     const isTooLarge = config.maxFileSizeBytes !== -1 && file.size > config.maxFileSizeBytes;

@@ -350,7 +350,7 @@ export default function PublicSharePage() {
 
   if (isError || !activeShareToken) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="h-[100dvh] w-full bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Glowing background circles for rich aesthetics */}
         <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-blue-500/5 filter blur-[80px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/5 filter blur-[100px] pointer-events-none" />

@@ -55,7 +55,7 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, folderId
 
         try {
           const accs = await fetchExternalAccounts();
-          const googleAccs = accs.filter(a => a.provider.toUpperCase() === 'GOOGLE');
+          const googleAccs = accs.filter(a => a.provider.toUpperCase().startsWith('GOOGLE'));
 
           // Fetch storage info for each Google account
           for (const acc of googleAccs) {

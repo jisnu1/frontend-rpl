@@ -113,7 +113,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, selecte
           fetchExternalAccounts(),
           fetchUserStorage()
         ]);
-        setExternalAccounts(accounts.filter(a => a.provider.toUpperCase() === 'GOOGLE'));
+        setExternalAccounts(accounts.filter(a => a.provider.toUpperCase().startsWith('GOOGLE')));
         setPersonalStorage(storage);
       } catch (err) {
         console.error('Failed to load migration destinations', err);

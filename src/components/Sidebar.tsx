@@ -59,7 +59,7 @@ export default function Sidebar({
 
         // Load Google Drive storage per account
         const accounts = await fetchExternalAccounts();
-        const googleAccs = accounts.filter(a => a.provider.toUpperCase() === 'GOOGLE');
+        const googleAccs = accounts.filter(a => a.provider.toUpperCase().startsWith('GOOGLE'));
         
         const gdriveResults: GoogleDriveStorageInfo[] = [];
         for (const acc of googleAccs) {
