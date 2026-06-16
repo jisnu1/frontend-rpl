@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { 
   MoreVertical, ExternalLink, Copy, Check,
-  Trash2, ArrowLeft, ArrowRight, SearchX, Globe, Mail, Clock
+  Trash2, ArrowLeft, ArrowRight, SearchX, Globe, Mail, Clock, Calendar
 } from 'lucide-react';
-import { SharedByMeDto, unshareFileById } from '../../../api/shared';
+import { SharedByMeDto, unshareFileById, shareFile } from '../../../api/shared';
 import FileIcon from '../../../components/ui/FileIcon';
 import Card from '../../../components/ui/Card';
 import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import FilePreviewModal from '../../../components/FilePreviewModal';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
+import Modal from '../../../components/ui/Modal';
+import Button from '../../../components/ui/Button';
 
 interface SharedByMeTableProps {
   files: SharedByMeDto[];
@@ -24,9 +26,10 @@ interface FileRowProps {
   file: SharedByMeDto;
   onPreviewClick: () => void;
   onRemoveAccess: () => void;
+  onManageClick: () => void;
 }
 
-function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
+function FileRow({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileRowProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { success: toastSuccess } = useToast();
@@ -184,6 +187,18 @@ function FileRow({ file, onPreviewClick, onRemoveAccess }: FileRowProps) {
               </button>
             )}
 
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                onManageClick();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <Clock className="w-4 h-4 text-slate-400" />
+              Kelola Tautan
+            </button>
+
             <div className="border-t border-slate-100 my-1" />
             <button
               onClick={(e) => {
@@ -208,9 +223,10 @@ interface FileCardProps {
   file: SharedByMeDto;
   onPreviewClick: () => void;
   onRemoveAccess: () => void;
+  onManageClick: () => void;
 }
 
-function FileCard({ file, onPreviewClick, onRemoveAccess }: FileCardProps) {
+function FileCard({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { success: toastSuccess } = useToast();
@@ -273,6 +289,18 @@ function FileCard({ file, onPreviewClick, onRemoveAccess }: FileCardProps) {
               >
                 <ExternalLink className="w-4 h-4 text-slate-400" />
                 Buka Pratinjau
+              </button>
+              <div className="border-t border-slate-100 my-1" />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onManageClick();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <Clock className="w-4 h-4 text-slate-400" />
+                Kelola Tautan
               </button>
               <div className="border-t border-slate-100 my-1" />
               <button
@@ -362,6 +390,70 @@ export default function SharedByMeTable({
   const { user } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
 
+  // Expiry states
+  const [editingFile, setEditingFile] = useState<SharedByMeDto | null>(null);
+  const [expiresOption, setExpiresOption] = useState<string>('never'); // 'never', '1h', '1d', '7d', 'custom'
+  const [customExpiry, setCustomExpiry] = useState<string>('');
+  const [isSavingExpiry, setIsSavingExpiry] = useState<boolean>(false);
+
+  const handleOpenManageFile = (file: SharedByMeDto) => {
+    setEditingFile(file);
+    if (file.expiresAt) {
+      setExpiresOption('custom');
+      const date = new Date(file.expiresAt);
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+      setCustomExpiry(localISOTime);
+    } else {
+      setExpiresOption('never');
+      setCustomExpiry('');
+    }
+  };
+
+  const handleSaveFileSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFile) return;
+
+    setIsSavingExpiry(true);
+    try {
+      let hours: number | undefined = undefined;
+      let days: number | undefined = undefined;
+
+      if (expiresOption === '1h') {
+        hours = 1;
+      } else if (expiresOption === '1d') {
+        days = 1;
+      } else if (expiresOption === '7d') {
+        days = 7;
+      } else if (expiresOption === 'custom' && customExpiry) {
+        const diffMs = new Date(customExpiry).getTime() - Date.now();
+        if (diffMs > 0) {
+          hours = Math.ceil(diffMs / (1000 * 60 * 60));
+        }
+      }
+
+      await shareFile(
+        editingFile.fileId,
+        {
+          isPublic: editingFile.isPublic,
+          email: editingFile.sharedWithEmail || undefined,
+          expiresInDays: days,
+          expiresInHours: hours
+        },
+        editingFile.provider
+      );
+
+      toastSuccess('Masa aktif berkas bersama berhasil diperbarui.');
+      setEditingFile(null);
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err: any) {
+      console.error(err);
+      toastError(err.response?.data?.message || 'Gagal memperbarui masa aktif berkas.');
+    } finally {
+      setIsSavingExpiry(false);
+    }
+  };
+
   const totalPages = Math.ceil(files.length / ITEMS_PER_PAGE);
   const paginatedFiles = files.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
@@ -421,6 +513,7 @@ export default function SharedByMeTable({
                     file={file} 
                     onPreviewClick={() => setActivePreviewFile(file)}
                     onRemoveAccess={() => setConfirmCancelShare(file)}
+                    onManageClick={() => handleOpenManageFile(file)}
                   />
                 ))
               )}
@@ -457,6 +550,7 @@ export default function SharedByMeTable({
                   file={file} 
                   onPreviewClick={() => setActivePreviewFile(file)}
                   onRemoveAccess={() => setConfirmCancelShare(file)}
+                  onManageClick={() => handleOpenManageFile(file)}
                 />
               ))}
             </div>
@@ -518,6 +612,96 @@ export default function SharedByMeTable({
         confirmVariant="danger"
         isLoading={isCancelling}
       />
+
+      {editingFile && (
+        <Modal
+          isOpen={editingFile !== null}
+          onClose={() => setEditingFile(null)}
+          title={`Kelola Masa Aktif Berkas`}
+          icon={Clock}
+        >
+          <form onSubmit={handleSaveFileSettings} className="space-y-4">
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Berkas</p>
+              <h4 className="text-sm font-bold text-slate-700 truncate mt-0.5">{editingFile.originalFileName}</h4>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-3">Metode Berbagi</p>
+              <p className="text-xs font-bold text-slate-650 mt-0.5">
+                {editingFile.isPublic ? 'Tautan Publik' : `Dibagikan ke ${editingFile.sharedWithEmail}`}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Pilihan Masa Aktif
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'never', label: 'Selamanya' },
+                  { value: '1h', label: '1 Jam' },
+                  { value: '1d', label: '1 Hari' },
+                  { value: '7d', label: '7 Hari' },
+                  { value: 'custom', label: 'Kustom' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setExpiresOption(opt.value)}
+                    className={`py-2 px-3 text-xs font-semibold rounded-xl border-2 transition-all cursor-pointer ${
+                      expiresOption === opt.value
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-slate-200 bg-white text-slate-650'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {expiresOption === 'custom' && (
+              <div className="space-y-1.5 animate-fadeIn">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Masa Kadaluarsa Kustom
+                  </label>
+                  {customExpiry && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpiresOption('never');
+                        setCustomExpiry('');
+                      }}
+                      className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-all cursor-pointer"
+                    >
+                      Hapus Batas Waktu
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="datetime-local"
+                    value={customExpiry}
+                    onChange={(e) => setCustomExpiry(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 pl-10 pr-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-end pt-4 border-t border-slate-150">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setEditingFile(null)}>
+                Batal
+              </Button>
+              <Button type="submit" variant="primary" size="sm" isLoading={isSavingExpiry}>
+                Simpan Perubahan
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   MoreVertical, ExternalLink, Copy, Check,
   Trash2, SearchX, Globe, Clock, Shield, ToggleLeft, ToggleRight, Calendar
@@ -16,11 +17,13 @@ import ConfirmModal from '../../../components/ui/ConfirmModal';
 import Modal from '../../../components/ui/Modal';
 import Button from '../../../components/ui/Button';
 
+
 interface SharedFoldersByMeTableProps {
   searchQuery: string;
 }
 
 export default function SharedFoldersByMeTable({ searchQuery }: SharedFoldersByMeTableProps) {
+  const navigate = useNavigate();
   const [folders, setFolders] = useState<SharedFolderResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -178,7 +181,15 @@ export default function SharedFoldersByMeTable({ searchQuery }: SharedFoldersByM
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                             </svg>
                           </div>
-                          <span className="text-sm font-bold text-slate-800">{folder.folderName}</span>
+                          <button
+                            onClick={() => {
+                              const providerPrefix = folder.folderType === 'GOOGLE_DRIVE' ? 'google' : 'local';
+                              navigate(`/shared/public/${providerPrefix}/${folder.shareToken}`);
+                            }}
+                            className="text-sm font-bold text-slate-850 hover:text-primary transition-all text-left cursor-pointer"
+                          >
+                            {folder.folderName}
+                          </button>
                         </div>
                       </td>
                       
@@ -335,9 +346,20 @@ export default function SharedFoldersByMeTable({ searchQuery }: SharedFoldersByM
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Masa Kadaluarsa (Kosongkan jika Selamanya)
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Masa Kadaluarsa (Kosongkan jika Selamanya)
+                </label>
+                {newExpiry && (
+                  <button
+                    type="button"
+                    onClick={() => setNewExpiry('')}
+                    className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-all cursor-pointer"
+                  >
+                    Hapus Batas Waktu
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
                   <Calendar className="w-4 h-4" />

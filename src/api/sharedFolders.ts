@@ -79,8 +79,11 @@ export async function fetchSharedFoldersByMe(): Promise<SharedFolderResponse[]> 
 /**
  * Mengakses isi folder yang dibagikan secara publik menggunakan share token
  */
-export async function fetchSharedFolderContentsPublic(shareToken: string): Promise<FolderContentResponse> {
-  const response = await apiClient.get<FolderContentResponse>(`/shared-folders/public/${shareToken}/contents`);
+export async function fetchSharedFolderContentsPublic(shareToken: string, folderId?: string): Promise<FolderContentResponse> {
+  const url = folderId 
+    ? `/shared-folders/public/${shareToken}/contents?folderId=${encodeURIComponent(folderId)}`
+    : `/shared-folders/public/${shareToken}/contents`;
+  const response = await apiClient.get<FolderContentResponse>(url);
   return response.data;
 }
 
@@ -90,14 +93,19 @@ export async function fetchSharedFolderContentsPublic(shareToken: string): Promi
 export async function uploadToSharedFolderPublic(
   shareToken: string,
   file: File,
+  folderId?: string,
   onProgress?: (percent: number) => void
 ): Promise<FileResponse> {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('size', file.size.toString());
 
+  const url = folderId 
+    ? `/shared-folders/public/${shareToken}/upload?folderId=${encodeURIComponent(folderId)}`
+    : `/shared-folders/public/${shareToken}/upload`;
+
   const response = await apiClient.post<FileResponse>(
-    `/shared-folders/public/${shareToken}/upload`,
+    url,
     formData,
     {
       headers: {
