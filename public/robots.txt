@@ -1,8 +1,15 @@
 User-agent: *
 Allow: /
+Disallow: /my-drive
+Disallow: /shared
+Disallow: /migration
+Disallow: /recap
+Disallow: /settings
 Disallow: /admin
-Disallow: /admin/
-Disallow: /admin/*
+Disallow: /login
+Disallow: /register
+Disallow: /verify-registration
+Disallow: /forgot-password
 
 # Sitemaps
 Sitemap: https://horizoncloud.my.id/sitemap.xml
