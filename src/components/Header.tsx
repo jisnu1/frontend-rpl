@@ -5,7 +5,6 @@ import {
   Menu, 
   Search, 
   Bell, 
-  Settings, 
   Cloud,
   Trash2,
   FileUp,
@@ -276,16 +275,11 @@ export default function Header({
             </>
           )}
         </div>
-        <Link 
-          to="/settings" 
-          className="hidden sm:block p-2 rounded-full text-slate-600 hover:bg-slate-50 transition-colors"
+        <Link
+          to="/settings"
+          className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent"
+          title="Pengaturan"
         >
-          <Settings className="w-5 h-5" />
-        </Link>
-        
-        <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-        
-        <div className="flex items-center gap-3 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent cursor-pointer">
           <span className="text-xs font-bold text-slate-700 hidden md:block">
             {user?.fullName || user?.username || 'Jessica'}
           </span>
@@ -300,7 +294,7 @@ export default function Header({
               {user?.username?.[0] || 'J'}
             </div>
           )}
-        </div>
+        </Link>
       </div>
     </header>
   );
