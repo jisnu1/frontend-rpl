@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
+Allow: /terms
+Allow: /privacy
 Disallow: /my-drive
 Disallow: /shared
 Disallow: /migration
