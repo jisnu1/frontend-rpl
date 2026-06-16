@@ -1,8 +1,8 @@
 PRIVACY POLICY
-Last Updated: June 13, 2026
+Last Updated: June 16, 2026
 
-Welcome to Horizon Drive.
-This Privacy Policy explains how we collect, use, store, and protect your information when using Horizon Drive.
+Welcome to Horizon Cloud.
+This Privacy Policy explains how we collect, use, store, and protect your information when using Horizon Cloud.
 
 1. INFORMATION WE COLLECT
 Account Information
@@ -38,7 +38,7 @@ We use collected information to:
 
 3. FILES AND USER CONTENT
 Users retain ownership of uploaded files.
-Horizon Drive may process files and metadata only to:
+Horizon Cloud may process files and metadata only to:
 - Store, transfer, and stream file contents (either locally on Storage Nodes or via Google Drive APIs)
 - Generate document previews (images, PDF, video, audio)
 - Enable search and filtering functionalities
@@ -50,7 +50,7 @@ We do not manually access user files unless:
 - Deemed necessary for security investigation regarding platform abuse
 
 4. THIRD-PARTY SERVICES
-Horizon Drive integrates with third-party providers to deliver essential features:
+Horizon Cloud integrates with third-party providers to deliver essential features:
 - Google OAuth & Google Drive APIs (to manage Google Drive files)
 - Brevo Email API (to dispatch security OTPs for registration and forgot password flows)
 - Gemini AI API / Fallback Providers (to process PDF text for AI summaries and chat)
@@ -80,9 +80,12 @@ Users may:
 - Revoke third-party app connections (such as disconnecting Google Drive)
 - Request account deletion
 
-8. CHANGES
-We may update this Privacy Policy from time to time. Continued use of Horizon Drive indicates acceptance of the updated policy.
+8. GOOGLE API SERVICES USER DATA POLICY (LIMITED USE)
+Horizon Cloud's use and transfer to any other app of information received from Google APIs will adhere to Google API Services User Data Policy, including the Limited Use requirements.
 
-9. CONTACT
+9. CHANGES
+We may update this Privacy Policy from time to time. Continued use of Horizon Cloud indicates acceptance of the updated policy.
+
+10. CONTACT
 Email: emuyforge@gmail.com
 Website: www.horizoncloud.my.id
