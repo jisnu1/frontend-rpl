@@ -735,33 +735,36 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
           </div>
         </div>
 
-        {/* ── Tab scroll bar ── */}
-        <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10 w-full overflow-x-hidden">
-          <div className="flex overflow-x-auto scrollbar-none px-3 py-2.5 gap-2">
-            {tabs.map(tab => {
-              const isActive = activeTab === tab.id;
-              const isGDrive = tab.provider === 'GOOGLE_DRIVE';
-              const TabIcon = isGDrive ? HardDrive : Database;
-              const tabFileCount = getTabFiles(tab).length;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs whitespace-nowrap shrink-0 transition-all ${
-                    isActive
-                      ? isGDrive
-                        ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25'
-                        : 'bg-primary text-white shadow-md shadow-primary/25'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }`}
-                >
-                  <TabIcon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{tab.name}</span>
-                  {tab.email && <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'text-white/70 bg-white/20' : 'text-slate-400 bg-slate-200'}`}>{tab.email.split('@')[0]}</span>}
-                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${isActive ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-500'}`}>{tabFileCount}</span>
-                </button>
-              );
-            })}
+        {/* ── Tab Dropdown Selector ── */}
+        <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10 w-full px-4 py-3">
+          <div className="relative">
+            <select
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-full bg-slate-100 border border-transparent rounded-2xl py-3 pl-11 pr-10 text-xs font-bold text-slate-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer transition-all"
+            >
+              {tabs.map(tab => {
+                const tabFileCount = getTabFiles(tab).length;
+                const emailStr = tab.email ? ` (${tab.email.split('@')[0]})` : '';
+                return (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.name === 'Google Drive' ? `Google Drive${emailStr}` : tab.name} ({tabFileCount} berkas)
+                  </option>
+                );
+              })}
+            </select>
+            {/* Left Icon */}
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              {currentTabConfig.provider === 'GOOGLE_DRIVE' ? (
+                <HardDrive className="w-4 h-4 text-sky-500" />
+              ) : (
+                <Database className="w-4 h-4 text-primary" />
+              )}
+            </div>
+            {/* Right Arrow/Chevron */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronRight className="w-4 h-4 rotate-90" />
+            </div>
           </div>
         </div>
 
