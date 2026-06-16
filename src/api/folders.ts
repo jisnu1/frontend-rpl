@@ -14,6 +14,7 @@ export interface FolderContentResponse {
   files: FileResponse[];
   permission?: 'VIEW' | 'EDIT';
   allowAnonymous?: boolean;
+  folderName?: string;
 }
 
 export interface GoogleDriveItemResponse {
@@ -115,5 +116,17 @@ export async function moveGoogleDriveItem(
     externalAccountId,
     fileId,
     targetFolderId,
+  });
+}
+
+/**
+ * Menghapus folder Google Drive beserta seluruh isinya
+ */
+export async function deleteGoogleDriveFolder(
+  externalAccountId: number,
+  folderId: string
+): Promise<void> {
+  await apiClient.delete(`/google-drive/folders/${folderId}`, {
+    params: { externalAccountId },
   });
 }

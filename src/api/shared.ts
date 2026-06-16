@@ -74,21 +74,32 @@ export async function fetchPublicFileInfo(shareToken: string, provider: string):
   return response.data;
 }
 
-export function getPublicDownloadUrl(shareToken: string, provider: string, download = false): string {
+export function getPublicDownloadUrl(shareToken: string, provider: string, download = false, fileId?: string): string {
   const baseUrl = API_BASE_URL;
-  const path = provider === 'google'
+  const path = provider === 'google' || provider === 'GOOGLE_DRIVE'
     ? `/google-drive/share/public/download/${shareToken}`
     : `/files/share/public/download/${shareToken}`;
-  return `${baseUrl}${path}${download ? '?download=true' : ''}`;
+  let url = `${baseUrl}${path}`;
+  const params: string[] = [];
+  if (download) params.push('download=true');
+  if (fileId) params.push(`fileId=${fileId}`);
+  if (params.length > 0) {
+    url += `?${params.join('&')}`;
+  }
+  return url;
 }
 
 /**
  * URL preview inline untuk file publik via share token (endpoint preview standalone)
  */
-export function getPublicPreviewUrl(shareToken: string, provider: string): string {
+export function getPublicPreviewUrl(shareToken: string, provider: string, fileId?: string): string {
   const baseUrl = API_BASE_URL;
   const prov = provider === 'google' || provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'google' : 'local';
-  return `${baseUrl}/preview/public/${prov}/${shareToken}`;
+  let url = `${baseUrl}/preview/public/${prov}/${shareToken}`;
+  if (fileId) {
+    url += `?fileId=${fileId}`;
+  }
+  return url;
 }
 
 

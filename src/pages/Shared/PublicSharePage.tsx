@@ -19,6 +19,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import FilePreviewModal from '../../components/FilePreviewModal';
 
 const getFileCategory = (fileName: string) => {
   const ext = fileName.split('.').pop()?.toLowerCase() || '';
@@ -33,15 +34,15 @@ const getFileCategory = (fileName: string) => {
 const getFileIcon = (category: string) => {
   switch (category) {
     case 'image':
-      return <ImageIcon className="w-16 h-16 text-[#60a5fa]" />;
+      return <ImageIcon className="w-16 h-16 text-blue-500" />;
     case 'pdf':
-      return <FileText className="w-16 h-16 text-[#2563eb]" />;
+      return <FileText className="w-16 h-16 text-rose-500" />;
     case 'video':
-      return <Film className="w-16 h-16 text-indigo-400" />;
+      return <Film className="w-16 h-16 text-indigo-500" />;
     case 'audio':
-      return <Music className="w-16 h-16 text-emerald-400" />;
+      return <Music className="w-16 h-16 text-emerald-500" />;
     case 'text':
-      return <FileText className="w-16 h-16 text-cyan-400" />;
+      return <FileText className="w-16 h-16 text-cyan-500" />;
     default:
       return <File className="w-16 h-16 text-slate-400" />;
   }
@@ -68,10 +69,12 @@ export default function PublicSharePage() {
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   // Folder Share states
+  const [folderName, setFolderName] = useState<string>('');
   const [folderFolders, setFolderFolders] = useState<FolderResponse[]>([]);
   const [folderFiles, setFolderFiles] = useState<FileResponse[]>([]);
   const [permission, setPermission] = useState<'VIEW' | 'EDIT'>('VIEW');
   const [allowAnonymous, setAllowAnonymous] = useState(true);
+  const [selectedPreviewFile, setSelectedPreviewFile] = useState<FileResponse | null>(null);
 
   // Subfolder navigation history
   const [navigationHistory, setNavigationHistory] = useState<{ id: string; name: string }[]>([]);
@@ -101,6 +104,9 @@ export default function PublicSharePage() {
       setFolderFiles(folderData.files || []);
       setPermission(folderData.permission || 'VIEW');
       setAllowAnonymous(folderData.allowAnonymous !== undefined ? folderData.allowAnonymous : true);
+      if (folderData.folderName) {
+        setFolderName(folderData.folderName);
+      }
       setShareType('FOLDER');
       setIsLoading(false);
     } catch (folderErr: any) {
@@ -333,30 +339,30 @@ export default function PublicSharePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-800">
         <div className="relative flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
         </div>
-        <p className="text-xs font-bold text-slate-400 mt-4 animate-pulse uppercase tracking-wider">Memuat detail pembagian...</p>
+        <p className="text-xs font-bold text-slate-500 mt-4 animate-pulse uppercase tracking-wider">Memuat detail pembagian...</p>
       </div>
     );
   }
 
   if (isError || !activeShareToken) {
     return (
-      <div className="min-h-screen bg-[#0f111a] flex flex-col md:flex-row text-white relative">
+      <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row text-slate-800 relative">
         {/* Left Side: Branding / Visual (Visible as top section on mobile) */}
-        <div className="w-full md:w-1/2 min-h-[35vh] md:min-h-screen bg-gradient-to-br from-[#0f111a] via-[#12131f] to-[#1c1e26] relative flex flex-col justify-between p-8 md:p-16 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden select-none shrink-0">
+        <div className="w-full md:w-1/2 min-h-[35vh] md:min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative flex flex-col justify-between p-8 md:p-16 border-b md:border-b-0 md:border-r border-slate-200 overflow-hidden select-none shrink-0 text-white">
           {/* Glowing background circles for rich aesthetics */}
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-[#2563eb]/5 filter blur-[80px] pointer-events-none animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[#60a5fa]/5 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-blue-500/10 filter blur-[80px] pointer-events-none animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/10 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
           
           {/* Logo Brand */}
           <div className="flex items-center gap-3 relative z-10">
             <div className="w-10 h-10 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-2xl flex items-center justify-center shadow-lg shadow-[#2563eb]/25">
-              <HardDrive className="w-5.5 h-5.5 text-[#0f111a]" />
+              <HardDrive className="w-5.5 h-5.5 text-white" />
             </div>
-            <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent uppercase">
+            <span className="text-xl font-black tracking-wider uppercase">
               Horizon Drive
             </span>
           </div>
@@ -365,40 +371,40 @@ export default function PublicSharePage() {
           <div className="my-auto py-8 relative z-10">
             <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-4 max-w-lg">
               Solusi Cloud Personal <br/>
-              <span className="bg-gradient-to-r from-[#2563eb] via-[#2563eb] to-[#60a5fa] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
                 Penuh Estetika
               </span>
             </h2>
-            <p className="text-xs md:text-sm text-slate-400 max-w-sm font-medium leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-300 max-w-sm font-medium leading-relaxed">
               Platform penyimpanan mandiri modern yang menggabungkan performa kencang dengan desain visual bertema Horizon yang hidup dan responsif.
             </p>
           </div>
 
           {/* Footer inside Left Panel (only shown on desktop) */}
-          <div className="hidden md:block text-[10px] font-bold text-slate-500 tracking-widest uppercase relative z-10">
+          <div className="hidden md:block text-[10px] font-bold text-slate-400 tracking-widest uppercase relative z-10">
             Horizon Drive &copy; {new Date().getFullYear()}
           </div>
         </div>
 
         {/* Right Side: Error Info */}
-        <div className="w-full md:w-1/2 flex-1 md:min-h-screen bg-[#0f111a] flex flex-col justify-between p-8 md:p-16 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#2563eb]/3 filter blur-[120px] pointer-events-none" />
+        <div className="w-full md:w-1/2 flex-1 md:min-h-screen bg-slate-50 flex flex-col justify-between p-8 md:p-16 relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary/5 filter blur-[120px] pointer-events-none" />
 
           {/* Spacer for centering on desktop */}
           <div className="hidden md:block" />
 
           {/* Error Details Card */}
-          <div className="max-w-md w-full mx-auto my-auto relative z-10 animate-fadeIn space-y-8 text-center md:text-left">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#2563eb]/10 to-[#60a5fa]/5 border border-[#2563eb]/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
-              <ShieldAlert className="w-10 h-10 text-[#2563eb] animate-bounce" />
+          <div className="max-w-md w-full mx-auto my-auto relative z-10 animate-fadeIn space-y-8 text-center md:text-left bg-white border border-slate-200/80 shadow-xl p-8 rounded-3xl">
+            <div className="w-20 h-20 bg-rose-50 border border-rose-100 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
+              <ShieldAlert className="w-10 h-10 text-rose-500 animate-bounce" />
             </div>
             
             <div className="space-y-3">
-              <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+              <h3 className="text-2xl md:text-3xl font-black tracking-tight text-slate-800 leading-tight">
                 Tautan Berbagi <br/>
-                <span className="text-[#2563eb]">Tidak Valid atau Kadaluarsa</span>
+                <span className="text-rose-600">Tidak Valid atau Kadaluarsa</span>
               </h3>
-              <p className="text-sm text-slate-400 font-medium leading-relaxed">
+              <p className="text-sm text-slate-505 font-medium leading-relaxed">
                 {errorMessage || 'Tautan pembagian ini tidak dapat diakses kembali karena masa aktifnya telah habis, dibatalkan oleh pemilik, atau tautan tidak valid.'}
               </p>
             </div>
@@ -407,7 +413,7 @@ export default function PublicSharePage() {
               <Button
                 onClick={() => navigate('/')}
                 variant="primary"
-                className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-[#2563eb]/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                className="bg-primary text-white font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
               >
                 <Home className="w-4 h-4" />
                 <span>Kembali ke Beranda</span>
@@ -416,7 +422,7 @@ export default function PublicSharePage() {
           </div>
 
           {/* Footer inside Right Panel */}
-          <div className="text-center md:text-right text-[10px] font-bold text-slate-650 tracking-wider uppercase pt-8 md:pt-0">
+          <div className="text-center md:text-right text-[10px] font-bold text-slate-400 tracking-wider uppercase pt-8 md:pt-0">
             <span className="md:hidden">Horizon Drive &copy; {new Date().getFullYear()} • </span>
             <span>Aman & Terenkripsi</span>
           </div>
@@ -432,33 +438,35 @@ export default function PublicSharePage() {
 
     return (
       <div 
-        className="h-[100dvh] w-full bg-[#0f111a] flex flex-col text-white overflow-hidden relative"
+        className="h-[100dvh] w-full bg-slate-50 flex flex-col text-slate-800 overflow-hidden relative"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
       >
         {/* Fullscreen Drag and Drop Overlay */}
         {isDragging && isEditAllowed && (
           <div 
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f111a]/90 backdrop-blur-md border-4 border-dashed border-[#2563eb] animate-fadeIn"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/95 backdrop-blur-md border-4 border-dashed border-primary animate-fadeIn"
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <UploadCloud className="w-20 h-20 text-[#2563eb] animate-bounce mb-4" />
-            <h3 className="text-lg font-bold text-slate-100 uppercase tracking-wide">Lepaskan Berkas untuk Mengunggah</h3>
-            <p className="text-xs text-slate-450 mt-1">Unggah langsung ke folder saat ini</p>
+            <UploadCloud className="w-20 h-20 text-primary animate-bounce mb-4" />
+            <h3 className="text-lg font-bold text-slate-800 uppercase tracking-wide">Lepaskan Berkas untuk Mengunggah</h3>
+            <p className="text-xs text-slate-500 mt-1">Unggah langsung ke folder saat ini</p>
           </div>
         )}
 
         {/* Top Header / Navbar */}
-        <header className="h-16 bg-[#1c1e26]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 z-10 shrink-0 shadow-sm">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-xl flex items-center justify-center shadow-lg shadow-[#2563eb]/20 shrink-0">
-              <Folder className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <Folder className="w-5 h-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-bold text-white truncate max-w-[150px] sm:max-w-[350px]">
-                {navigationHistory.length > 0 ? navigationHistory[navigationHistory.length - 1].name : 'Folder Bersama Publik'}
+              <h1 className="text-sm font-bold text-slate-800 truncate max-w-[150px] sm:max-w-[350px]">
+                {navigationHistory.length > 0 
+                  ? navigationHistory[navigationHistory.length - 1].name 
+                  : folderName || 'Folder Bersama Publik'}
               </h1>
               <p className="text-[9px] text-slate-400 font-bold flex items-center gap-1.5 mt-0.5 uppercase tracking-wide">
                 <span>{folderFolders.length} Folder</span>
@@ -471,8 +479,8 @@ export default function PublicSharePage() {
           <div className="flex items-center gap-3 shrink-0">
             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
               permission === 'EDIT' 
-                ? 'bg-[#2563eb]/10 border-[#2563eb]/20 text-[#2563eb]' 
-                : 'bg-slate-500/10 border-slate-500/20 text-slate-350'
+                ? 'bg-primary/10 border-primary/20 text-primary' 
+                : 'bg-slate-100 border-slate-200 text-slate-500'
             }`}>
               <ShieldCheck className="w-3.5 h-3.5" />
               {permission === 'EDIT' ? 'Kolaboratif' : 'Hanya Baca'}
@@ -482,7 +490,7 @@ export default function PublicSharePage() {
               <>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white font-bold text-xs px-4 py-2 rounded-full shadow-lg shadow-[#2563eb]/20 transition-all hover:scale-[1.03] active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
+                  className="bg-primary text-white font-bold text-xs px-4 py-2 rounded-full shadow-md hover:bg-indigo-700 transition-all hover:scale-[1.03] active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
                 >
                   <UploadCloud className="w-4 h-4" />
                   <span>Unggah Berkas</span>
@@ -503,7 +511,7 @@ export default function PublicSharePage() {
           
           {/* Lock message if login is required for editing */}
           {isLoginRequired && (
-            <div className="bg-[#2563eb]/5 border border-[#2563eb]/10 rounded-2xl p-4 flex items-center gap-3 animate-fadeIn text-[#60a5fa]">
+            <div className="bg-blue-50 border border-blue-150 rounded-2xl p-4 flex items-center gap-3 animate-fadeIn text-blue-700">
               <Lock className="w-5 h-5 shrink-0" />
               <p className="text-xs font-semibold">
                 Unggahan & penghapusan berkas dinonaktifkan secara anonim. Silakan masuk akun Anda untuk berkolaborasi di folder ini.
@@ -513,32 +521,31 @@ export default function PublicSharePage() {
 
           {/* Upload Progress Bar */}
           {uploadProgress !== null && (
-            <div className="bg-[#1c1e26] border border-white/5 rounded-2xl p-4 space-y-2 animate-pulse">
-              <div className="flex justify-between items-center text-xs font-bold text-[#2563eb]">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 shadow-sm">
+              <div className="flex justify-between items-center text-xs font-bold text-primary animate-pulse">
                 <span className="truncate max-w-[220px]">Mengunggah: {uploadingFileName}</span>
                 <span>{uploadProgress}%</span>
               </div>
-              <div className="w-full bg-[#0f111a] rounded-full h-1.5 overflow-hidden">
-                <div className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-primary h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           )}
 
           {/* Dynamic Interactive Breadcrumbs */}
-          <div className="flex items-center flex-wrap gap-2 text-xs font-bold text-slate-400 bg-[#1c1e26]/40 px-4 py-3 border border-white/5 rounded-2xl">
+          <div className="flex items-center flex-wrap gap-2 text-xs font-bold text-slate-500 bg-white px-4 py-3 border border-slate-200 rounded-2xl shadow-sm">
             <button
               onClick={() => handleBreadcrumbClick(-1)}
-              className="flex items-center gap-1.5 text-slate-350 hover:text-[#2563eb] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 text-slate-500 hover:text-primary transition-all cursor-pointer"
             >
               <Home className="w-4 h-4" />
-              <span>Root</span>
             </button>
             {navigationHistory.map((item, idx) => (
               <React.Fragment key={item.id}>
-                <span className="text-slate-600">/</span>
+                <span className="text-slate-300">/</span>
                 <button
                   onClick={() => handleBreadcrumbClick(idx)}
-                  className={`hover:text-[#2563eb] transition-all cursor-pointer ${idx === navigationHistory.length - 1 ? 'text-[#60a5fa]' : 'text-slate-350'}`}
+                  className={`hover:text-primary transition-all cursor-pointer ${idx === navigationHistory.length - 1 ? 'text-primary' : 'text-slate-650'}`}
                 >
                   {item.name}
                 </button>
@@ -548,13 +555,13 @@ export default function PublicSharePage() {
 
           {/* Folders & Files Container */}
           <div className="space-y-4">
-            <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Isi Direktori</h3>
+            <h3 className="text-[10px] font-bold text-slate-450 uppercase tracking-widest">Isi Direktori</h3>
             
             {folderFolders.length === 0 && folderFiles.length === 0 ? (
-              <div className="py-24 text-center bg-[#1c1e26]/30 rounded-3xl border border-white/5">
-                <SearchX className="w-16 h-16 block mx-auto mb-4 text-slate-650" />
-                <h4 className="text-slate-300 text-sm font-bold">Direktori ini kosong</h4>
-                {isEditAllowed && <p className="text-xs text-slate-500 mt-1 font-semibold">Tarik berkas Anda ke sini untuk mengunggah.</p>}
+              <div className="py-24 text-center bg-white rounded-3xl border border-slate-200 shadow-sm">
+                <SearchX className="w-16 h-16 block mx-auto mb-4 text-slate-400" />
+                <h4 className="text-slate-700 text-sm font-bold">Direktori ini kosong</h4>
+                {isEditAllowed && <p className="text-xs text-slate-400 mt-1 font-semibold">Tarik berkas Anda ke sini untuk mengunggah.</p>}
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -564,12 +571,12 @@ export default function PublicSharePage() {
                   <div 
                     key={sub.id} 
                     onClick={() => handleFolderClick(sub)}
-                    className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#60a5fa]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all select-none cursor-pointer group"
+                    className="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-primary/30 hover:bg-slate-50/50 hover:scale-[1.01] transition-all select-none cursor-pointer group shadow-sm"
                   >
-                    <div className="p-2 bg-[#60a5fa]/10 text-[#60a5fa] rounded-xl shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0 group-hover:scale-105 transition-transform">
                       <Folder className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-bold text-slate-200 truncate" title={sub.name}>
+                    <span className="text-xs font-bold text-slate-700 truncate" title={sub.name}>
                       {sub.name}
                     </span>
                   </div>
@@ -582,21 +589,22 @@ export default function PublicSharePage() {
                   return (
                     <div 
                       key={file.id} 
-                      className="p-5 flex flex-col gap-4 rounded-3xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#2563eb]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all text-left relative"
+                      onClick={() => setSelectedPreviewFile(file)}
+                      className="p-5 flex flex-col gap-4 rounded-3xl bg-white border border-slate-200/80 hover:border-primary/30 hover:bg-slate-50/50 hover:scale-[1.01] transition-all text-left relative cursor-pointer shadow-sm"
                     >
                       <div className="flex items-start justify-between">
                         <FileIcon type={ext} className="w-8 h-8 shrink-0" />
                         
                         {/* Action buttons */}
-                        <div className="flex gap-1.5 shrink-0">
+                        <div className="flex gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                           {file.id && (
                             <a
                               href={file.provider === 'GOOGLE_DRIVE' 
-                                ? getPublicDownloadUrl(activeShareToken, 'google', true) + `&fileId=${file.id}`
-                                : getPublicDownloadUrl(activeShareToken, 'local', true) + `&fileId=${file.id}`
+                                ? getPublicDownloadUrl(activeShareToken, 'google', true, file.id)
+                                : getPublicDownloadUrl(activeShareToken, 'local', true, file.id)
                               }
                               download={file.originalFileName}
-                              className="p-2 rounded-xl bg-white/5 hover:bg-[#60a5fa]/20 hover:text-[#60a5fa] text-slate-400 transition-all cursor-pointer"
+                              className="p-2 rounded-xl bg-slate-50 hover:bg-primary/10 hover:text-primary text-slate-500 transition-all border border-slate-200/60"
                               title="Unduh"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -605,7 +613,7 @@ export default function PublicSharePage() {
                           {isEditAllowed && file.id && (
                             <button
                               onClick={() => handleDeleteFile(file.id, file.originalFileName)}
-                              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all cursor-pointer"
+                              className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-all border border-rose-100"
                               title="Hapus"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -615,12 +623,12 @@ export default function PublicSharePage() {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-200 truncate" title={file.originalFileName}>
+                        <p className="text-xs font-bold text-slate-700 truncate" title={file.originalFileName}>
                           {file.originalFileName}
                         </p>
                         <div className="flex justify-between items-center mt-2.5">
-                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{formatFileSize(file.size)}</span>
-                          {file.createdAt && <span className="text-[9px] text-slate-500 font-medium">{new Date(file.createdAt).toLocaleDateString('id-ID')}</span>}
+                          <span className="text-[9px] text-slate-450 font-bold uppercase tracking-wider">{formatFileSize(file.size)}</span>
+                          {file.createdAt && <span className="text-[9px] text-slate-400 font-medium">{new Date(file.createdAt).toLocaleDateString('id-ID')}</span>}
                         </div>
                       </div>
                     </div>
@@ -634,9 +642,22 @@ export default function PublicSharePage() {
 
         </div>
 
-        <footer className="h-10 border-t border-white/5 bg-[#1c1e26]/30 text-center flex items-center justify-center text-[9px] text-slate-600 font-bold uppercase tracking-wider shrink-0">
+        <footer className="h-10 border-t border-slate-200 bg-white text-center flex items-center justify-center text-[9px] text-slate-400 font-bold uppercase tracking-wider shrink-0 shadow-sm">
           Horizon Drive &copy; {new Date().getFullYear()}
         </footer>
+
+        {selectedPreviewFile && (
+          <FilePreviewModal
+            isOpen={!!selectedPreviewFile}
+            onClose={() => setSelectedPreviewFile(null)}
+            fileId={selectedPreviewFile.id}
+            fileName={selectedPreviewFile.originalFileName}
+            provider={selectedPreviewFile.provider}
+            fileSize={selectedPreviewFile.size}
+            createdAt={selectedPreviewFile.createdAt}
+            shareToken={activeShareToken}
+          />
+        )}
       </div>
     );
   }
@@ -648,15 +669,15 @@ export default function PublicSharePage() {
   const downloadUrl = getPublicDownloadUrl(activeShareToken, activeProvider, true);
 
   return (
-    <div className="h-[100dvh] w-full bg-[#0f111a] flex flex-col text-white overflow-hidden">
+    <div className="h-[100dvh] w-full bg-slate-50 flex flex-col text-slate-800 overflow-hidden">
       {/* Top Header */}
-      <header className="h-16 bg-[#1c1e26]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
+      <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 z-10 shrink-0 shadow-sm">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-xl flex items-center justify-center shadow-lg shadow-[#2563eb]/25 shrink-0">
-            <HardDrive className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+            <HardDrive className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm font-bold text-white truncate max-w-[150px] sm:max-w-[300px] md:max-w-[450px]" title={fileInfo.originalFileName}>
+            <h1 className="text-sm font-bold text-slate-850 truncate max-w-[150px] sm:max-w-[300px] md:max-w-[450px]" title={fileInfo.originalFileName}>
               {fileInfo.originalFileName}
             </h1>
             <p className="text-[9px] text-slate-450 font-bold flex items-center gap-2 mt-0.5 uppercase tracking-wide">
@@ -668,13 +689,13 @@ export default function PublicSharePage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <span className="hidden md:inline-flex bg-[#2563eb]/10 border border-[#2563eb]/20 text-[#2563eb] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="hidden md:inline-flex bg-primary/10 border border-primary/20 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
             Berbagi Publik
           </span>
           <a 
             href={downloadUrl}
             download={fileInfo.originalFileName}
-            className="inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white hover:scale-[1.02] hover:shadow-lg hover:shadow-[#2563eb]/10 text-xs py-2 px-4 gap-2"
+            className="inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-primary text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-primary/20 text-xs py-2 px-4 gap-2 shadow-md"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Unduh Berkas</span>
@@ -684,21 +705,21 @@ export default function PublicSharePage() {
       </header>
 
       {/* Main Preview Container */}
-      <main className="flex-1 w-full bg-[#0f111a] flex items-center justify-center relative overflow-hidden p-4">
+      <main className="flex-1 w-full bg-slate-100/50 flex items-center justify-center relative overflow-hidden p-4">
         {isPreviewLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-[#0f111a]/40 z-10">
-            <div className="w-12 h-12 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin"></div>
-            <p className="text-xs font-bold text-slate-450 mt-4 animate-pulse uppercase tracking-wider">Memuat pratinjau media...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-800 bg-white/40 z-10">
+            <div className="w-12 h-12 border-4 border-primary/25 border-t-primary rounded-full animate-spin"></div>
+            <p className="text-xs font-bold text-slate-400 mt-4 animate-pulse uppercase tracking-wider">Memuat pratinjau media...</p>
           </div>
         )}
 
         {previewError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white bg-[#0f111a]/40 z-10 animate-fadeIn">
-            <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-500" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-800 bg-white/45 z-10 animate-fadeIn">
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-full flex items-center justify-center mb-4 shadow-sm">
+              <AlertTriangle className="w-8 h-8 text-rose-500" />
             </div>
-            <h4 className="font-bold text-lg text-slate-200">Gagal Memuat Pratinjau</h4>
-            <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">{previewError}</p>
+            <h4 className="font-bold text-lg text-slate-700">Gagal Memuat Pratinjau</h4>
+            <p className="text-xs text-slate-450 mt-2 max-w-sm leading-relaxed">{previewError}</p>
           </div>
         )}
 
@@ -709,24 +730,24 @@ export default function PublicSharePage() {
                 src={objectUrl} 
                 alt={fileInfo.originalFileName} 
                 onError={() => setPreviewError('Browser gagal memuat gambar ini. Kemungkinan format tidak didukung.')}
-                className="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl border border-white/5 transition-transform duration-300 hover:scale-[1.01]" 
+                className="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl border border-slate-200 transition-transform duration-300 hover:scale-[1.01]" 
               />
             )}
 
             {category === 'pdf' && objectUrl && (
               isMobile ? (
-                <div className="w-full max-w-md p-8 backdrop-blur-md bg-[#1c1e26]/60 border border-white/5 rounded-3xl text-center shadow-2xl mx-4">
+                <div className="w-full max-w-md p-8 bg-white border border-slate-200 rounded-3xl text-center shadow-2xl mx-4">
                   <div className="mb-6 flex justify-center">
-                    <FileText className="w-16 h-16 text-[#2563eb] animate-pulse" />
+                    <FileText className="w-16 h-16 text-rose-500 animate-pulse" />
                   </div>
-                  <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
+                  <h3 className="font-bold text-slate-800 text-lg truncate mb-1" title={fileInfo.originalFileName}>
                     {fileInfo.originalFileName}
                   </h3>
-                  <p className="text-xs text-slate-500 mb-6">{formatFileSize(fileInfo.size)}</p>
-                  <p className="text-xs text-slate-450 mb-6 font-semibold">Pratinjau PDF tidak didukung di browser seluler.</p>
+                  <p className="text-xs text-slate-400 mb-6">{formatFileSize(fileInfo.size)}</p>
+                  <p className="text-xs text-slate-550 mb-6 font-semibold">Pratinjau PDF tidak didukung di browser seluler.</p>
                   <button 
                     onClick={() => window.open(objectUrl || '', '_blank')}
-                    className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg active:scale-[0.98] bg-[#2563eb] text-white text-sm py-3 px-6 gap-2.5 hover:bg-[#2563eb]/95"
+                    className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg active:scale-[0.98] bg-primary text-white text-sm py-3 px-6 gap-2.5"
                   >
                     Buka PDF di Tab Baru
                   </button>
@@ -735,7 +756,7 @@ export default function PublicSharePage() {
                 <iframe 
                   src={objectUrl} 
                   title={fileInfo.originalFileName}
-                  className="w-full h-full rounded-2xl border border-white/5 bg-white"
+                  className="w-full h-full rounded-2xl border border-slate-200 bg-white shadow-xl"
                 />
               )
             )}
@@ -745,21 +766,21 @@ export default function PublicSharePage() {
                 src={objectUrl} 
                 controls 
                 onError={() => setPreviewError('Browser tidak dapat memutar video ini. Format/codec video ini kemungkinan tidak didukung oleh browser Anda.')}
-                className="max-w-full max-h-[75vh] rounded-2xl shadow-2xl border border-white/5 bg-black"
+                className="max-w-full max-h-[75vh] rounded-2xl shadow-2xl border border-slate-250 bg-black"
               />
             )}
 
             {category === 'audio' && objectUrl && (
-              <div className="w-full max-w-md text-center p-8 backdrop-blur-md bg-[#1c1e26]/60 border border-white/5 rounded-3xl shadow-2xl mx-4">
+              <div className="w-full max-w-md text-center p-8 bg-white border border-slate-200 rounded-3xl shadow-2xl mx-4">
                 <div className="mb-6 flex justify-center">
-                  <div className="w-20 h-20 bg-[#2563eb]/10 border border-[#2563eb]/20 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
-                    <Music className="w-10 h-10 text-[#2563eb]" />
+                  <div className="w-20 h-20 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
+                    <Music className="w-10 h-10 text-emerald-500" />
                   </div>
                 </div>
-                <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
+                <h3 className="font-bold text-slate-800 text-lg truncate mb-1" title={fileInfo.originalFileName}>
                   {fileInfo.originalFileName}
                 </h3>
-                <p className="text-xs text-slate-500 mb-6">{formatFileSize(fileInfo.size)}</p>
+                <p className="text-xs text-slate-400 mb-6">{formatFileSize(fileInfo.size)}</p>
                 <audio 
                   src={objectUrl} 
                   controls 
@@ -770,7 +791,7 @@ export default function PublicSharePage() {
             )}
 
             {category === 'text' && textContent !== null && (
-              <div className="w-full max-w-4xl h-[75vh] p-6 backdrop-blur-md bg-[#1c1e26]/70 border border-white/5 rounded-3xl overflow-auto text-left font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-text text-slate-100">
+              <div className="w-full max-w-4xl h-[75vh] p-6 bg-slate-900 border border-slate-800 rounded-3xl overflow-auto text-left font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-text text-slate-100 shadow-2xl">
                 {textContent}
               </div>
             )}
@@ -778,32 +799,32 @@ export default function PublicSharePage() {
         )}
 
         {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category !== 'other' && (
-          <div className="text-center text-slate-400 space-y-2 animate-fadeIn">
-            <div className="w-10 h-10 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin mx-auto"></div>
+          <div className="text-center text-slate-450 space-y-2 animate-fadeIn">
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
             <p className="text-[10px] font-bold uppercase tracking-wider">Menginisialisasi pratinjau...</p>
           </div>
         )}
 
         {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category === 'other' && (
-          <div className="w-full max-w-md p-8 backdrop-blur-md bg-[#1c1e26]/50 border border-white/5 rounded-3xl text-center shadow-2xl mx-4 animate-fadeIn">
-            <div className="w-24 h-24 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <div className="w-full max-w-md p-8 bg-white border border-slate-250 rounded-3xl text-center shadow-2xl mx-4 animate-fadeIn">
+            <div className="w-24 h-24 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               {getFileIcon(category)}
             </div>
-            <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
+            <h3 className="font-bold text-slate-800 text-lg truncate mb-1" title={fileInfo.originalFileName}>
               {fileInfo.originalFileName}
             </h3>
-            <p className="text-xs text-slate-500 mb-6">{formatFileSize(fileInfo.size)}</p>
+            <p className="text-xs text-slate-400 mb-6">{formatFileSize(fileInfo.size)}</p>
             
-            <div className="bg-white/5 rounded-2xl p-4 text-left border border-white/5 space-y-3 mb-6">
+            <div className="bg-slate-50 rounded-2xl p-4 text-left border border-slate-200/60 space-y-3 mb-6">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-slate-400">Penyedia:</span>
-                <span className="text-slate-200 uppercase tracking-wide">
+                <span className="text-slate-450 font-bold">Penyedia:</span>
+                <span className="text-slate-700 font-bold uppercase tracking-wide">
                   {fileInfo.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
                 </span>
               </div>
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-slate-400">Tanggal Unggah:</span>
-                <span className="text-slate-200">
+                <span className="text-slate-450 font-bold">Tanggal Unggah:</span>
+                <span className="text-slate-700 font-bold">
                   {new Date(fileInfo.createdAt).toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'long',
@@ -812,15 +833,15 @@ export default function PublicSharePage() {
                 </span>
               </div>
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-slate-400">Pemilik Berkas:</span>
-                <span className="text-slate-200 truncate max-w-[180px]">{fileInfo.ownerEmail}</span>
+                <span className="text-slate-450 font-bold">Pemilik Berkas:</span>
+                <span className="text-slate-700 truncate max-w-[180px] font-bold">{fileInfo.ownerEmail}</span>
               </div>
             </div>
 
             <a 
               href={downloadUrl}
               download={fileInfo.originalFileName}
-              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-[#2563eb]/10 active:scale-[0.98] bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white text-sm py-3 px-6 gap-2.5"
+              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] bg-primary text-white text-sm py-3 px-6 gap-2.5 hover:bg-indigo-700"
             >
               <Download className="w-4 h-4" />
               Unduh Berkas

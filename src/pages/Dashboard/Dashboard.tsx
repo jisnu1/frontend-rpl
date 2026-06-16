@@ -33,6 +33,7 @@ import {
   fetchGoogleDriveFolderContents, 
   createGoogleDriveFolder, 
   moveGoogleDriveItem,
+  deleteGoogleDriveFolder,
   FolderResponse
 } from '../../api/folders';
 import { fetchExternalAccounts, getGoogleAuthUrl, ExternalAccountDto } from '../../api/externalAccounts';
@@ -65,9 +66,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const gDriveFolderId = queryParams.get('gDriveFolderId') || undefined;
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'local' | 'gdrive'>(() => {
+  const [activeTab, setActiveTab] = useState<'all' | 'local' | number>(() => {
     const saved = sessionStorage.getItem('horizon_active_tab');
-    return (saved as 'local' | 'gdrive') || 'local';
+    if (saved === 'local') return 'local';
+    if (saved && !isNaN(Number(saved))) return Number(saved);
+    return 'all';
   });
 
   // GDrive accounts state
@@ -137,17 +140,24 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   };
 
   // Persist active tab selection
-  const handleTabChange = (tab: 'local' | 'gdrive') => {
+  const handleTabChange = (tab: 'all' | 'local' | number) => {
     setActiveTab(tab);
-    sessionStorage.setItem('horizon_active_tab', tab);
+    sessionStorage.setItem('horizon_active_tab', String(tab));
     
-    // Clear URL parameters when switching main tabs
-    if (tab === 'local') {
+    if (tab === 'all') {
+      setActiveExternalAccount(null);
+      navigate('/my-drive');
+    } else if (tab === 'local') {
+      setActiveExternalAccount(null);
       navigate('/my-drive');
     } else {
-      if (activeExternalAccount) {
-        navigate(`/my-drive?accountId=${activeExternalAccount.id}`);
+      const matchingAcc = externalAccounts.find(a => a.id === tab);
+      if (matchingAcc) {
+        setActiveExternalAccount(matchingAcc);
+        navigate(`/my-drive?accountId=${tab}`);
       } else {
+        setActiveTab('all');
+        setActiveExternalAccount(null);
         navigate('/my-drive');
       }
     }
@@ -158,9 +168,30 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     try {
       const accs = await fetchExternalAccounts();
       setExternalAccounts(accs);
-      const googleAcc = accs.find(a => a.provider.toUpperCase() === 'GOOGLE');
-      if (googleAcc) {
-        setActiveExternalAccount(googleAcc);
+      
+      const queryParams = new URLSearchParams(location.search);
+      const accountIdParam = queryParams.get('accountId');
+      if (accountIdParam) {
+        const accId = Number(accountIdParam);
+        const matchingAcc = accs.find(a => a.id === accId);
+        if (matchingAcc) {
+          setActiveExternalAccount(matchingAcc);
+          setActiveTab(accId);
+          return;
+        }
+      }
+      
+      // Fallback: if activeTab is a number, set activeExternalAccount
+      if (typeof activeTab === 'number') {
+        const matchingAcc = accs.find(a => a.id === activeTab);
+        if (matchingAcc) {
+          setActiveExternalAccount(matchingAcc);
+        } else {
+          setActiveTab('all');
+          setActiveExternalAccount(null);
+        }
+      } else {
+        setActiveExternalAccount(null);
       }
     } catch (err) {
       console.error('Gagal memuat akun eksternal', err);
@@ -186,7 +217,29 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       const storageData = await fetchUserStorage();
       setStorageInfo(storageData);
 
-      if (activeTab === 'local') {
+      if (activeTab === 'all') {
+        // Render virtual folders
+        const virtualFolders: FolderResponse[] = [
+          {
+            id: 'virtual_local',
+            name: 'Storage Node',
+            parentId: null,
+            userId: user?.id || 0,
+            createdAt: new Date().toISOString(),
+          }
+        ];
+        externalAccounts.forEach((acc, index) => {
+          virtualFolders.push({
+            id: `virtual_gdrive_${acc.id}`,
+            name: `Drive ${index + 1} (${acc.email})`,
+            parentId: null,
+            userId: user?.id || 0,
+            createdAt: new Date().toISOString(),
+          });
+        });
+        setFolders(virtualFolders);
+        setFiles([]);
+      } else if (activeTab === 'local') {
         const data = await fetchFolderContents(folderId);
         setFolders(data.folders || []);
         setFiles(data.files || []);
@@ -199,9 +252,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         sessionStorage.setItem('horizon_folder_names', JSON.stringify(storedNames));
 
       } else {
-        // GDrive Tab Penelusuran
-        if (activeExternalAccount) {
-          const data = await fetchGoogleDriveFolderContents(activeExternalAccount.id, gDriveFolderId);
+        // activeTab is externalAccountId (number)
+        const currentAccount = externalAccounts.find(a => a.id === activeTab) || activeExternalAccount;
+        if (currentAccount) {
+          const data = await fetchGoogleDriveFolderContents(currentAccount.id, gDriveFolderId);
           
           const mappedFolders: FolderResponse[] = [];
           const mappedFiles: FileResponse[] = [];
@@ -223,7 +277,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 size: item.size || 0,
                 createdAt: item.createdTime,
                 provider: 'GOOGLE_DRIVE',
-                externalAccountId: activeExternalAccount.id,
+                externalAccountId: currentAccount.id,
               });
             }
           });
@@ -297,14 +351,21 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
 
   useEffect(() => {
     loadContents();
-  }, [uploadTrigger, folderId, gDriveFolderId, activeTab, activeExternalAccount]);
+  }, [uploadTrigger, folderId, gDriveFolderId, activeTab, activeExternalAccount, externalAccounts]);
 
   // Folder Navigation Actions
   const handleFolderDoubleClick = (folder: FolderResponse) => {
-    if (activeTab === 'local') {
-      navigate(`/my-drive?folderId=${folder.id}`);
+    if (folder.id === 'virtual_local') {
+      handleTabChange('local');
+    } else if (folder.id.startsWith('virtual_gdrive_')) {
+      const accId = Number(folder.id.replace('virtual_gdrive_', ''));
+      handleTabChange(accId);
     } else {
-      navigate(`/my-drive?gDriveFolderId=${folder.id}&accountId=${activeExternalAccount?.id}`);
+      if (activeTab === 'local') {
+        navigate(`/my-drive?folderId=${folder.id}`);
+      } else {
+        navigate(`/my-drive?gDriveFolderId=${folder.id}&accountId=${activeExternalAccount?.id}`);
+      }
     }
   };
 
@@ -336,8 +397,9 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         await createFolder(newFolderName.trim(), folderId);
         toastSuccess(`Folder "${newFolderName}" berhasil dibuat.`);
       } else {
-        if (!activeExternalAccount) return;
-        await createGoogleDriveFolder(activeExternalAccount.id, newFolderName.trim(), gDriveFolderId);
+        const accountId = typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id;
+        if (!accountId) return;
+        await createGoogleDriveFolder(accountId, newFolderName.trim(), gDriveFolderId);
         toastSuccess(`Folder GDrive "${newFolderName}" berhasil dibuat.`);
       }
       setNewFolderName('');
@@ -360,9 +422,14 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         await deleteFolder(confirmDeleteFolder.id);
         toastSuccess(`Folder "${confirmDeleteFolder.name}" berhasil dihapus beserta isinya.`);
       } else {
-        // GDrive folders can be deleted with the deleteFile API
-        await deleteFile(confirmDeleteFolder.id, 'GOOGLE_DRIVE');
-        toastSuccess(`Folder Google Drive "${confirmDeleteFolder.name}" berhasil dihapus.`);
+        const accountId = typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id;
+        if (accountId) {
+          await deleteGoogleDriveFolder(accountId, confirmDeleteFolder.id);
+          toastSuccess(`Folder Google Drive "${confirmDeleteFolder.name}" berhasil dihapus beserta isinya.`);
+        } else {
+          await deleteFile(confirmDeleteFolder.id, 'GOOGLE_DRIVE');
+          toastSuccess(`Folder Google Drive "${confirmDeleteFolder.name}" berhasil dihapus.`);
+        }
       }
       loadContents();
     } catch (err: any) {
@@ -424,8 +491,9 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       }
 
       if (targetProvider === 'GOOGLE_DRIVE') {
-        if (!activeExternalAccount) return;
-        await moveGoogleDriveItem(activeExternalAccount.id, sourceId, targetFolderId);
+        const accountId = typeof activeTab === 'number' ? activeTab : activeExternalAccount?.id;
+        if (!accountId) return;
+        await moveGoogleDriveItem(accountId, sourceId, targetFolderId);
         toastSuccess('Item berhasil dipindahkan di Google Drive.');
       } else {
         await moveFolderItem(sourceId, targetFolderId, type);
@@ -489,50 +557,54 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       )}
 
       {/* Tabs Selector Local VPS vs Google Drive */}
-      <div className="flex border-b border-slate-200 gap-6 text-sm font-extrabold">
+      <div className="flex border-b border-slate-200 gap-6 text-sm font-extrabold overflow-x-auto pb-1">
+        <button
+          onClick={() => handleTabChange('all')}
+          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'all' 
+              ? 'border-primary text-primary' 
+              : 'border-transparent text-slate-450 hover:text-slate-700'
+          }`}
+        >
+          <Files className="w-4 h-4" />
+          <span>ALL</span>
+        </button>
         <button
           onClick={() => handleTabChange('local')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
+          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'local' 
               ? 'border-primary text-primary' 
               : 'border-transparent text-slate-450 hover:text-slate-700'
           }`}
         >
           <Cloud className="w-4 h-4" />
-          <span>Local VPS Storage</span>
+          <span>Storage Node</span>
         </button>
+        {externalAccounts.map((acc, index) => (
+          <button
+            key={acc.id}
+            onClick={() => handleTabChange(acc.id)}
+            className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === acc.id 
+                ? 'border-primary text-primary' 
+                : 'border-transparent text-slate-450 hover:text-slate-700'
+            }`}
+          >
+            <HardDrive className="w-4 h-4" />
+            <span>Drive {index + 1} ({acc.email})</span>
+          </button>
+        ))}
         <button
-          onClick={() => handleTabChange('gdrive')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'gdrive' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
+          onClick={handleConnectGoogleDrive}
+          className="pb-3 border-b-2 border-transparent text-[#0052cc] hover:text-[#0052cc]/80 flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap ml-auto"
         >
-          <HardDrive className="w-4 h-4" />
-          <span>Google Drive</span>
+          <Plus className="w-3.5 h-3.5" />
+          <span>Hubungkan Google Drive</span>
         </button>
       </div>
 
-      {/* GDrive Connection Page (shown if not connected on GDrive tab) */}
-      {activeTab === 'gdrive' && !activeExternalAccount && (
-        <Card className="p-8 text-center max-w-lg mx-auto flex flex-col items-center justify-center space-y-4 shadow-sm border border-slate-200 mt-6">
-          <HardDrive className="w-16 h-16 text-amber-500 animate-pulse" />
-          <div>
-            <h3 className="text-lg font-bold text-slate-700">Sambungkan Google Drive Anda</h3>
-            <p className="text-sm text-slate-450 mt-2 font-semibold leading-relaxed">
-              Horizon Cloud mendukung integrasi real-time Google Drive. Sambungkan akun Google Drive Anda untuk menelusuri folder, mengunduh, mengunggah, memindahkan, dan mengaktifkan auto-sync berkas.
-            </p>
-          </div>
-          <Button variant="primary" onClick={handleConnectGoogleDrive} className="mt-4 flex items-center gap-2">
-            Sambungkan Akun Google
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </Card>
-      )}
-
-      {/* Main Dashboard interface (if connected / Local) */}
-      {(activeTab === 'local' || activeExternalAccount) && (
+      {/* Main Dashboard interface (if connected / Local / ALL) */}
+      {(activeTab === 'all' || activeTab === 'local' || activeExternalAccount) && (
         <>
           {/* Modal Konfirmasi Hapus Berkas */}
           <Modal
@@ -592,7 +664,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 variant="primary"
                 onClick={() => {
                   if (confirmDownloadFile) {
-                    downloadFile(confirmDownloadFile.id, confirmDownloadFile.originalFileName, confirmDownloadFile.provider, confirmDownloadFile.size);
+                    downloadFile(
+                      confirmDownloadFile.id,
+                      confirmDownloadFile.originalFileName,
+                      confirmDownloadFile.provider,
+                      confirmDownloadFile.size,
+                      confirmDownloadFile.externalAccountId
+                    );
                     setConfirmDownloadFile(null);
                   }
                 }}
@@ -639,154 +717,158 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           <div className="flex justify-between items-start md:items-end flex-wrap gap-3 md:gap-4">
             <div>
               {/* Breadcrumb Navigation */}
-              <nav className="flex items-center gap-2 text-xs text-slate-450 mb-1 select-none flex-wrap">
-                <span className="hover:text-slate-800 cursor-pointer font-semibold" onClick={() => handleBreadcrumbClick()}>
-                  {activeTab === 'local' ? 'My Drive' : `Google Drive (${activeExternalAccount?.email})`}
-                </span>
-                
-                {(activeTab === 'local' ? localPath : gDrivePath).map((p, idx) => (
-                  <React.Fragment key={p.id}>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-350 shrink-0" />
-                    <span 
-                      className={`hover:text-slate-800 cursor-pointer font-semibold truncate max-w-[120px] ${
-                        idx === (activeTab === 'local' ? localPath.length - 1 : gDrivePath.length - 1) 
-                          ? 'text-slate-500 font-extrabold pointer-events-none' 
-                          : ''
-                      }`}
-                      onClick={() => handleBreadcrumbClick(p.id)}
-                    >
-                      {p.name}
-                    </span>
-                  </React.Fragment>
-                ))}
-              </nav>
+              {activeTab !== 'all' && (
+                <nav className="flex items-center gap-2 text-xs text-slate-450 mb-1 select-none flex-wrap">
+                  <span className="hover:text-slate-800 cursor-pointer font-semibold" onClick={() => handleBreadcrumbClick()}>
+                    {activeTab === 'local' ? 'My Drive' : `Google Drive (${activeExternalAccount?.email || ''})`}
+                  </span>
+                  
+                  {(activeTab === 'local' ? localPath : gDrivePath).map((p, idx) => (
+                    <React.Fragment key={p.id}>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-350 shrink-0" />
+                      <span 
+                        className={`hover:text-slate-800 cursor-pointer font-semibold truncate max-w-[120px] ${
+                          idx === (activeTab === 'local' ? localPath.length - 1 : gDrivePath.length - 1) 
+                            ? 'text-slate-500 font-extrabold pointer-events-none' 
+                            : ''
+                        }`}
+                        onClick={() => handleBreadcrumbClick(p.id)}
+                      >
+                        {p.name}
+                      </span>
+                    </React.Fragment>
+                  ))}
+                </nav>
+              )}
               
               <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                {activeTab === 'local' 
-                  ? (localPath.length > 0 ? localPath[localPath.length - 1].name : 'My Drive')
-                  : (gDrivePath.length > 0 ? gDrivePath[gDrivePath.length - 1].name : 'Google Drive')
+                {activeTab === 'all'
+                  ? 'Semua Penyimpanan'
+                  : activeTab === 'local' 
+                    ? (localPath.length > 0 ? localPath[localPath.length - 1].name : 'My Drive')
+                    : (gDrivePath.length > 0 ? gDrivePath[gDrivePath.length - 1].name : `Google Drive (${activeExternalAccount?.email || ''})`)
                 }
                 <FolderOpen className="w-6 h-6 md:w-8 md:h-8 text-primary" />
               </h1>
               <p className="text-sm text-slate-500 mt-1">
-                {activeTab === 'local' 
-                  ? 'Kelola seluruh berkas dan folder penyimpanan pribadi Anda di server VPS Lokal.' 
-                  : 'Telusuri, organisasikan, dan bagikan seluruh berkas Anda di Google Drive secara real-time.'}
+                {activeTab === 'all'
+                  ? 'Akses cepat ke seluruh node penyimpanan lokal dan akun Google Drive yang terhubung.'
+                  : activeTab === 'local' 
+                    ? 'Kelola seluruh berkas dan folder penyimpanan pribadi Anda di server VPS Lokal.' 
+                    : 'Telusuri, organisasikan, dan bagikan seluruh berkas Anda di Google Drive secara real-time.'}
               </p>
             </div>
 
             {/* Controls Container */}
-            <div className="flex items-center gap-3 relative flex-wrap">
-              
-              {/* Button Create Folder */}
-              <Button 
-                variant="primary" 
-                size="sm" 
-                onClick={() => setIsCreateFolderOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <FolderPlus className="w-4 h-4" />
-                <span>Folder Baru</span>
-              </Button>
-
-              {/* Tombol Filter dengan Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
-                    activeFilter !== 'all'
-                      ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
+            {activeTab !== 'all' && (
+              <div className="flex items-center gap-3 relative flex-wrap">
+                
+                {/* Button Create Folder */}
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={() => setIsCreateFolderOpen(true)}
+                  className="flex items-center gap-2"
                 >
-                  <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
-                  <span>
-                    {activeFilter === 'all'
-                      ? 'Filter'
-                      : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
-                  </span>
-                  <svg
-                    className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
-                      isFilterDropdownOpen ? 'rotate-180' : ''
+                  <FolderPlus className="w-4 h-4" />
+                  <span>Folder Baru</span>
+                </Button>
+
+                {/* Tombol Filter dengan Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
+                      activeFilter !== 'all'
+                        ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+                    <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
+                    <span>
+                      {activeFilter === 'all'
+                        ? 'Filter'
+                        : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
+                        isFilterDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
 
-                {isFilterDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-20 filter-dropdown-backdrop" onClick={() => setIsFilterDropdownOpen(false)} />
-                    
-                    {/* Dropdown Menu */}
-                    <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-100 shadow-[0px_10px_30px_rgba(15,23,42,0.1)] py-2 z-30 animate-fadeIn filter-dropdown-menu">
-                      <div className="px-4 py-2 border-b border-slate-50 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        Pilih Jenis Berkas
-                      </div>
-                      {filterCategories.map((category) => {
-                        const IconComponent = category.icon;
-                        const isActive = activeFilter === category.id;
-                        const count = getCategoryCount(category);
+                  {isFilterDropdownOpen && (
+                    <>
+                      {/* Overlay background to close dropdown */}
+                      <div className="fixed inset-0 z-10" onClick={() => setIsFilterDropdownOpen(false)} />
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-fadeIn min-w-[220px]">
+                        {filterCategories.map((category) => {
+                          const IconComponent = category.icon;
+                          const isActive = activeFilter === category.id;
+                          const count = getCategoryCount(category);
 
-                        return (
-                          <button
-                            key={category.id}
-                            onClick={() => {
-                              setActiveFilter(category.id);
-                              setIsFilterDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
-                              isActive
-                                ? 'text-[#0052cc] bg-[#0052cc]/5'
-                                : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`p-1.5 rounded-lg transition-colors ${
-                                isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
-                              }`}>
-                                <IconComponent className="w-4 h-4" />
+                          return (
+                            <button
+                              key={category.id}
+                              onClick={() => {
+                                setActiveFilter(category.id);
+                                setIsFilterDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
+                                isActive
+                                  ? 'text-[#0052cc] bg-[#0052cc]/5'
+                                  : 'text-slate-700 hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`p-1.5 rounded-lg transition-colors ${
+                                  isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
+                                }`}>
+                                  <IconComponent className="w-4 h-4" />
+                                </div>
+                                <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
                               </div>
-                              <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
-                            </div>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
-                              isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
-                            }`}>
-                              {count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                                isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
+                              }`}>
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
 
-              {/* Kontrol Tampilan Grid / List */}
-              <div className="bg-slate-100 p-1 rounded-xl hidden md:flex gap-1 border border-slate-200/50">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-all ${
-                    viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
-                  }`}
-                  title="List View"
-                >
-                  <List className="w-4.5 h-4.5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-all ${
-                    viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
-                  }`}
-                  title="Grid View"
-                >
-                  <Grid className="w-4.5 h-4.5" />
-                </button>
+                {/* Kontrol Tampilan Grid / List */}
+                <div className="bg-slate-100 p-1 rounded-xl hidden md:flex gap-1 border border-slate-200/50">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1.5 rounded-lg transition-all ${
+                      viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
+                    }`}
+                    title="List View"
+                  >
+                    <List className="w-4.5 h-4.5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 rounded-lg transition-all ${
+                      viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
+                    }`}
+                    title="Grid View"
+                  >
+                    <Grid className="w-4.5 h-4.5" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Konten Utama: Daftar Folder & Berkas */}
@@ -804,11 +886,11 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                     return (
                       <div
                         key={folder.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, folder.id, 'FOLDER', providerStr)}
-                        onDragOver={(e) => handleDragOver(e, folder.id)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, folder.id, providerStr)}
+                        draggable={activeTab !== 'all'}
+                        onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, folder.id, 'FOLDER', providerStr) : undefined}
+                        onDragOver={activeTab !== 'all' ? (e) => handleDragOver(e, folder.id) : undefined}
+                        onDragLeave={activeTab !== 'all' ? handleDragLeave : undefined}
+                        onDrop={activeTab !== 'all' ? (e) => handleDrop(e, folder.id, providerStr) : undefined}
                         onDoubleClick={() => handleFolderDoubleClick(folder)}
                         onClick={() => {
                           if (window.innerWidth < 768) {
@@ -829,28 +911,30 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                         </div>
 
                         {/* Folder Action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveShareFolder(folder);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer"
-                            title="Bagikan Folder"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmDeleteFolder(folder);
-                            }}
-                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all cursor-pointer"
-                            title="Hapus Folder"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {activeTab !== 'all' && (
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveShareFolder(folder);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer"
+                              title="Bagikan Folder"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteFolder(folder);
+                              }}
+                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all cursor-pointer"
+                              title="Hapus Folder"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -859,8 +943,9 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             )}
 
             {/* ───── SECTION 2: FILES ───── */}
-            <div className="space-y-3">
-              {filteredFolders.length > 0 && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Berkas</h3>}
+            {activeTab !== 'all' && (
+              <div className="space-y-3">
+                {filteredFolders.length > 0 && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Berkas</h3>}
               
               <div className="bg-white rounded-[2rem] shadow-[0px_4px_20px_rgba(15,23,42,0.03)] border border-slate-150/80 overflow-hidden">
                 {/* ── LIST VIEW ─────────────────────────────── */}
@@ -1141,6 +1226,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                 )}
               </div>
             </div>
+            )}
 
           </div>
         </>
@@ -1178,6 +1264,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           provider={activePreviewFile?.provider}
           fileSize={activePreviewFile?.size}
           createdAt={activePreviewFile?.createdAt}
+          externalAccountId={activePreviewFile?.externalAccountId}
         />
       )}
 

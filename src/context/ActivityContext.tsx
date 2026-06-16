@@ -30,7 +30,7 @@ interface ActivityContextType {
   notifications: ActivityNotification[];
   unreadCount: number;
   uploadFile: (file: File, provider: any, onUploadSuccess?: () => void, folderId?: string) => Promise<void>;
-  downloadFile: (fileId: string, fileName: string, provider: string, fileSize: number) => Promise<void>;
+  downloadFile: (fileId: string, fileName: string, provider: string, fileSize: number, externalAccountId?: number | null) => Promise<void>;
   cancelActivity: (id: string) => Promise<void>;
   markAllNotificationsAsRead: () => void;
   clearNotifications: () => void;
@@ -225,7 +225,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
   }, [addNotification, toastSuccess, toastError, updateActivityProgress, updateActivityStatus]);
 
   // Asynchronous Download File Implementation
-  const downloadFile = useCallback(async (fileId: string, fileName: string, provider: string, fileSize: number) => {
+  const downloadFile = useCallback(async (fileId: string, fileName: string, provider: string, fileSize: number, externalAccountId?: number | null) => {
     const actId = 'download_' + Math.random().toString(36).substring(2, 9);
     const newActivity: BackgroundActivity = {
       id: actId,
@@ -242,7 +242,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     activeTasksRef.current.set(actId, { type: 'download', fileId, provider, fileName });
 
     try {
-      const url = getDownloadUrl(fileId, provider);
+      const url = getDownloadUrl(fileId, provider, externalAccountId);
       
       const response = await apiClient.get(url, {
         responseType: 'blob',

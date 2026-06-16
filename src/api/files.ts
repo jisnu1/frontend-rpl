@@ -31,10 +31,14 @@ export async function deleteFile(id: string, provider?: string): Promise<void> {
 /**
  * Mendapatkan URL streaming unduhan riil
  */
-export function getDownloadUrl(fileId: string, provider: string): string {
+export function getDownloadUrl(fileId: string, provider: string, externalAccountId?: number | null): string {
   const baseUrl = API_BASE_URL;
   if (provider?.toUpperCase() === 'GOOGLE_DRIVE') {
-    return `${baseUrl}/google-drive/download/${fileId}/stream`;
+    let url = `${baseUrl}/google-drive/download/${fileId}/stream`;
+    if (externalAccountId) {
+      url += `?externalAccountId=${externalAccountId}`;
+    }
+    return url;
   }
   return `${baseUrl}/files/download/${fileId}/stream`;
 }
@@ -42,7 +46,15 @@ export function getDownloadUrl(fileId: string, provider: string): string {
 /**
  * Mendapatkan URL preview inline untuk file pribadi (browser render langsung)
  */
-export function getPreviewUrl(fileId: string): string {
+export function getPreviewUrl(fileId: string, provider?: string | null, externalAccountId?: number | null): string {
   const baseUrl = API_BASE_URL;
-  return `${baseUrl}/preview/${fileId}`;
+  let url = `${baseUrl}/preview/${fileId}`;
+  const params = new URLSearchParams();
+  if (provider) params.append('provider', provider);
+  if (externalAccountId) params.append('externalAccountId', String(externalAccountId));
+  const query = params.toString();
+  if (query) {
+    url += `?${query}`;
+  }
+  return url;
 }

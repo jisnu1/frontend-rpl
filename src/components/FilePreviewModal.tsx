@@ -6,6 +6,7 @@ import {
 import apiClient from '../api/apiClient';
 import { getPreviewUrl } from '../api/files';
 import { useActivity } from '../context/ActivityContext';
+import { getPublicPreviewUrl, getPublicDownloadUrl } from '../api/shared';
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ interface FilePreviewModalProps {
   fileSize: number | null | undefined;
   ownerEmail?: string | null | undefined;
   createdAt?: string | null | undefined;
+  shareToken?: string;
+  externalAccountId?: number | null;
 }
 
 export default function FilePreviewModal({
@@ -26,7 +29,9 @@ export default function FilePreviewModal({
   provider,
   fileSize,
   ownerEmail,
-  createdAt
+  createdAt,
+  shareToken,
+  externalAccountId
 }: FilePreviewModalProps) {
   const { downloadFile } = useActivity();
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -47,7 +52,9 @@ export default function FilePreviewModal({
         setError(null);
         setTextContent(null);
         
-        const previewUrl = getPreviewUrl(fileId);
+        const previewUrl = shareToken
+          ? getPublicPreviewUrl(shareToken, provider, fileId)
+          : getPreviewUrl(fileId, provider, externalAccountId);
         const response = await apiClient.get(previewUrl, {
           responseType: 'blob',
         });
@@ -342,7 +349,12 @@ export default function FilePreviewModal({
             <button
               onClick={() => {
                 if (fileId && provider) {
-                  downloadFile(fileId, name, provider, size);
+                  if (shareToken) {
+                    const downloadUrl = getPublicDownloadUrl(shareToken, provider, true, fileId);
+                    window.open(downloadUrl, '_blank');
+                  } else {
+                    downloadFile(fileId, name, provider, size, externalAccountId);
+                  }
                 }
               }}
               className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-primary text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-primary/20 text-xs py-3 px-6 gap-2"
