@@ -7,6 +7,7 @@ import apiClient from '../api/apiClient';
 import { getPreviewUrl } from '../api/files';
 import { useActivity } from '../context/ActivityContext';
 import { getPublicPreviewUrl, getPublicDownloadUrl } from '../api/shared';
+import { getFileCategory, formatSize, isMobileDevice } from '../utils/fileHelpers';
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -103,23 +104,7 @@ export default function FilePreviewModal({
   const size = fileSize || 0;
   const pvd = provider || 'local';
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
 
-  const getFileCategory = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase() || '';
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
-    if (['pdf'].includes(ext)) return 'pdf';
-    if (['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov'].includes(ext)) return 'video';
-    if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
-    if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
-    return 'other';
-  };
 
   const getFileIcon = (category: string) => {
     switch (category) {
@@ -139,7 +124,7 @@ export default function FilePreviewModal({
   };
 
   const category = getFileCategory(name);
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  const isMobile = isMobileDevice();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm transition-all duration-300 p-4">
@@ -285,7 +270,7 @@ export default function FilePreviewModal({
                 </div>
                 <div>
                   <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Ukuran Berkas</div>
-                  <div className="text-xs font-bold text-slate-700">{formatFileSize(size)}</div>
+                  <div className="text-xs font-bold text-slate-700">{formatSize(size)}</div>
                 </div>
               </div>
 

@@ -58,3 +58,11 @@ export function getPreviewUrl(fileId: string, provider?: string | null, external
   }
   return url;
 }
+
+/**
+ * Mengambil detail metadata berkas berdasarkan ID berkas
+ */
+export async function fetchFileDetails(id: string): Promise<FileResponse> {
+  const response = await apiClient.get<FileResponse>(`/files/${id}`);
+  return response.data;
+}

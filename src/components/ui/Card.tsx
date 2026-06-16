@@ -1,4 +1,5 @@
 import React, { HTMLAttributes } from 'react';
+import { cn } from '../../utils/cn';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hoverLift?: boolean;
@@ -27,7 +28,7 @@ export default function Card({
 
   return (
     <div
-      className={`${baseStyles} ${liftStyles} ${borderAccents[borderAccent]} ${className}`}
+      className={cn(baseStyles, liftStyles, borderAccents[borderAccent], className)}
       {...props}
     >
       {children}

@@ -20,16 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import FilePreviewModal from '../../components/FilePreviewModal';
-
-const getFileCategory = (fileName: string) => {
-  const ext = fileName.split('.').pop()?.toLowerCase() || '';
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'image';
-  if (['pdf'].includes(ext)) return 'pdf';
-  if (['mp4', 'webm', 'ogg', 'mkv', 'avi', 'mov'].includes(ext)) return 'video';
-  if (['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac'].includes(ext)) return 'audio';
-  if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
-  return 'other';
-};
+import { getFileCategory, formatSize, isMobileDevice } from '../../utils/fileHelpers';
 
 const getFileIcon = (category: string) => {
   switch (category) {
@@ -89,7 +80,7 @@ export default function PublicSharePage() {
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+  const isMobile = isMobileDevice();
 
   const loadShareData = async (folderId?: string) => {
     if (!activeShareToken) return;
@@ -330,11 +321,7 @@ export default function PublicSharePage() {
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return formatSize(bytes);
   };
 
   if (isLoading) {

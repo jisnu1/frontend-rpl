@@ -1,5 +1,6 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
@@ -39,7 +40,7 @@ export default function Button({
   return (
     <button
       disabled={disabled || isLoading}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={cn(baseStyles, variants[variant], sizes[size], className)}
       {...props}
     >
       {isLoading && (

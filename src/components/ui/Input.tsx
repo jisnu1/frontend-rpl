@@ -1,5 +1,6 @@
 import React, { InputHTMLAttributes, forwardRef, useState } from 'react';
 import { LucideIcon, Eye, EyeOff } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -36,13 +37,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={actualType}
-            className={`w-full bg-[#F1F5F9] border-none rounded-full py-2.5 text-base md:text-xs font-semibold text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none ${
-              LeftIcon ? 'pl-11' : 'pl-4'
-            } ${
-              (RightIcon || isPasswordType) ? 'pr-11' : 'pr-4'
-            } ${
-              error ? 'ring-2 ring-error/50 focus:ring-error' : ''
-            } ${className}`}
+            className={cn(
+              "w-full bg-[#F1F5F9] border-none rounded-full py-2.5 text-base md:text-xs font-semibold text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:bg-white transition-all outline-none",
+              LeftIcon ? 'pl-11' : 'pl-4',
+              (RightIcon || isPasswordType) ? 'pr-11' : 'pr-4',
+              error ? 'ring-2 ring-error/50 focus:ring-error' : '',
+              className
+            )}
             {...props}
           />
           

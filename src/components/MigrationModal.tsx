@@ -4,6 +4,7 @@ import { fetchExternalAccounts, ExternalAccountDto } from '../api/externalAccoun
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
 import { useActivity } from '../context/ActivityContext';
 import { useToast } from '../context/ToastContext';
+import { formatSize } from '../utils/fileHelpers';
 
 interface MigrationModalProps {
   isOpen: boolean;
@@ -171,13 +172,7 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, selecte
 
   const hasSelfMigration = selfMigrationFiles.length > 0 || selfMigrationFolders.length > 0;
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
+
 
   const handleStartMigration = async () => {
     setIsSubmitting(true);

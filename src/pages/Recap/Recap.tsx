@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import Dashboard from '../Dashboard/Dashboard';
 import AiAssistantPanel from './components/AiAssistantPanel';
 import { fetchAiSummary, fetchPdfSummary, fetchPdfChat } from '../../api/recap';
-import apiClient from '../../api/apiClient';
+import { fetchFileDetails } from '../../api/files';
 import { useToast } from '../../context/ToastContext';
 
 interface Message {
@@ -40,15 +40,15 @@ export default function Recap({ uploadTrigger = 0, searchQuery = '' }: { uploadT
       setIsPanelOpen(false); // keep minimized in the corner as processing indicator
       try {
         // Fetch metadata from backend
-        const fileRes = await apiClient.get(`/files/${fileId}`);
-        setFileDetails(fileRes.data);
+        const fileData = await fetchFileDetails(fileId);
+        setFileDetails(fileData);
 
         // Fetch AI PDF summary
         const summaryText = await fetchPdfSummary(fileId);
         setSummary(summaryText);
         
         // Show success toast
-        toastSuccess(`AI Recap selesai! Rangkuman dokumen "${fileRes.data.originalFileName}" telah siap.`);
+        toastSuccess(`AI Recap selesai! Rangkuman dokumen "${fileData.originalFileName}" telah siap.`);
       } catch (err: any) {
         console.error('Failed to load document or AI summary', err);
         setSummary('Gagal memproses berkas PDF ini atau server AI sedang sibuk. Silakan coba kembali nanti.');

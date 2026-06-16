@@ -1,28 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  FolderOpen, 
-  Download, 
-  Trash2, 
-  Sparkles, 
-  List, 
-  Grid, 
-  SearchX, 
   AlertTriangle,
-  ChevronRight,
-  Share2,
+  Download,
+  FolderPlus,
   Filter,
+  List,
+  Grid,
   Files,
   FileText,
   Image as ImageIcon,
   Video as VideoIcon,
-  Table as TableIcon,
-  FolderPlus,
-  Folder,
-  Plus,
-  HardDrive,
-  Cloud,
-  ArrowRight
+  Table as TableIcon
 } from 'lucide-react';
 import { fetchMyFiles, deleteFile, getDownloadUrl, FileResponse } from '../../api/files';
 import { 
@@ -42,8 +31,6 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import ShareModal from '../../components/ShareModal';
 import FolderShareModal from '../../components/FolderShareModal';
-import FileIcon from '../../components/ui/FileIcon';
-import Card from '../../components/ui/Card';
 import { useToast } from '../../context/ToastContext';
 import { useActivity } from '../../context/ActivityContext';
 import FilePreviewModal from '../../components/FilePreviewModal';
@@ -51,13 +38,22 @@ import { fetchUserStorage, UserStorageResponse } from '../../api/storage';
 import { useAuth } from '../../context/AuthContext';
 import UpgradeModal from '../../components/ui/UpgradeModal';
 
-interface DashboardFolder extends FolderResponse {
+// Sub-components
+import QuotaBanner from './components/QuotaBanner';
+import DashboardTabs from './components/DashboardTabs';
+import Breadcrumbs from './components/Breadcrumbs';
+import FolderCreationModal from './components/FolderCreationModal';
+import FileBrowser from './components/FileBrowser';
+
+import { formatSize, getFileExtension } from '../../utils/fileHelpers';
+
+export interface DashboardFolder extends FolderResponse {
   provider?: 'STORAGE_NODE' | 'GOOGLE_DRIVE';
   externalAccountId?: number | null;
   providerLabel?: string;
 }
 
-interface DashboardFile extends FileResponse {
+export interface DashboardFile extends FileResponse {
   providerLabel?: string;
 }
 
@@ -130,10 +126,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
   const { error: toastError, success: toastSuccess } = useToast();
   const { downloadFile } = useActivity();
 
-  const getFileExtension = (filename: string) => {
-    return filename.split('.').pop() || '';
-  };
-
   const getFolderProvider = (folder: DashboardFolder | null) => {
     if (!folder) return 'STORAGE_NODE';
     return folder.provider || (activeTab === 'local' ? 'STORAGE_NODE' : 'GOOGLE_DRIVE');
@@ -155,7 +147,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }).length;
   };
 
-  // Persist active tab selection
   const handleTabChange = (tab: 'all' | 'local' | number) => {
     setActiveTab(tab);
     sessionStorage.setItem('horizon_active_tab', String(tab));
@@ -179,7 +170,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Load connected cloud accounts
   const loadAccounts = async () => {
     try {
       const accs = await fetchExternalAccounts();
@@ -197,7 +187,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         }
       }
       
-      // Fallback: if activeTab is a number, set activeExternalAccount
       if (typeof activeTab === 'number') {
         const matchingAcc = accs.find(a => a.id === activeTab);
         if (matchingAcc) {
@@ -214,7 +203,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Connect Google Drive integration
   const handleConnectGoogleDrive = async () => {
     try {
       const url = await getGoogleAuthUrl();
@@ -225,16 +213,13 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Core navigation contents loader
   const loadContents = async () => {
     setIsLoading(true);
     try {
-      // Fetch storage quota info
       const storageData = await fetchUserStorage();
       setStorageInfo(storageData);
 
       if (activeTab === 'all') {
-        // Fetch local root and GDrive roots concurrently
         const localPromise: Promise<FolderContentResponse> = fetchFolderContents(undefined).catch(err => {
           console.error("Failed to fetch local contents in ALL tab", err);
           return { folders: [], files: [] } as FolderContentResponse;
@@ -254,7 +239,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         const combinedFolders: DashboardFolder[] = [];
         const combinedFiles: DashboardFile[] = [];
 
-        // Add local contents
         if (localData.folders) {
           localData.folders.forEach((f: FolderResponse) => {
             combinedFolders.push({
@@ -276,7 +260,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           });
         }
 
-        // Add GDrive contents
         gdriveResults.forEach((result) => {
           const acc = result.acc;
           const data = result.data;
@@ -326,7 +309,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         setFolders(mappedFolders);
         setFiles(mappedFiles);
 
-        // Store subfolders names locally for breadcrumbs reconstruction
         const storedNames = JSON.parse(sessionStorage.getItem('horizon_folder_names') || '{}');
         data.folders?.forEach(f => {
           storedNames[f.id] = f.name;
@@ -334,7 +316,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         sessionStorage.setItem('horizon_folder_names', JSON.stringify(storedNames));
 
       } else {
-        // activeTab is externalAccountId (number)
         const currentAccount = externalAccounts.find(a => a.id === activeTab) || activeExternalAccount;
         if (currentAccount) {
           const data = await fetchGoogleDriveFolderContents(currentAccount.id, gDriveFolderId);
@@ -371,7 +352,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           setFolders(mappedFolders);
           setFiles(mappedFiles);
 
-          // Store GDrive folder names locally for breadcrumbs reconstruction
           const storedGDriveNames = JSON.parse(sessionStorage.getItem('horizon_gdrive_names') || '{}');
           mappedFolders.forEach(f => {
             storedGDriveNames[f.id] = f.name;
@@ -390,7 +370,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Sync breadcrumbs with URL params
   useEffect(() => {
     if (activeTab === 'local') {
       if (!folderId) {
@@ -439,7 +418,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     loadContents();
   }, [uploadTrigger, folderId, gDriveFolderId, activeTab, activeExternalAccount, externalAccounts]);
 
-  // Folder Navigation Actions
   const handleFolderDoubleClick = (folder: DashboardFolder) => {
     if (folder.id === 'virtual_local') {
       handleTabChange('local');
@@ -474,7 +452,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Breadcrumb click handler
   const handleBreadcrumbClick = (id?: string) => {
     if (activeTab === 'local') {
       if (!id) {
@@ -491,7 +468,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Create folder action
   const handleCreateFolder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFolderName.trim()) return;
@@ -518,7 +494,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Delete folder action
   const handleDeleteFolder = async () => {
     if (!confirmDeleteFolder) return;
     setIsDeleting(true);
@@ -547,7 +522,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Delete file action
   const handleDeleteFile = async () => {
     if (!confirmDeleteFile) return;
     setIsDeleting(true);
@@ -564,7 +538,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  // Drag-and-drop move items implementation
   const handleDragStart = (e: React.DragEvent, id: string, type: 'FILE' | 'FOLDER', provider: string) => {
     e.dataTransfer.setData('text/plain', JSON.stringify({ id, type, provider }));
   };
@@ -612,14 +585,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     }
   };
 
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
   const filteredFiles = files.filter((f) => {
     const matchesSearch = f.originalFileName.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
@@ -634,82 +599,21 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isEmpty = !isLoading && filteredFiles.length === 0 && filteredFolders.length === 0;
-
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1 space-y-5 md:space-y-8 flex flex-col relative">
       
       {/* Sticky Over-quota Alert Banner */}
-      {storageInfo && storageInfo.usedBytes > storageInfo.quotaBytes && (
-        <div className="bg-gradient-to-r from-red-600 to-rose-500 text-white rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-[0_10px_30px_rgba(244,63,94,0.25)] border border-red-500/10 transition-all">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-2.5 rounded-2xl shrink-0">
-              <AlertTriangle className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <h4 className="text-sm md:text-base font-extrabold tracking-wide">Penyimpanan Anda Telah Melebihi Kuota!</h4>
-              <p className="text-xs text-white/90 mt-1 font-semibold leading-relaxed">
-                Penggunaan ({formatSize(storageInfo.usedBytes)}) telah melewati kuota aktif ({formatSize(storageInfo.quotaBytes)}). Fitur Upload, Berbagi berkas, AI, dan Migrasi dinonaktifkan sementara. Silakan hapus berkas atau upgrade paket Anda.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setUpgradeModalOpen(true)}
-            className="w-full md:w-auto px-5 py-2.5 bg-white text-rose-600 hover:bg-slate-50 font-black rounded-xl text-xs transition-all shadow-md shrink-0 active:scale-95 cursor-pointer"
-          >
-            Upgrade Sekarang
-          </button>
-        </div>
-      )}
+      <QuotaBanner storageInfo={storageInfo} onUpgradeClick={() => setUpgradeModalOpen(true)} />
 
       {/* Tabs Selector Local VPS vs Google Drive */}
-      <div className="flex border-b border-slate-200 gap-6 text-sm font-extrabold overflow-x-auto pb-1">
-        <button
-          onClick={() => handleTabChange('all')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'all' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          <Files className="w-4 h-4" />
-          <span>ALL</span>
-        </button>
-        <button
-          onClick={() => handleTabChange('local')}
-          className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'local' 
-              ? 'border-primary text-primary' 
-              : 'border-transparent text-slate-450 hover:text-slate-700'
-          }`}
-        >
-          <Cloud className="w-4 h-4" />
-          <span>Storage Node</span>
-        </button>
-        {externalAccounts.map((acc, index) => (
-          <button
-            key={acc.id}
-            onClick={() => handleTabChange(acc.id)}
-            className={`pb-3 border-b-2 flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === acc.id 
-                ? 'border-primary text-primary' 
-                : 'border-transparent text-slate-450 hover:text-slate-700'
-            }`}
-          >
-            <HardDrive className="w-4 h-4" />
-            <span>Drive {index + 1} ({acc.email})</span>
-          </button>
-        ))}
-        <button
-          onClick={handleConnectGoogleDrive}
-          className="pb-3 border-b-2 border-transparent text-[#0052cc] hover:text-[#0052cc]/80 flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap ml-auto"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>Hubungkan Google Drive</span>
-        </button>
-      </div>
+      <DashboardTabs 
+        activeTab={activeTab} 
+        externalAccounts={externalAccounts} 
+        onTabChange={handleTabChange}
+        onConnectGoogleDrive={handleConnectGoogleDrive}
+      />
 
-      {/* Main Dashboard interface (if connected / Local / ALL) */}
+      {/* Main Dashboard interface */}
       {(activeTab === 'all' || activeTab === 'local' || activeExternalAccount) && (
         <>
           {/* Modal Konfirmasi Hapus Berkas */}
@@ -787,104 +691,45 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           </Modal>
 
           {/* Modal Buat Folder Baru */}
-          <Modal
+          <FolderCreationModal 
             isOpen={isCreateFolderOpen}
             onClose={() => setIsCreateFolderOpen(false)}
-            title="Buat Folder Baru"
-            icon={FolderPlus}
-          >
-            <form onSubmit={handleCreateFolder} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                  Nama Folder
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="Masukkan nama folder..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 px-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"
-                  autoFocus
-                />
-              </div>
-              <div className="flex gap-2 justify-end pt-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setIsCreateFolderOpen(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" variant="primary" size="sm" isLoading={isCreatingFolder}>
-                  Buat Folder
-                </Button>
-              </div>
-            </form>
-          </Modal>
+            newFolderName={newFolderName}
+            setNewFolderName={setNewFolderName}
+            onSubmit={handleCreateFolder}
+            isLoading={isCreatingFolder}
+          />
 
           {/* Header Halaman & Kontrol Tampilan */}
           <div className="flex justify-between items-start md:items-end flex-wrap gap-3 md:gap-4">
-            <div>
-              {/* Breadcrumb Navigation */}
-              {activeTab !== 'all' && (
-                <nav className="flex items-center gap-2 text-xs text-slate-450 mb-1 select-none flex-wrap">
-                  <span className="hover:text-slate-800 cursor-pointer font-semibold" onClick={() => handleBreadcrumbClick()}>
-                    {activeTab === 'local' ? 'My Drive' : `Google Drive (${activeExternalAccount?.email || ''})`}
-                  </span>
-                  
-                  {(activeTab === 'local' ? localPath : gDrivePath).map((p, idx) => (
-                    <React.Fragment key={p.id}>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-350 shrink-0" />
-                      <span 
-                        className={`hover:text-slate-800 cursor-pointer font-semibold truncate max-w-[120px] ${
-                          idx === (activeTab === 'local' ? localPath.length - 1 : gDrivePath.length - 1) 
-                            ? 'text-slate-500 font-extrabold pointer-events-none' 
-                            : ''
-                        }`}
-                        onClick={() => handleBreadcrumbClick(p.id)}
-                      >
-                        {p.name}
-                      </span>
-                    </React.Fragment>
-                  ))}
-                </nav>
-              )}
-              
-              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                {activeTab === 'all'
-                  ? 'Semua Penyimpanan'
-                  : activeTab === 'local' 
-                    ? (localPath.length > 0 ? localPath[localPath.length - 1].name : 'My Drive')
-                    : (gDrivePath.length > 0 ? gDrivePath[gDrivePath.length - 1].name : `Google Drive (${activeExternalAccount?.email || ''})`)
-                }
-                <FolderOpen className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-              </h1>
-              <p className="text-sm text-slate-500 mt-1">
-                {activeTab === 'all'
-                  ? 'Akses cepat ke seluruh node penyimpanan lokal dan akun Google Drive yang terhubung.'
-                  : activeTab === 'local' 
-                    ? 'Kelola seluruh berkas dan folder penyimpanan pribadi Anda di server VPS Lokal.' 
-                    : 'Telusuri, organisasikan, dan bagikan seluruh berkas Anda di Google Drive secara real-time.'}
-              </p>
-            </div>
+            <Breadcrumbs 
+              activeTab={activeTab}
+              activeExternalAccount={activeExternalAccount}
+              localPath={localPath}
+              gDrivePath={gDrivePath}
+              onBreadcrumbClick={handleBreadcrumbClick}
+            />
 
             {/* Controls Container */}
             {activeTab !== 'all' && (
-              <div className="flex items-center gap-3 relative flex-wrap">
+              <div className="flex items-center gap-3 relative flex-wrap w-full md:w-auto justify-end">
                 
                 {/* Button Create Folder */}
                 <Button 
                   variant="primary" 
                   size="sm" 
                   onClick={() => setIsCreateFolderOpen(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 flex-1 md:flex-initial justify-center"
                 >
                   <FolderPlus className="w-4 h-4" />
                   <span>Folder Baru</span>
                 </Button>
 
                 {/* Tombol Filter dengan Dropdown */}
-                <div className="relative">
+                <div className="relative flex-1 md:flex-initial">
                   <button
                     onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
+                    className={`flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
                       activeFilter !== 'all'
                         ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -910,7 +755,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
 
                   {isFilterDropdownOpen && (
                     <>
-                      {/* Overlay background to close dropdown */}
                       <div className="fixed inset-0 z-10" onClick={() => setIsFilterDropdownOpen(false)} />
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-fadeIn min-w-[220px]">
                         {filterCategories.map((category) => {
@@ -978,366 +822,28 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
           </div>
 
           {/* Konten Utama: Daftar Folder & Berkas */}
-          <div className="flex-1 animate-fadeIn space-y-6">
-            
-            {/* ───── SECTION 1: FOLDERS (Grid layout always at top for quick access) ───── */}
-            {filteredFolders.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Folder</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredFolders.map((folder) => {
-                    const isDraggedOver = draggedOverFolderId === folder.id;
-                    const providerStr = folder.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
-                    
-                    return (
-                      <div
-                        key={folder.id}
-                        draggable={activeTab !== 'all'}
-                        onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, folder.id, 'FOLDER', providerStr) : undefined}
-                        onDragOver={activeTab !== 'all' ? (e) => handleDragOver(e, folder.id) : undefined}
-                        onDragLeave={activeTab !== 'all' ? handleDragLeave : undefined}
-                        onDrop={activeTab !== 'all' ? (e) => handleDrop(e, folder.id, providerStr) : undefined}
-                        onDoubleClick={() => handleFolderDoubleClick(folder)}
-                        onClick={() => {
-                          if (window.innerWidth < 768) {
-                            handleFolderDoubleClick(folder);
-                          }
-                        }}
-                        className={`flex items-center justify-between p-4 rounded-2xl bg-white border shadow-[0px_2px_8px_rgba(15,23,42,0.01)] transition-all duration-200 select-none group cursor-pointer hover:shadow-md hover:border-primary/50 active:scale-98 ${
-                          isDraggedOver ? 'border-primary bg-indigo-50/30 ring-2 ring-primary/20 scale-[1.02]' : 'border-slate-150'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`p-2.5 rounded-xl ${isDraggedOver ? 'bg-primary text-white animate-pulse' : 'bg-primary/5 text-primary'}`}>
-                            <Folder className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0 flex flex-col">
-                            <span className="text-sm font-bold text-slate-800 truncate pr-2" title={folder.name}>
-                              {folder.name}
-                            </span>
-                            {folder.providerLabel && (
-                              <span className="text-[10px] text-slate-400 font-medium truncate">
-                                {folder.providerLabel}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Folder Action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveShareFolder(folder);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-450 hover:bg-slate-100 hover:text-slate-800 transition-all cursor-pointer"
-                            title="Bagikan Folder"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmDeleteFolder(folder);
-                            }}
-                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition-all cursor-pointer"
-                            title="Hapus Folder"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ───── SECTION 2: FILES ───── */}
-            <div className="space-y-3">
-                {filteredFolders.length > 0 && <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Berkas</h3>}
-              
-              <div className="bg-white rounded-[2rem] shadow-[0px_4px_20px_rgba(15,23,42,0.03)] border border-slate-150/80 overflow-hidden">
-                {/* ── LIST VIEW ─────────────────────────────── */}
-                {viewMode === 'list' && (
-                  <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
-                    <table className="w-full text-left border-collapse" style={{ minWidth: '600px' }}>
-                      <thead>
-                        <tr className="bg-slate-50/70 border-b border-slate-100">
-                          <th className="px-4 md:px-8 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider">Nama Berkas</th>
-                          <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[110px] min-w-[110px]">Penyedia</th>
-                          <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[160px] min-w-[160px] hidden md:table-cell">Tanggal</th>
-                          <th className="px-3 md:px-6 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider w-[80px] min-w-[80px]">Ukuran</th>
-                          <th className="px-2 md:px-8 py-4 md:py-5 text-xs text-slate-400 font-bold uppercase tracking-wider text-right w-[130px] min-w-[130px]">Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {isLoading ? (
-                          Array.from({ length: 4 }).map((_, i) => (
-                            <tr key={i}>
-                              <td className="px-8 py-5">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-10 h-10 rounded-xl bg-slate-100 animate-pulse" />
-                                  <div className="space-y-2">
-                                    <div className="h-3.5 w-40 bg-slate-100 rounded animate-pulse" />
-                                    <div className="h-2.5 w-16 bg-slate-100 rounded animate-pulse" />
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-5"><div className="h-5 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
-                              <td className="px-6 py-5"><div className="h-3.5 w-24 bg-slate-100 rounded animate-pulse" /></td>
-                              <td className="px-6 py-5"><div className="h-3.5 w-12 bg-slate-100 rounded animate-pulse" /></td>
-                              <td className="px-8 py-5" />
-                            </tr>
-                          ))
-                        ) : isEmpty ? (
-                          <tr>
-                            <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">
-                              <SearchX className="w-12 h-12 block mx-auto mb-4 text-slate-300" />
-                              <h3 className="text-lg font-bold text-slate-700">Tidak ada berkas atau folder</h3>
-                              <p className="text-sm text-slate-450 mt-1 font-semibold">
-                                {searchQuery ? `Tidak ada konten yang cocok dengan "${searchQuery}"` : 'Unggah berkas atau buat folder baru untuk memulai.'}
-                              </p>
-                            </td>
-                          </tr>
-                        ) : (
-                          filteredFiles.map((file) => {
-                            const ext = getFileExtension(file.originalFileName);
-                            const isPdf = ext.toLowerCase() === 'pdf';
-                            const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
-
-                            return (
-                              <tr 
-                                key={file.id} 
-                                draggable={activeTab !== 'all'}
-                                onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, file.id, 'FILE', providerStr) : undefined}
-                                onClick={(e) => {
-                                  const target = e.target as HTMLElement;
-                                  if (target.closest('button') || target.closest('a')) {
-                                    return;
-                                  }
-                                  setActivePreviewFile(file);
-                                }}
-                                className="group hover:bg-slate-50/40 transition-colors cursor-pointer select-none"
-                              >
-                                {/* Nama */}
-                                <td className="px-4 md:px-8 py-4 md:py-5">
-                                  <div className="flex items-center gap-2 md:gap-4">
-                                    <FileIcon type={ext} className="w-5 h-5 shrink-0" />
-                                    <div className="min-w-0">
-                                      <p className="text-sm font-bold text-slate-800 truncate max-w-[140px] md:max-w-[280px]" title={file.originalFileName}>
-                                        {file.originalFileName}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </td>
-                                
-                                {/* Penyedia */}
-                                <td className="px-3 md:px-6 py-4 md:py-5">
-                                  <span className={`inline-flex px-2 py-0.5 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded-full border ${
-                                    file.provider?.toUpperCase() === 'GOOGLE_DRIVE' 
-                                      ? 'bg-amber-50 border-amber-100 text-amber-600' 
-                                      : 'bg-blue-50 border-blue-100 text-blue-600'
-                                  }`}>
-                                    {file.providerLabel || (file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local')}
-                                  </span>
-                                </td>
-
-                                {/* Tanggal - hide on mobile */}
-                                <td className="px-3 md:px-6 py-4 md:py-5 text-xs font-semibold text-slate-450 hidden md:table-cell">
-                                  {file.createdAt ? new Date(file.createdAt).toLocaleString() : '-'}
-                                </td>
-
-                                {/* Ukuran */}
-                                <td className="px-3 md:px-6 py-4 md:py-5 text-xs font-bold text-slate-500">
-                                  {formatSize(file.size)}
-                                </td>
-
-                                <td className="pl-1 pr-3 md:pl-2 md:pr-6 py-4 md:py-5" onClick={(e) => e.stopPropagation()}>
-                                  <div className="flex justify-end gap-1 md:gap-2 shrink-0 relative z-10">
-                                    {isPdf && (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigate(`/recap?fileId=${file.id}`);
-                                        }}
-                                        className="hidden md:flex items-center justify-center p-1.5 rounded-lg text-primary hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
-                                        title="Analisis AI Recap"
-                                      >
-                                        <Sparkles className="w-4 h-4" />
-                                      </button>
-                                    )}
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmDownloadFile(file);
-                                      }}
-                                      className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
-                                      title="Unduh Berkas"
-                                    >
-                                      <Download className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActiveShareFile(file);
-                                      }}
-                                      className="hidden sm:flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
-                                      title="Bagikan Akses Berkas"
-                                    >
-                                      <Share2 className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setConfirmDeleteFile(file);
-                                      }}
-                                      className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all cursor-pointer"
-                                      title="Hapus Berkas"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* ── GRID VIEW ─────────────────────────────── */}
-                {viewMode === 'grid' && (
-                  <div className="p-6">
-                    {isLoading ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                          <div key={i} className="bg-slate-50 rounded-2xl p-5 space-y-4 border border-slate-100 animate-pulse">
-                            <div className="w-12 h-12 rounded-xl bg-slate-200" />
-                            <div className="space-y-2">
-                              <div className="h-3.5 bg-slate-200 rounded w-3/4" />
-                              <div className="h-2.5 bg-slate-200 rounded w-1/2" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : isEmpty ? (
-                      <div className="py-20 text-center text-slate-400 font-bold">
-                        <SearchX className="w-12 h-12 block mx-auto mb-4 text-slate-300" />
-                        <h3 className="text-lg font-bold text-slate-700">Tidak ada berkas</h3>
-                        <p className="text-sm text-slate-450 mt-1 font-semibold">
-                          {searchQuery ? `Tidak ada berkas yang cocok dengan "${searchQuery}"` : 'Unggah berkas baru untuk memulai.'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fadeIn">
-                        {filteredFiles.map((file) => {
-                          const ext = getFileExtension(file.originalFileName);
-                          const isPdf = ext.toLowerCase() === 'pdf';
-                          const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
-
-                          return (
-                            <Card 
-                              key={file.id} 
-                              draggable={activeTab !== 'all'}
-                              onDragStart={activeTab !== 'all' ? (e) => handleDragStart(e, file.id, 'FILE', providerStr) : undefined}
-                              onClick={(e) => {
-                                const target = e.target as HTMLElement;
-                                if (target.closest('button') || target.closest('a')) {
-                                  return;
-                                }
-                                setActivePreviewFile(file);
-                              }}
-                              className="p-5 flex flex-col gap-4 group cursor-pointer hover:shadow-md hover:border-slate-350 transition-all active:scale-[0.98] select-none"
-                            >
-                              
-                              {/* Header Kartu */}
-                              <div className="flex items-start justify-between">
-                                <FileIcon type={ext} className="w-6 h-6 shrink-0" />
-                                <span className={`text-[9px] font-bold uppercase tracking-wider rounded-full border px-2 py-0.5 ${
-                                  file.provider?.toUpperCase() === 'GOOGLE_DRIVE' 
-                                    ? 'bg-amber-50 border-amber-100 text-amber-600' 
-                                    : 'bg-blue-50 border-blue-100 text-blue-600'
-                                  }`}>
-                                  {file.providerLabel || (file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'GDrive' : 'Local')}
-                                </span>
-                              </div>
-
-                              {/* Info Berkas */}
-                              <div className="min-w-0">
-                                <p className="text-sm font-bold text-slate-800 truncate" title={file.originalFileName}>
-                                  {file.originalFileName}
-                                </p>
-                                <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                                  {file.createdAt ? new Date(file.createdAt).toLocaleDateString() : '-'}
-                                </p>
-                              </div>
-
-                              {/* Footer & Aksi */}
-                              <div 
-                                className="border-t border-slate-100 pt-3 flex justify-between items-center mt-auto"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <span className="text-xs font-bold text-slate-500">{formatSize(file.size)}</span>
-                                <div className="flex gap-1">
-                                  {isPdf && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/recap?fileId=${file.id}`);
-                                      }}
-                                      className="p-1.5 rounded-lg text-primary hover:bg-indigo-50/50 transition-colors cursor-pointer"
-                                      title="AI Recap"
-                                    >
-                                      <Sparkles className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setConfirmDownloadFile(file);
-                                    }}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer"
-                                    title="Download"
-                                  >
-                                    <Download className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveShareFile(file);
-                                    }}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer"
-                                    title="Bagikan"
-                                  >
-                                    <Share2 className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setConfirmDeleteFile(file);
-                                    }}
-                                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-55 transition-colors cursor-pointer"
-                                    title="Hapus"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </div>
-
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
+          <FileBrowser 
+            isLoading={isLoading}
+            activeTab={activeTab}
+            filteredFolders={filteredFolders}
+            filteredFiles={filteredFiles}
+            draggedOverFolderId={draggedOverFolderId}
+            viewMode={viewMode}
+            searchQuery={searchQuery}
+            activeFilter={activeFilter}
+            onFolderDoubleClick={handleFolderDoubleClick}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onShareFolder={setActiveShareFolder}
+            onDeleteFolder={setConfirmDeleteFolder}
+            onDownloadFile={setConfirmDownloadFile}
+            onShareFile={setActiveShareFile}
+            onDeleteFile={setConfirmDeleteFile}
+            onPreviewFile={setActivePreviewFile}
+            onRecapClick={(fileId) => navigate(`/recap?fileId=${fileId}`)}
+          />
         </>
       )}
 

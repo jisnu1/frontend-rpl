@@ -59,6 +59,37 @@ export default function Register() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, hasMinLength: false, hasLetterAndDigit: false, hasUpperAndLower: false, hasSymbol: false };
+    let score = 0;
+    
+    const hasMinLength = pass.length >= 8;
+    if (hasMinLength) score += 1;
+    
+    const hasLetter = /[a-zA-Z]/.test(pass);
+    const hasDigit = /\d/.test(pass);
+    const hasLetterAndDigit = hasLetter && hasDigit;
+    if (hasLetterAndDigit) score += 1;
+    
+    const hasUpper = /[A-Z]/.test(pass);
+    const hasLower = /[a-z]/.test(pass);
+    const hasUpperAndLower = hasUpper && hasLower;
+    if (hasUpperAndLower) score += 1;
+    
+    const hasSymbol = /[@$!%*?&#^()\-_\=+]/.test(pass);
+    if (hasSymbol) score += 1;
+    
+    return {
+      score,
+      hasMinLength,
+      hasLetterAndDigit,
+      hasUpperAndLower,
+      hasSymbol
+    };
+  };
+
+  const strength = getPasswordStrength(password);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
@@ -67,6 +98,11 @@ export default function Register() {
 
     if (!username.trim() || !email.trim() || !password.trim()) {
       setError('Semua kolom wajib diisi.');
+      return;
+    }
+
+    if (strength.score < 2) {
+      setError('Password minimal harus berwarna Kuning (minimal 8 karakter dengan kombinasi huruf dan angka).');
       return;
     }
 
@@ -171,15 +207,56 @@ export default function Register() {
               disabled={isSubmitting || success || lockoutTime > 0}
             />
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Create a password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              leftIcon={Lock}
-              disabled={isSubmitting || success || lockoutTime > 0}
-            />
+            <div className="space-y-1.5">
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                leftIcon={Lock}
+                disabled={isSubmitting || success || lockoutTime > 0}
+              />
+              
+              {password && (
+                <div className="space-y-1 px-1 text-left animate-fadeIn">
+                  <div className="flex justify-between items-center text-[9px] font-bold">
+                    <span className="text-slate-400">KEKUATAN SANDI:</span>
+                    <span className={
+                      strength.score === 1 ? 'text-rose-500 font-extrabold' :
+                      strength.score === 2 ? 'text-amber-500 font-extrabold' :
+                      strength.score === 3 ? 'text-emerald-450 font-extrabold' :
+                      strength.score === 4 ? 'text-emerald-600 font-extrabold' : 'text-slate-400'
+                    }>
+                      {strength.score === 1 && 'Sangat Lemah'}
+                      {strength.score === 2 && 'Sedang (Cukup)'}
+                      {strength.score === 3 && 'Kuat'}
+                      {strength.score === 4 && 'Sangat Kuat'}
+                    </span>
+                  </div>
+                  
+                  {/* Bar */}
+                  <div className="flex gap-1 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-0.5">
+                    <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 1 ? 'bg-rose-500' : 'bg-transparent'}`} />
+                    <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 2 ? 'bg-amber-500' : 'bg-transparent'}`} />
+                    <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 3 ? 'bg-emerald-400' : 'bg-transparent'}`} />
+                    <div className={`h-full flex-1 rounded-full transition-all duration-300 ${strength.score >= 4 ? 'bg-emerald-600' : 'bg-transparent'}`} />
+                  </div>
+                  
+                  {/* Checklist */}
+                  <div className="flex flex-col gap-0.5 text-[9px] font-semibold text-slate-450 pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full transition-colors ${strength.hasMinLength ? 'bg-emerald-500' : 'bg-slate-350'}`} />
+                      <span className={strength.hasMinLength ? 'text-slate-600 font-bold' : 'text-slate-400'}>Minimal 8 karakter</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full transition-colors ${strength.hasLetterAndDigit ? 'bg-emerald-500' : 'bg-slate-350'}`} />
+                      <span className={strength.hasLetterAndDigit ? 'text-slate-600 font-bold' : 'text-slate-400'}>Kombinasi huruf & angka</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <Input
               label="Confirm Password"
@@ -228,7 +305,7 @@ export default function Register() {
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
-              disabled={!agreed || success || lockoutTime > 0}
+              disabled={!agreed || success || lockoutTime > 0 || strength.score < 2 || password !== confirmPassword}
             >
               {lockoutTime > 0 ? `Terkunci (${formatTime(lockoutTime)})` : 'Sign Up'}
             </Button>
