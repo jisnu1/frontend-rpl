@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { HardDrive, Database, ChevronDown } from 'lucide-react';
 
 interface TabConfig {
@@ -21,10 +21,29 @@ export default function MigrationTabs({
   activeTab,
   onTabChange
 }: MigrationTabsProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const currentTabConfig = tabs.find(t => t.id === activeTab) || tabs[0];
 
+  // Helper to get Google Drive index
+  const getGDriveIndex = (tabId: string) => {
+    let count = 0;
+    for (const t of tabs) {
+      if (t.provider === 'GOOGLE_DRIVE') {
+        count++;
+        if (t.id === tabId) return count;
+      }
+    }
+    return 0;
+  };
+
+  const getMobileTabLabel = () => {
+    if (currentTabConfig.provider !== 'GOOGLE_DRIVE') return 'Storage Node';
+    const driveIdx = getGDriveIndex(currentTabConfig.id);
+    const emailStr = currentTabConfig.email ? ` (${currentTabConfig.email.split('@')[0]}...)` : '';
+    return `Google Drive ${driveIdx}${emailStr}`;
+  };
+
   let desktopGDriveCount = 0;
-  let mobileGDriveCount = 0;
 
   return (
     <>
@@ -63,25 +82,16 @@ export default function MigrationTabs({
       </div>
 
       {/* Mobile Layout (block on mobile, hidden on desktop) */}
-      <div className="block lg:hidden bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10 w-full px-4 py-3">
+      <div className="block lg:hidden bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10 w-full px-4 py-3 relative">
         <div className="relative">
-          <select
-            value={activeTab}
-            onChange={(e) => onTabChange(e.target.value)}
-            className="w-full bg-slate-100 border border-transparent rounded-2xl py-3 pl-11 pr-10 text-xs font-bold text-slate-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer transition-all"
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full bg-slate-100 border border-transparent rounded-2xl py-3 pl-11 pr-10 text-xs font-bold text-slate-700 focus:bg-white focus:border-primary flex items-center justify-between cursor-pointer select-none"
           >
-            {tabs.map((tab) => {
-              const isGDrive = tab.provider === 'GOOGLE_DRIVE';
-              if (isGDrive) mobileGDriveCount++;
-              const emailStr = tab.email ? ` (${tab.email.split('@')[0]})` : '';
-              const displayName = isGDrive ? `Drive ${mobileGDriveCount}${emailStr}` : 'Storage Node';
-              return (
-                <option key={tab.id} value={tab.id}>
-                  {displayName}
-                </option>
-              );
-            })}
-          </select>
+            <span>{getMobileTabLabel()}</span>
+            <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
           {/* Left Icon */}
           <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
             {currentTabConfig.provider === 'GOOGLE_DRIVE' ? (
@@ -90,10 +100,34 @@ export default function MigrationTabs({
               <Database className="w-4 h-4 text-primary" />
             )}
           </div>
-          {/* Right Chevron */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-            <ChevronDown className="w-4 h-4" />
-          </div>
+
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+              <div className="absolute left-0 mt-2 w-full bg-white border border-slate-100 rounded-2xl shadow-xl py-1.5 z-40 animate-fadeIn">
+                {tabs.map((tab) => {
+                  const isGDrive = tab.provider === 'GOOGLE_DRIVE';
+                  const driveIdx = isGDrive ? getGDriveIndex(tab.id) : 0;
+                  const emailStr = tab.email ? ` (${tab.email.split('@')[0]}...)` : '';
+                  const displayName = isGDrive ? `Google Drive ${driveIdx}${emailStr}` : 'Storage Node';
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        onTabChange(tab.id);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full text-left px-5 py-2.5 text-xs font-bold transition-colors ${
+                        activeTab === tab.id ? 'text-primary bg-indigo-50/50' : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {displayName}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

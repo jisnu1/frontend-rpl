@@ -157,7 +157,7 @@ export default function Header({
               {/* Click outside backdrop */}
               <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
               {/* Dropdown Card */}
-              <div className="absolute right-0 mt-2.5 w-[90vw] max-w-[340px] bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 py-3 flex flex-col gap-2 max-h-[30rem]">
+              <div className="fixed top-16 left-4 right-4 md:absolute md:top-auto md:left-auto md:right-0 md:w-[340px] w-auto mt-2.5 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 py-3 flex flex-col gap-2 max-h-[30rem]">
                 <div className="px-4 py-1.5 flex items-center justify-between border-b border-slate-50 pb-2">
                   <span className="text-xs font-bold text-slate-800">Aktivitas & Riwayat</span>
                   {notifications.length > 0 && (

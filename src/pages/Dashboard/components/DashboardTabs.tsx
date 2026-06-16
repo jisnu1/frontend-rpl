@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Files, Cloud, HardDrive, Plus, ChevronDown } from 'lucide-react';
 
 interface DashboardTabsProps {
@@ -14,6 +14,15 @@ export default function DashboardTabs({
   onTabChange,
   onConnectGoogleDrive
 }: DashboardTabsProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const getActiveTabLabel = () => {
+    if (activeTab === 'all') return 'Semua Penyimpanan';
+    if (activeTab === 'local') return 'Storage Node (Local)';
+    const acc = externalAccounts.find(a => a.id === activeTab);
+    return acc ? `Google Drive (${acc.email.split('@')[0]}...)` : 'Pilih Penyimpanan';
+  };
+
   return (
     <>
       {/* Desktop Tabs View */}
@@ -65,29 +74,59 @@ export default function DashboardTabs({
       </div>
 
       {/* Mobile Select Dropdown View */}
-      <div className="flex md:hidden items-center gap-2 w-full border-b border-slate-200 pb-3">
+      <div className="flex md:hidden items-center gap-2 w-full border-b border-slate-200 pb-3 relative">
         <div className="relative flex-1">
-          <select
-            value={activeTab}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === 'all') onTabChange('all');
-              else if (val === 'local') onTabChange('local');
-              else onTabChange(Number(val));
-            }}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-3.5 pr-9 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none cursor-pointer"
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-3.5 pr-9 text-xs font-bold text-slate-700 focus:outline-none flex items-center justify-between cursor-pointer select-none"
           >
-            <option value="all">📁 Semua Penyimpanan (All)</option>
-            <option value="local">☁️ Storage Node (Local)</option>
-            {externalAccounts.map((acc, index) => (
-              <option key={acc.id} value={acc.id}>
-                💾 Google Drive {index + 1} ({acc.email.split('@')[0]}...)
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
-            <ChevronDown className="w-4 h-4" />
-          </div>
+            <span>{getActiveTabLabel()}</span>
+            <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+              <div className="absolute left-0 mt-2 w-full bg-white border border-slate-100 rounded-2xl shadow-xl py-1.5 z-40 animate-fadeIn">
+                <button
+                  onClick={() => {
+                    onTabChange('all');
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                    activeTab === 'all' ? 'text-primary bg-indigo-50/50' : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Semua Penyimpanan (All)
+                </button>
+                <button
+                  onClick={() => {
+                    onTabChange('local');
+                    setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                    activeTab === 'local' ? 'text-primary bg-indigo-50/50' : 'text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Storage Node (Local)
+                </button>
+                {externalAccounts.map((acc, index) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => {
+                      onTabChange(acc.id);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                      activeTab === acc.id ? 'text-primary bg-indigo-50/50' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    Google Drive {index + 1} ({acc.email.split('@')[0]}...)
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
         <button
           onClick={onConnectGoogleDrive}

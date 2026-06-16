@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, MessageSquareWarning, Send, CheckCircle } from 'lucide-react';
 import { submitBugReport } from '../api/reports';
+import { useToast } from '../context/ToastContext';
 
 export default function FloatingReportButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,6 +9,7 @@ export default function FloatingReportButton() {
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const { error: toastError } = useToast();
 
   // Close on click outside
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function FloatingReportButton() {
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
-      alert('Gagal mengirimkan laporan bug. Silakan coba lagi.');
+      toastError('Gagal mengirimkan laporan bug. Silakan coba lagi.');
     }
   };
 

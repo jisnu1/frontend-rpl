@@ -238,7 +238,7 @@ export default function Shared({ searchQuery = '' }: SharedProps) {
           </div>
           
           {/* View Mode Toggle */}
-          <div className="bg-slate-100 p-1 rounded-xl hidden md:flex gap-1">
+          <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
             <button
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-lg transition-all ${

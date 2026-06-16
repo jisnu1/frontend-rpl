@@ -20,7 +20,72 @@ import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import FilePreviewModal from '../../components/FilePreviewModal';
-import { getFileCategory, formatSize, isMobileDevice } from '../../utils/fileHelpers';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import { getFileCategory, formatSize, isMobileDevice, getFileExtension } from '../../utils/fileHelpers';
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function tokenizeAndHighlight(code: string, ext: string): string {
+  const escaped = escapeHtml(code);
+  
+  if (['txt', 'log'].includes(ext)) {
+    return escaped;
+  }
+  
+  const regex = new RegExp(
+    '(\\/\\*[\\s\\S]*?\\*\\/)|' + // Group 1: Multi-line comments
+    '(\\/\\/.*|#.*)|' +            // Group 2: Single-line comments
+    '("(?:\\\\[\\s\\S]|[^"\\\\])*")|' + // Group 3: Double quoted string
+    '(\'(?:\\\\[\\s\\S]|[^\'\\\\])*\')|' + // Group 4: Single quoted string
+    '(`(?:\\\\[\\s\\S]|[^`\\\\])*`)|' + // Group 5: Template literals
+    '(@\\w+)|' +                   // Group 6: Decorators/Annotations
+    '\\b(class|interface|enum|extends|implements|package|import|public|private|protected|static|final|native|transient|volatile|synchronized|throws|return|def|const|let|var|function|if|else|for|while|do|switch|case|break|continue|default|try|catch|finally|throw|new|this|super|type|from|export|as|void|int|double|float|long|short|byte|boolean|char|string|number|any|unknown|null|undefined|true|false|self|lambda|assert|async|await|yield|elif|in|is|not|and|or|pass|except|raise|with|struct|union|register|extern|typedef|inline|virtual|override|sql|select|insert|update|delete|from|where|join|left|right|inner|outer|on|group|by|order|having|limit|create|table|alter|drop|index|view|into|values|set)\\b|' + // Group 7: Keywords
+    '\\b(\\d+(?:\\.\\d+)?)\\b|' +   // Group 8: Numbers
+    '(\\b\\w+)(?=\\()',            // Group 9: Functions
+    'g'
+  );
+  
+  let lastIndex = 0;
+  let html = '';
+  
+  escaped.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, offset) => {
+    if (offset > lastIndex) {
+      html += escaped.substring(lastIndex, offset);
+    }
+    
+    if (p1 || p2) {
+      html += `<span class="text-slate-500 italic">${match}</span>`;
+    } else if (p3 || p4 || p5) {
+      html += `<span class="text-amber-300 font-medium">${match}</span>`;
+    } else if (p6) {
+      html += `<span class="text-indigo-400 font-bold">${match}</span>`;
+    } else if (p7) {
+      html += `<span class="text-pink-400 font-bold">${match}</span>`;
+    } else if (p8) {
+      html += `<span class="text-orange-400">${match}</span>`;
+    } else if (p9) {
+      html += `<span class="text-sky-300 font-medium">${match}</span>`;
+    } else {
+      html += match;
+    }
+    
+    lastIndex = offset + match.length;
+    return match;
+  });
+  
+  if (lastIndex < escaped.length) {
+    html += escaped.substring(lastIndex);
+  }
+  
+  return html;
+}
 
 const getFileIcon = (category: string) => {
   switch (category) {
@@ -72,6 +137,7 @@ export default function PublicSharePage() {
   const [permission, setPermission] = useState<'VIEW' | 'EDIT'>('VIEW');
   const [allowAnonymous, setAllowAnonymous] = useState(true);
   const [selectedPreviewFile, setSelectedPreviewFile] = useState<FileResponse | null>(null);
+  const [deleteConfirmInfo, setDeleteConfirmInfo] = useState<{ fileId: string; fileName: string } | null>(null);
 
   // Subfolder navigation history
   const [navigationHistory, setNavigationHistory] = useState<{ id: string; name: string }[]>([]);
@@ -241,7 +307,7 @@ export default function PublicSharePage() {
   };
 
   // Delete file action
-  const handleDeleteFile = async (fileId: string, fileName: string) => {
+  const handleDeleteFile = (fileId: string, fileName: string) => {
     if (!activeShareToken) return;
 
     if (!allowAnonymous && !isAuthenticated) {
@@ -249,13 +315,16 @@ export default function PublicSharePage() {
       return;
     }
 
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus berkas "${fileName}" dari folder bersama?`)) {
-      return;
-    }
+    setDeleteConfirmInfo({ fileId, fileName });
+  };
 
+  const executeDeleteFile = async () => {
+    if (!deleteConfirmInfo || !activeShareToken) return;
+    const { fileId, fileName } = deleteConfirmInfo;
     try {
       await deleteFromSharedFolderPublic(activeShareToken, fileId);
       toastSuccess(`Berkas "${fileName}" berhasil dihapus.`);
+      setDeleteConfirmInfo(null);
       loadShareData(currentFolderId);
     } catch (err: any) {
       console.error(err);
@@ -340,6 +409,27 @@ export default function PublicSharePage() {
 
   const formatFileSize = (bytes: number): string => {
     return formatSize(bytes);
+  };
+
+  const renderCodePreview = (codeText: string, fileExt: string) => {
+    const highlighted = tokenizeAndHighlight(codeText, fileExt);
+    const lines = highlighted.split(/\r?\n/);
+    return (
+      <div className="w-full max-w-4xl h-[75vh] bg-[#1e1e1e] rounded-3xl border border-white/10 overflow-auto font-mono text-xs text-left select-text scrollbar-thin shadow-2xl">
+        <table className="w-full border-collapse">
+          <tbody>
+            {lines.map((line, index) => (
+              <tr key={index} className="hover:bg-white/5 leading-relaxed group">
+                <td className="w-10 text-right pr-4 text-slate-655 select-none border-r border-slate-800 align-top pt-0.5 font-semibold">
+                  {index + 1}
+                </td>
+                <td className="pl-4 whitespace-pre select-text align-top pt-0.5 text-slate-300" dangerouslySetInnerHTML={{ __html: line || ' ' }} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -614,6 +704,22 @@ export default function PublicSharePage() {
             shareToken={activeShareToken}
           />
         )}
+
+        {deleteConfirmInfo && (
+          <ConfirmModal
+            isOpen={!!deleteConfirmInfo}
+            onClose={() => setDeleteConfirmInfo(null)}
+            onConfirm={executeDeleteFile}
+            title="Hapus Berkas dari Folder Bersama?"
+            message={
+              <span>
+                Apakah Anda yakin ingin menghapus berkas <strong>"{deleteConfirmInfo.fileName}"</strong> dari folder bersama ini?
+              </span>
+            }
+            confirmText="Hapus"
+            confirmVariant="danger"
+          />
+        )}
       </div>
     );
   }
@@ -828,9 +934,7 @@ export default function PublicSharePage() {
             )}
 
             {!isGoogleDrive && !isOffice && !isCsv && category === 'text' && textContent !== null && (
-              <div className="w-full max-w-4xl h-[75vh] p-6 bg-slate-900 border border-slate-800 rounded-3xl overflow-auto text-left font-mono text-[11px] whitespace-pre-wrap leading-relaxed select-text text-slate-100 shadow-2xl">
-                {textContent}
-              </div>
+              renderCodePreview(textContent, ext)
             )}
           </div>
         )}

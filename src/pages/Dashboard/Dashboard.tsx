@@ -711,10 +711,10 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
             />
 
             {/* Controls Container */}
-            {activeTab !== 'all' && (
-              <div className="flex items-center gap-3 relative flex-wrap w-full md:w-auto justify-end">
-                
-                {/* Button Create Folder */}
+            <div className="flex items-center gap-3 relative flex-wrap w-full md:w-auto justify-end">
+              
+              {/* Button Create Folder */}
+              {activeTab !== 'all' && (
                 <Button 
                   variant="primary" 
                   size="sm" 
@@ -724,101 +724,101 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
                   <FolderPlus className="w-4 h-4" />
                   <span>Folder Baru</span>
                 </Button>
+              )}
 
-                {/* Tombol Filter dengan Dropdown */}
-                <div className="relative flex-1 md:flex-initial">
-                  <button
-                    onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                    className={`flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
-                      activeFilter !== 'all'
-                        ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              {/* Tombol Filter dengan Dropdown */}
+              <div className="relative flex-1 md:flex-initial">
+                <button
+                  onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                  className={`flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm cursor-pointer select-none ${
+                    activeFilter !== 'all'
+                      ? 'bg-[#0052cc]/5 border-[#0052cc]/20 text-[#0052cc]'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
+                  <span>
+                    {activeFilter === 'all'
+                      ? 'Filter'
+                      : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
+                      isFilterDropdownOpen ? 'rotate-180' : ''
                     }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <Filter className={`w-4 h-4 ${activeFilter !== 'all' ? 'text-[#0052cc]' : 'text-slate-500'}`} />
-                    <span>
-                      {activeFilter === 'all'
-                        ? 'Filter'
-                        : `Filter: ${filterCategories.find((c) => c.id === activeFilter)?.label.replace(' (PDF/Word)', '')}`}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 text-slate-400 mt-0.5 transition-transform duration-300 ${
-                        isFilterDropdownOpen ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-                  {isFilterDropdownOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setIsFilterDropdownOpen(false)} />
-                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-fadeIn min-w-[220px]">
-                        {filterCategories.map((category) => {
-                          const IconComponent = category.icon;
-                          const isActive = activeFilter === category.id;
-                          const count = getCategoryCount(category);
+                {isFilterDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsFilterDropdownOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-20 animate-fadeIn min-w-[220px]">
+                      {filterCategories.map((category) => {
+                        const IconComponent = category.icon;
+                        const isActive = activeFilter === category.id;
+                        const count = getCategoryCount(category);
 
-                          return (
-                            <button
-                              key={category.id}
-                              onClick={() => {
-                                setActiveFilter(category.id);
-                                setIsFilterDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
-                                isActive
-                                  ? 'text-[#0052cc] bg-[#0052cc]/5'
-                                  : 'text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`p-1.5 rounded-lg transition-colors ${
-                                  isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
-                                }`}>
-                                  <IconComponent className="w-4 h-4" />
-                                </div>
-                                <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
-                              </div>
-                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
-                                isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
+                        return (
+                          <button
+                            key={category.id}
+                            onClick={() => {
+                              setActiveFilter(category.id);
+                              setIsFilterDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center justify-between transition-all duration-200 cursor-pointer select-none ${
+                              isActive
+                                ? 'text-[#0052cc] bg-[#0052cc]/5'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`p-1.5 rounded-lg transition-colors ${
+                                isActive ? 'bg-[#0052cc]/10 text-[#0052cc]' : 'bg-slate-50 text-slate-400'
                               }`}>
-                                {count}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Kontrol Tampilan Grid / List */}
-                <div className="bg-slate-100 p-1 rounded-xl hidden md:flex gap-1 border border-slate-200/50">
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-1.5 rounded-lg transition-all ${
-                      viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
-                    }`}
-                    title="List View"
-                  >
-                    <List className="w-4.5 h-4.5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1.5 rounded-lg transition-all ${
-                      viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
-                    }`}
-                    title="Grid View"
-                  >
-                    <Grid className="w-4.5 h-4.5" />
-                  </button>
-                </div>
+                                <IconComponent className="w-4 h-4" />
+                              </div>
+                              <span className={isActive ? 'text-[#0052cc]' : 'text-slate-700'}>{category.label}</span>
+                            </div>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors ${
+                              isActive ? 'bg-[#0052cc]/20 text-[#0052cc]' : 'bg-slate-100 text-slate-550'
+                            }`}>
+                              {count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+
+              {/* Kontrol Tampilan Grid / List */}
+              <div className="bg-slate-100 p-1 rounded-xl flex gap-1 border border-slate-200/50">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-lg transition-all ${
+                    viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
+                  }`}
+                  title="List View"
+                >
+                  <List className="w-4.5 h-4.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-lg transition-all ${
+                    viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-650'
+                  }`}
+                  title="Grid View"
+                >
+                  <Grid className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Konten Utama: Daftar Folder & Berkas */}

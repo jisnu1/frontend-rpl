@@ -320,7 +320,7 @@ function FileCard({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileC
       </div>
 
       <div className="min-w-0">
-        <p className="text-sm font-bold text-slate-800 truncate" title={file.originalFileName}>{file.originalFileName}</p>
+        <p className="text-sm font-bold text-slate-800 break-all break-words line-clamp-2" title={file.originalFileName}>{file.originalFileName}</p>
         <p className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">
           {file.provider?.toUpperCase() === 'GOOGLE_DRIVE' ? 'Google Drive' : 'Local Storage'}
         </p>

@@ -98,7 +98,7 @@ export default function FileBrowser({
                         <Folder className="w-4.5 h-4.5" />
                       </div>
                       <div className="min-w-0 flex flex-col">
-                        <span className="text-xs font-bold text-slate-800 truncate pr-1" title={folder.name}>
+                        <span className="text-xs font-bold text-slate-800 break-all break-words line-clamp-2 pr-1" title={folder.name}>
                           {folder.name}
                         </span>
                         {folder.providerLabel && (
@@ -521,7 +521,7 @@ export default function FileBrowser({
 
                         {/* Info Berkas */}
                         <div className="min-w-0">
-                          <p className="text-xs sm:text-sm font-bold text-slate-800 truncate" title={file.originalFileName}>
+                          <p className="text-xs sm:text-sm font-bold text-slate-800 break-all break-words line-clamp-2" title={file.originalFileName}>
                             {file.originalFileName}
                           </p>
                           <p className="text-[9px] sm:text-[10px] text-slate-400 font-semibold mt-0.5">

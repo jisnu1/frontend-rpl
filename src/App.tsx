@@ -158,7 +158,7 @@ export default function App() {
           onSearchChange={(e) => setSearchQuery(e.target.value)}
         />
         
-        <main className="flex-1 overflow-y-auto min-h-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
           <Routes>
             <Route path="/" element={<Navigate to="/my-drive" replace />} />
             <Route path="/login" element={<Navigate to="/my-drive" replace />} />

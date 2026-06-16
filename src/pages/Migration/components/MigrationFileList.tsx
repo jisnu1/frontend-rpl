@@ -184,13 +184,13 @@ export default function MigrationFileList({
                       : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between p-3.5">
+                  <div className="flex items-center justify-between p-3.5 min-w-0 w-full">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`p-2.5 rounded-xl ${isChecked ? 'bg-primary text-white' : 'bg-primary/5 text-primary'}`}>
                         <Folder className="w-4.5 h-4.5" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate" title={folder.name}>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-slate-800 break-all break-words line-clamp-2" title={folder.name}>
                           {folder.name}
                         </p>
                         <p className="text-[9px] text-slate-450 font-semibold mt-0.5">
@@ -265,7 +265,7 @@ export default function MigrationFileList({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-800 truncate leading-snug">{file.originalFileName}</p>
+                      <p className="text-sm font-bold text-slate-800 break-all break-words line-clamp-2 leading-snug">{file.originalFileName}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                           isGDriveFile ? 'bg-sky-100 text-sky-600' : 'bg-primary/10 text-primary'
