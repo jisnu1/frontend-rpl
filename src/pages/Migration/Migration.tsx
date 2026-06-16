@@ -703,7 +703,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
       {/* ============================================================
           MOBILE LAYOUT — shown only on mobile (< md), brand new
           ============================================================ */}
-      <div className="lg:hidden flex flex-col min-h-screen bg-slate-50 pb-32">
+      <div className="lg:hidden flex flex-col min-h-screen bg-slate-50 pb-32 w-full overflow-x-hidden">
 
         {/* ── Banner compact ── */}
         <div className="bg-gradient-to-br from-primary to-[#0041c4] text-white px-4 pt-4 pb-5">
@@ -736,7 +736,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         </div>
 
         {/* ── Tab scroll bar ── */}
-        <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10">
+        <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-10 w-full overflow-x-hidden">
           <div className="flex overflow-x-auto scrollbar-none px-3 py-2.5 gap-2">
             {tabs.map(tab => {
               const isActive = activeTab === tab.id;
@@ -766,7 +766,7 @@ export default function Migration({ isSidebarMinimized = false }: MigrationProps
         </div>
 
         {/* ── Search + select all bar ── */}
-        <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+        <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3 w-full overflow-x-hidden">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
