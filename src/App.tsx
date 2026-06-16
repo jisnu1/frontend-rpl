@@ -166,7 +166,7 @@ export default function App() {
             <Route path="/my-drive" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
-            <Route path="/migration" element={<ProtectedRoute><Migration /></ProtectedRoute>} />
+            <Route path="/migration" element={<ProtectedRoute><Migration isSidebarMinimized={isSidebarMinimized} /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/landing" element={<Navigate to="/my-drive" replace />} />

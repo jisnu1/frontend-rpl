@@ -44,7 +44,11 @@ const getProviderName = (provider: string) => {
   return provider;
 };
 
-export default function Migration() {
+interface MigrationProps {
+  isSidebarMinimized?: boolean;
+}
+
+export default function Migration({ isSidebarMinimized = false }: MigrationProps) {
   const { user } = useAuth();
   const { error: toastError, success: toastSuccess } = useToast();
 
@@ -555,8 +559,12 @@ export default function Migration() {
 
         {/* Desktop: Floating Bottom Action Bar */}
         {selectedCount > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn hidden md:block">
-            <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div
+            className={`fixed bottom-0 right-0 z-30 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-2xl animate-fadeIn hidden md:block transition-all duration-300 ${
+              isSidebarMinimized ? 'left-20' : 'left-[280px]'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-black text-slate-800">{selectedCount} berkas dipilih</p>
                 <p className="text-xs font-semibold text-slate-400">{formatSize(selectedSize)}</p>
