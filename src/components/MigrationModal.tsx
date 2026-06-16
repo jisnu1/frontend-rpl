@@ -192,13 +192,18 @@ export default function MigrationModal({ isOpen, onClose, selectedFiles, selecte
         fileNamesMap[f.id] = f.name;
       });
 
+      // Find the first selected item that is from Google Drive to get its account ID
+      const firstGoogleItem = [...selectedFiles, ...selectedFolders].find(item => item.provider === 'GOOGLE_DRIVE');
+      const sourceExternalAccountId = firstGoogleItem ? firstGoogleItem.externalAccountId : null;
+
       const res = await migrateFiles(
         fileIds,
         fileNamesMap,
         targetProvider,
         targetAccountId,
         deleteSource,
-        folderIds
+        folderIds,
+        sourceExternalAccountId
       );
 
       if (res.success) {

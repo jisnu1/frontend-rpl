@@ -28,6 +28,7 @@ export interface MigrationRequestDto {
   folderIds?: string[];
   targetProvider: string;
   targetExternalAccountId: number | null;
+  sourceExternalAccountId?: number | null;
   deleteSource: boolean;
 }
 

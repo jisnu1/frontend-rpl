@@ -40,7 +40,8 @@ interface ActivityContextType {
     targetProvider: string,
     targetExternalAccountId: number | null,
     deleteSource: boolean,
-    folderIds?: string[]
+    folderIds?: string[],
+    sourceExternalAccountId?: number | null
   ) => Promise<{ success: boolean; batchId: string }>;
 }
 
@@ -465,13 +466,15 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
     targetProvider: string,
     targetExternalAccountId: number | null,
     deleteSource: boolean,
-    folderIds?: string[]
+    folderIds?: string[],
+    sourceExternalAccountId?: number | null
   ) => {
     const res = await startMigration({
       fileIds,
       folderIds,
       targetProvider,
       targetExternalAccountId,
+      sourceExternalAccountId,
       deleteSource
     });
 
