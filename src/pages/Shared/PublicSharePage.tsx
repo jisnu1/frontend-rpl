@@ -33,9 +33,9 @@ const getFileCategory = (fileName: string) => {
 const getFileIcon = (category: string) => {
   switch (category) {
     case 'image':
-      return <ImageIcon className="w-16 h-16 text-[#fab795]" />;
+      return <ImageIcon className="w-16 h-16 text-[#60a5fa]" />;
     case 'pdf':
-      return <FileText className="w-16 h-16 text-[#e95678]" />;
+      return <FileText className="w-16 h-16 text-[#2563eb]" />;
     case 'video':
       return <Film className="w-16 h-16 text-indigo-400" />;
     case 'audio':
@@ -335,7 +335,7 @@ export default function PublicSharePage() {
     return (
       <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center text-white">
         <div className="relative flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-[#e95678]/20 border-t-[#e95678] rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin"></div>
         </div>
         <p className="text-xs font-bold text-slate-400 mt-4 animate-pulse uppercase tracking-wider">Memuat detail pembagian...</p>
       </div>
@@ -344,16 +344,16 @@ export default function PublicSharePage() {
 
   if (isError || !activeShareToken) {
     return (
-      <div className="min-h-screen bg-[#0f111a] flex flex-col md:flex-row text-white overflow-hidden relative">
+      <div className="min-h-screen bg-[#0f111a] flex flex-col md:flex-row text-white relative">
         {/* Left Side: Branding / Visual (Visible as top section on mobile) */}
         <div className="w-full md:w-1/2 min-h-[35vh] md:min-h-screen bg-gradient-to-br from-[#0f111a] via-[#12131f] to-[#1c1e26] relative flex flex-col justify-between p-8 md:p-16 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden select-none shrink-0">
           {/* Glowing background circles for rich aesthetics */}
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-[#e95678]/5 filter blur-[80px] pointer-events-none animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[#fab795]/5 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-[#2563eb]/5 filter blur-[80px] pointer-events-none animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[#60a5fa]/5 filter blur-[100px] pointer-events-none animate-pulse duration-4000" />
           
           {/* Logo Brand */}
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#e95678] to-[#fab795] rounded-2xl flex items-center justify-center shadow-lg shadow-[#e95678]/25">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-2xl flex items-center justify-center shadow-lg shadow-[#2563eb]/25">
               <HardDrive className="w-5.5 h-5.5 text-[#0f111a]" />
             </div>
             <span className="text-xl font-black tracking-wider bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent uppercase">
@@ -365,7 +365,7 @@ export default function PublicSharePage() {
           <div className="my-auto py-8 relative z-10">
             <h2 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-4 max-w-lg">
               Solusi Cloud Personal <br/>
-              <span className="bg-gradient-to-r from-[#e95678] via-[#e95678] to-[#fab795] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#2563eb] via-[#2563eb] to-[#60a5fa] bg-clip-text text-transparent">
                 Penuh Estetika
               </span>
             </h2>
@@ -382,21 +382,21 @@ export default function PublicSharePage() {
 
         {/* Right Side: Error Info */}
         <div className="w-full md:w-1/2 flex-1 md:min-h-screen bg-[#0f111a] flex flex-col justify-between p-8 md:p-16 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#e95678]/3 filter blur-[120px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#2563eb]/3 filter blur-[120px] pointer-events-none" />
 
           {/* Spacer for centering on desktop */}
           <div className="hidden md:block" />
 
           {/* Error Details Card */}
           <div className="max-w-md w-full mx-auto my-auto relative z-10 animate-fadeIn space-y-8 text-center md:text-left">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#e95678]/10 to-[#fab795]/5 border border-[#e95678]/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
-              <ShieldAlert className="w-10 h-10 text-[#e95678] animate-bounce" />
+            <div className="w-20 h-20 bg-gradient-to-br from-[#2563eb]/10 to-[#60a5fa]/5 border border-[#2563eb]/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
+              <ShieldAlert className="w-10 h-10 text-[#2563eb] animate-bounce" />
             </div>
             
             <div className="space-y-3">
               <h3 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
                 Tautan Berbagi <br/>
-                <span className="text-[#e95678]">Tidak Valid atau Kadaluarsa</span>
+                <span className="text-[#2563eb]">Tidak Valid atau Kadaluarsa</span>
               </h3>
               <p className="text-sm text-slate-400 font-medium leading-relaxed">
                 {errorMessage || 'Tautan pembagian ini tidak dapat diakses kembali karena masa aktifnya telah habis, dibatalkan oleh pemilik, atau tautan tidak valid.'}
@@ -407,7 +407,7 @@ export default function PublicSharePage() {
               <Button
                 onClick={() => navigate('/')}
                 variant="primary"
-                className="bg-gradient-to-r from-[#e95678] to-[#fab795] text-[#0f111a] font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-[#e95678]/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white font-bold text-xs py-3.5 px-8 rounded-full shadow-lg shadow-[#2563eb]/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
               >
                 <Home className="w-4 h-4" />
                 <span>Kembali ke Beranda</span>
@@ -432,19 +432,19 @@ export default function PublicSharePage() {
 
     return (
       <div 
-        className="min-h-screen bg-[#0f111a] flex flex-col text-white overflow-hidden relative"
+        className="h-[100dvh] w-full bg-[#0f111a] flex flex-col text-white overflow-hidden relative"
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
       >
         {/* Fullscreen Drag and Drop Overlay */}
         {isDragging && isEditAllowed && (
           <div 
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f111a]/90 backdrop-blur-md border-4 border-dashed border-[#e95678] animate-fadeIn"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f111a]/90 backdrop-blur-md border-4 border-dashed border-[#2563eb] animate-fadeIn"
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <UploadCloud className="w-20 h-20 text-[#e95678] animate-bounce mb-4" />
+            <UploadCloud className="w-20 h-20 text-[#2563eb] animate-bounce mb-4" />
             <h3 className="text-lg font-bold text-slate-100 uppercase tracking-wide">Lepaskan Berkas untuk Mengunggah</h3>
             <p className="text-xs text-slate-450 mt-1">Unggah langsung ke folder saat ini</p>
           </div>
@@ -453,8 +453,8 @@ export default function PublicSharePage() {
         {/* Top Header / Navbar */}
         <header className="h-16 bg-[#1c1e26]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#e95678] to-[#fab795] rounded-xl flex items-center justify-center shadow-lg shadow-[#e95678]/20 shrink-0">
-              <Folder className="w-5 h-5 text-[#0f111a]" />
+            <div className="w-9 h-9 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-xl flex items-center justify-center shadow-lg shadow-[#2563eb]/20 shrink-0">
+              <Folder className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
               <h1 className="text-sm font-bold text-white truncate max-w-[150px] sm:max-w-[350px]">
@@ -471,7 +471,7 @@ export default function PublicSharePage() {
           <div className="flex items-center gap-3 shrink-0">
             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
               permission === 'EDIT' 
-                ? 'bg-[#e95678]/10 border-[#e95678]/20 text-[#e95678]' 
+                ? 'bg-[#2563eb]/10 border-[#2563eb]/20 text-[#2563eb]' 
                 : 'bg-slate-500/10 border-slate-500/20 text-slate-350'
             }`}>
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -482,7 +482,7 @@ export default function PublicSharePage() {
               <>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-gradient-to-r from-[#e95678] to-[#fab795] text-[#0f111a] font-bold text-xs px-4 py-2 rounded-full shadow-lg shadow-[#e95678]/20 transition-all hover:scale-[1.03] active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
+                  className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white font-bold text-xs px-4 py-2 rounded-full shadow-lg shadow-[#2563eb]/20 transition-all hover:scale-[1.03] active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
                 >
                   <UploadCloud className="w-4 h-4" />
                   <span>Unggah Berkas</span>
@@ -503,7 +503,7 @@ export default function PublicSharePage() {
           
           {/* Lock message if login is required for editing */}
           {isLoginRequired && (
-            <div className="bg-[#fab795]/5 border border-[#fab795]/10 rounded-2xl p-4 flex items-center gap-3 animate-fadeIn text-[#fab795]">
+            <div className="bg-[#2563eb]/5 border border-[#2563eb]/10 rounded-2xl p-4 flex items-center gap-3 animate-fadeIn text-[#60a5fa]">
               <Lock className="w-5 h-5 shrink-0" />
               <p className="text-xs font-semibold">
                 Unggahan & penghapusan berkas dinonaktifkan secara anonim. Silakan masuk akun Anda untuk berkolaborasi di folder ini.
@@ -514,12 +514,12 @@ export default function PublicSharePage() {
           {/* Upload Progress Bar */}
           {uploadProgress !== null && (
             <div className="bg-[#1c1e26] border border-white/5 rounded-2xl p-4 space-y-2 animate-pulse">
-              <div className="flex justify-between items-center text-xs font-bold text-[#e95678]">
+              <div className="flex justify-between items-center text-xs font-bold text-[#2563eb]">
                 <span className="truncate max-w-[220px]">Mengunggah: {uploadingFileName}</span>
                 <span>{uploadProgress}%</span>
               </div>
               <div className="w-full bg-[#0f111a] rounded-full h-1.5 overflow-hidden">
-                <div className="bg-gradient-to-r from-[#e95678] to-[#fab795] h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                <div className="bg-gradient-to-r from-[#2563eb] to-[#60a5fa] h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function PublicSharePage() {
           <div className="flex items-center flex-wrap gap-2 text-xs font-bold text-slate-400 bg-[#1c1e26]/40 px-4 py-3 border border-white/5 rounded-2xl">
             <button
               onClick={() => handleBreadcrumbClick(-1)}
-              className="flex items-center gap-1.5 text-slate-350 hover:text-[#e95678] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 text-slate-350 hover:text-[#2563eb] transition-all cursor-pointer"
             >
               <Home className="w-4 h-4" />
               <span>Root</span>
@@ -538,7 +538,7 @@ export default function PublicSharePage() {
                 <span className="text-slate-600">/</span>
                 <button
                   onClick={() => handleBreadcrumbClick(idx)}
-                  className={`hover:text-[#e95678] transition-all cursor-pointer ${idx === navigationHistory.length - 1 ? 'text-[#fab795]' : 'text-slate-350'}`}
+                  className={`hover:text-[#2563eb] transition-all cursor-pointer ${idx === navigationHistory.length - 1 ? 'text-[#60a5fa]' : 'text-slate-350'}`}
                 >
                   {item.name}
                 </button>
@@ -564,9 +564,9 @@ export default function PublicSharePage() {
                   <div 
                     key={sub.id} 
                     onClick={() => handleFolderClick(sub)}
-                    className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#fab795]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all select-none cursor-pointer group"
+                    className="flex items-center gap-3.5 p-4 rounded-2xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#60a5fa]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all select-none cursor-pointer group"
                   >
-                    <div className="p-2 bg-[#fab795]/10 text-[#fab795] rounded-xl shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="p-2 bg-[#60a5fa]/10 text-[#60a5fa] rounded-xl shrink-0 group-hover:scale-105 transition-transform">
                       <Folder className="w-5 h-5" />
                     </div>
                     <span className="text-xs font-bold text-slate-200 truncate" title={sub.name}>
@@ -582,7 +582,7 @@ export default function PublicSharePage() {
                   return (
                     <div 
                       key={file.id} 
-                      className="p-5 flex flex-col gap-4 rounded-3xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#e95678]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all text-left relative"
+                      className="p-5 flex flex-col gap-4 rounded-3xl bg-[#1c1e26]/50 border border-white/5 hover:border-[#2563eb]/30 hover:bg-[#1c1e26]/85 hover:scale-[1.01] transition-all text-left relative"
                     >
                       <div className="flex items-start justify-between">
                         <FileIcon type={ext} className="w-8 h-8 shrink-0" />
@@ -596,7 +596,7 @@ export default function PublicSharePage() {
                                 : getPublicDownloadUrl(activeShareToken, 'local', true) + `&fileId=${file.id}`
                               }
                               download={file.originalFileName}
-                              className="p-2 rounded-xl bg-white/5 hover:bg-[#fab795]/20 hover:text-[#fab795] text-slate-400 transition-all cursor-pointer"
+                              className="p-2 rounded-xl bg-white/5 hover:bg-[#60a5fa]/20 hover:text-[#60a5fa] text-slate-400 transition-all cursor-pointer"
                               title="Unduh"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -605,7 +605,7 @@ export default function PublicSharePage() {
                           {isEditAllowed && file.id && (
                             <button
                               onClick={() => handleDeleteFile(file.id, file.originalFileName)}
-                              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#e95678] transition-all cursor-pointer"
+                              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all cursor-pointer"
                               title="Hapus"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -648,12 +648,12 @@ export default function PublicSharePage() {
   const downloadUrl = getPublicDownloadUrl(activeShareToken, activeProvider, true);
 
   return (
-    <div className="min-h-screen h-screen w-screen bg-[#0f111a] flex flex-col text-white overflow-hidden">
+    <div className="h-[100dvh] w-full bg-[#0f111a] flex flex-col text-white overflow-hidden">
       {/* Top Header */}
       <header className="h-16 bg-[#1c1e26]/90 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#e95678] to-[#fab795] rounded-xl flex items-center justify-center shadow-lg shadow-[#e95678]/25 shrink-0">
-            <HardDrive className="w-5 h-5 text-[#0f111a]" />
+          <div className="w-9 h-9 bg-gradient-to-br from-[#2563eb] to-[#60a5fa] rounded-xl flex items-center justify-center shadow-lg shadow-[#2563eb]/25 shrink-0">
+            <HardDrive className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
             <h1 className="text-sm font-bold text-white truncate max-w-[150px] sm:max-w-[300px] md:max-w-[450px]" title={fileInfo.originalFileName}>
@@ -668,13 +668,13 @@ export default function PublicSharePage() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <span className="hidden md:inline-flex bg-[#e95678]/10 border border-[#e95678]/20 text-[#e95678] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="hidden md:inline-flex bg-[#2563eb]/10 border border-[#2563eb]/20 text-[#2563eb] text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
             Berbagi Publik
           </span>
           <a 
             href={downloadUrl}
             download={fileInfo.originalFileName}
-            className="inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-gradient-to-r from-[#e95678] to-[#fab795] text-[#0f111a] hover:scale-[1.02] hover:shadow-lg hover:shadow-[#e95678]/10 text-xs py-2 px-4 gap-2"
+            className="inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-[0.98] bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white hover:scale-[1.02] hover:shadow-lg hover:shadow-[#2563eb]/10 text-xs py-2 px-4 gap-2"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Unduh Berkas</span>
@@ -687,15 +687,15 @@ export default function PublicSharePage() {
       <main className="flex-1 w-full bg-[#0f111a] flex items-center justify-center relative overflow-hidden p-4">
         {isPreviewLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-[#0f111a]/40 z-10">
-            <div className="w-12 h-12 border-4 border-[#e95678]/20 border-t-[#e95678] rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin"></div>
             <p className="text-xs font-bold text-slate-450 mt-4 animate-pulse uppercase tracking-wider">Memuat pratinjau media...</p>
           </div>
         )}
 
         {previewError && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white bg-[#0f111a]/40 z-10 animate-fadeIn">
-            <div className="w-16 h-16 bg-[#e95678]/10 border border-[#e95678]/20 rounded-full flex items-center justify-center mb-4">
-              <AlertTriangle className="w-8 h-8 text-[#e95678]" />
+            <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
             <h4 className="font-bold text-lg text-slate-200">Gagal Memuat Pratinjau</h4>
             <p className="text-xs text-slate-500 mt-2 max-w-sm leading-relaxed">{previewError}</p>
@@ -717,7 +717,7 @@ export default function PublicSharePage() {
               isMobile ? (
                 <div className="w-full max-w-md p-8 backdrop-blur-md bg-[#1c1e26]/60 border border-white/5 rounded-3xl text-center shadow-2xl mx-4">
                   <div className="mb-6 flex justify-center">
-                    <FileText className="w-16 h-16 text-[#e95678] animate-pulse" />
+                    <FileText className="w-16 h-16 text-[#2563eb] animate-pulse" />
                   </div>
                   <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
                     {fileInfo.originalFileName}
@@ -726,7 +726,7 @@ export default function PublicSharePage() {
                   <p className="text-xs text-slate-450 mb-6 font-semibold">Pratinjau PDF tidak didukung di browser seluler.</p>
                   <button 
                     onClick={() => window.open(objectUrl || '', '_blank')}
-                    className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg active:scale-[0.98] bg-[#e95678] text-white text-sm py-3 px-6 gap-2.5 hover:bg-[#e95678]/95"
+                    className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg active:scale-[0.98] bg-[#2563eb] text-white text-sm py-3 px-6 gap-2.5 hover:bg-[#2563eb]/95"
                   >
                     Buka PDF di Tab Baru
                   </button>
@@ -752,8 +752,8 @@ export default function PublicSharePage() {
             {category === 'audio' && objectUrl && (
               <div className="w-full max-w-md text-center p-8 backdrop-blur-md bg-[#1c1e26]/60 border border-white/5 rounded-3xl shadow-2xl mx-4">
                 <div className="mb-6 flex justify-center">
-                  <div className="w-20 h-20 bg-[#fab795]/10 border border-[#fab795]/20 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
-                    <Music className="w-10 h-10 text-[#fab795]" />
+                  <div className="w-20 h-20 bg-[#2563eb]/10 border border-[#2563eb]/20 rounded-2xl flex items-center justify-center shadow-inner animate-pulse">
+                    <Music className="w-10 h-10 text-[#2563eb]" />
                   </div>
                 </div>
                 <h3 className="font-bold text-white text-lg truncate mb-1" title={fileInfo.originalFileName}>
@@ -779,7 +779,7 @@ export default function PublicSharePage() {
 
         {!isPreviewLoading && !previewError && !objectUrl && textContent === null && category !== 'other' && (
           <div className="text-center text-slate-400 space-y-2 animate-fadeIn">
-            <div className="w-10 h-10 border-4 border-[#e95678]/20 border-t-[#e95678] rounded-full animate-spin mx-auto"></div>
+            <div className="w-10 h-10 border-4 border-[#2563eb]/20 border-t-[#2563eb] rounded-full animate-spin mx-auto"></div>
             <p className="text-[10px] font-bold uppercase tracking-wider">Menginisialisasi pratinjau...</p>
           </div>
         )}
@@ -820,7 +820,7 @@ export default function PublicSharePage() {
             <a 
               href={downloadUrl}
               download={fileInfo.originalFileName}
-              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-[#e95678]/10 active:scale-[0.98] bg-gradient-to-r from-[#e95678] to-[#fab795] text-[#0f111a] text-sm py-3 px-6 gap-2.5"
+              className="w-full inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-[#2563eb]/10 active:scale-[0.98] bg-gradient-to-r from-[#2563eb] to-[#60a5fa] text-white text-sm py-3 px-6 gap-2.5"
             >
               <Download className="w-4 h-4" />
               Unduh Berkas
