@@ -20,7 +20,6 @@ import TermsPage from './pages/Landing/TermsPage';
 import { useAuth } from './context/AuthContext';
 import { Construction } from 'lucide-react';
 import BackgroundActivityContainer from './components/ui/BackgroundActivityContainer';
-import FloatingReportButton from './components/FloatingReportButton';
 
 // Reusable Route Protection Wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -184,8 +183,7 @@ export default function App() {
       {/* Background activity progress toasts */}
       <BackgroundActivityContainer />
 
-      {/* Global floating bug reporter - only shown on settings page */}
-      {location.pathname === '/settings' && <FloatingReportButton />}
+
     </div>
   );
 }
