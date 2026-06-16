@@ -12,7 +12,7 @@ export function getFileCategory(filename: string): 'image' | 'pdf' | 'video' | '
   if (['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return 'spreadsheet';
   if (['doc', 'docx', 'rtf', 'odt'].includes(ext)) return 'document';
   if (['ppt', 'pptx', 'odp'].includes(ext)) return 'presentation';
-  if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx'].includes(ext)) return 'text';
+  if (['txt', 'log', 'md', 'json', 'xml', 'js', 'css', 'html', 'java', 'py', 'sh', 'ts', 'tsx', 'jsx', 'cpp', 'c', 'h', 'hpp', 'cs', 'go', 'rs', 'sql', 'php', 'swift', 'kt', 'kts', 'yaml', 'yml', 'ini', 'toml', 'bat', 'cmd', 'ps1', 'dart', 'rb', 'pl', 'pm', 'r', 'm', 'scala', 'groovy'].includes(ext)) return 'text';
   return 'other';
 }
 
