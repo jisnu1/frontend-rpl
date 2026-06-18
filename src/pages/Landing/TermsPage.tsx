@@ -366,7 +366,7 @@ export default function TermsPage() {
                 </p>
               </div>
               <Link
-                to="/privacy"
+                to="/privacy-policy"
                 id="terms-goto-privacy"
                 className="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors self-start md:self-auto shadow-sm"
               >

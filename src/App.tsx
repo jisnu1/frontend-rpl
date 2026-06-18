@@ -112,8 +112,8 @@ export default function App() {
   const isPublicRoute = 
     normalizedPath === '/' || 
     normalizedPath === '/landing' ||
-    normalizedPath === '/privacy' ||
-    normalizedPath === '/terms';
+    normalizedPath === '/privacy-policy' ||
+    normalizedPath === '/term-of-service';
 
   if (!isAuthenticated) {
     if (isPublicRoute) {
@@ -121,8 +121,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing" element={<LandingPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPage />} />
+          <Route path="/term-of-service" element={<TermsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       );
@@ -182,8 +182,8 @@ export default function App() {
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/landing" element={<Navigate to="/my-drive" replace />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPage />} />
+            <Route path="/term-of-service" element={<TermsPage />} />
             <Route path="*" element={<PlaceholderPage title="Not Found" />} />
           </Routes>
         </main>

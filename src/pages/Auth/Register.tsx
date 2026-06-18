@@ -281,7 +281,7 @@ export default function Register() {
               <label htmlFor="agree-terms" className="text-xs text-slate-500 font-semibold leading-relaxed cursor-pointer select-none">
                 Saya setuju dengan{' '}
                 <a 
-                  href="/terms" 
+                  href="/term-of-service" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:underline font-bold"
@@ -290,7 +290,7 @@ export default function Register() {
                 </a>{' '}
                 dan{' '}
                 <a 
-                  href="/privacy" 
+                  href="/privacy-policy" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-primary hover:underline font-bold"
@@ -324,9 +324,9 @@ export default function Register() {
         <div className="mt-8 flex items-center justify-center gap-4 text-xs text-slate-400 font-semibold">
           <Link to="/" className="hover:text-slate-600 transition-colors">Home</Link>
           <span>•</span>
-          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
+          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
           <span>•</span>
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Terms of Service</a>
+          <a href="/term-of-service" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition-colors">Terms of Service</a>
         </div>
       </div>
     </div>

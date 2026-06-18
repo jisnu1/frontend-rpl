@@ -482,7 +482,7 @@ export default function PrivacyPage() {
                 </p>
               </div>
               <Link
-                to="/terms"
+                to="/term-of-service"
                 id="privacy-goto-terms"
                 className="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors self-start md:self-auto shadow-sm"
               >

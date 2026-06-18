@@ -458,14 +458,14 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-xs font-semibold">
             <div className="flex items-center gap-3">
               <Link 
-                to="/privacy"
+                to="/privacy-policy"
                 className="hover:text-white transition-colors cursor-pointer"
               >
                 Privacy Policy
               </Link>
               <span className="text-slate-700">|</span>
               <Link 
-                to="/terms"
+                to="/term-of-service"
                 className="hover:text-white transition-colors cursor-pointer"
               >
                 Terms of Service
