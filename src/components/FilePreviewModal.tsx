@@ -127,11 +127,27 @@ export default function FilePreviewModal({
     }
 
     if (node) {
+      let lastTap = 0;
+
       const handleStart = (e: TouchEvent) => {
         const currentScale = scaleRef.current;
         const currentPos = positionRef.current;
 
-        if (e.touches.length === 2) {
+        if (e.touches.length === 1) {
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            e.preventDefault(); // Prevent double tap zoom
+          }
+          lastTap = now;
+
+          const t = e.touches[0];
+          touchStartRef.current = {
+            distance: 0,
+            scale: currentScale,
+            x: t.clientX - currentPos.x,
+            y: t.clientY - currentPos.y
+          };
+        } else if (e.touches.length === 2) {
           const t1 = e.touches[0];
           const t2 = e.touches[1];
           const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
@@ -142,14 +158,6 @@ export default function FilePreviewModal({
             scale: currentScale,
             x: midX - currentPos.x,
             y: midY - currentPos.y
-          };
-        } else if (e.touches.length === 1) {
-          const t = e.touches[0];
-          touchStartRef.current = {
-            distance: 0,
-            scale: currentScale,
-            x: t.clientX - currentPos.x,
-            y: t.clientY - currentPos.y
           };
         }
       };
@@ -202,14 +210,26 @@ export default function FilePreviewModal({
         }
       };
 
+      const handleGestureStart = (e: Event) => {
+        e.preventDefault(); // Disable native Safari pinch-to-zoom viewport action
+      };
+
+      const handleGestureChange = (e: Event) => {
+        e.preventDefault(); // Disable native Safari pinch-to-zoom viewport action
+      };
+
       node.addEventListener('touchstart', handleStart, { passive: false });
       node.addEventListener('touchmove', handleMove, { passive: false });
       node.addEventListener('touchend', handleEnd, { passive: false });
+      node.addEventListener('gesturestart', handleGestureStart, { passive: false });
+      node.addEventListener('gesturechange', handleGestureChange, { passive: false });
 
       activeTouchCleanupRef.current = () => {
         node.removeEventListener('touchstart', handleStart);
         node.removeEventListener('touchmove', handleMove);
         node.removeEventListener('touchend', handleEnd);
+        node.removeEventListener('gesturestart', handleGestureStart);
+        node.removeEventListener('gesturechange', handleGestureChange);
       };
     }
   }, []);
