@@ -106,65 +106,113 @@ export default function FilePreviewModal({
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const touchStartRef = React.useRef({ distance: 0, scale: 1, x: 0, y: 0 });
+  const scaleRef = React.useRef(1);
+  const positionRef = React.useRef({ x: 0, y: 0 });
+  const activeTouchCleanupRef = React.useRef<(() => void) | null>(null);
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length === 2) {
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const midX = (t1.clientX + t2.clientX) / 2;
-      const midY = (t1.clientY + t2.clientY) / 2;
-      touchStartRef.current = {
-        distance: dist,
-        scale: scale,
-        x: midX - position.x,
-        y: midY - position.y
+  // Keep refs in sync with state for use in the non-passive touch listeners
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  // Use callback ref to bind non-passive event listeners directly to the DOM element
+  const containerRef = React.useCallback((node: HTMLDivElement | null) => {
+    if (activeTouchCleanupRef.current) {
+      activeTouchCleanupRef.current();
+      activeTouchCleanupRef.current = null;
+    }
+
+    if (node) {
+      const handleStart = (e: TouchEvent) => {
+        const currentScale = scaleRef.current;
+        const currentPos = positionRef.current;
+
+        if (e.touches.length === 2) {
+          const t1 = e.touches[0];
+          const t2 = e.touches[1];
+          const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+          const midX = (t1.clientX + t2.clientX) / 2;
+          const midY = (t1.clientY + t2.clientY) / 2;
+          touchStartRef.current = {
+            distance: dist,
+            scale: currentScale,
+            x: midX - currentPos.x,
+            y: midY - currentPos.y
+          };
+        } else if (e.touches.length === 1) {
+          const t = e.touches[0];
+          touchStartRef.current = {
+            distance: 0,
+            scale: currentScale,
+            x: t.clientX - currentPos.x,
+            y: t.clientY - currentPos.y
+          };
+        }
       };
-    } else if (e.touches.length === 1) {
-      const t = e.touches[0];
-      touchStartRef.current = {
-        distance: 0,
-        scale: scale,
-        x: t.clientX - position.x,
-        y: t.clientY - position.y
+
+      const handleMove = (e: TouchEvent) => {
+        const currentScale = scaleRef.current;
+
+        if (e.touches.length === 2 && touchStartRef.current.distance > 0) {
+          if (e.cancelable) e.preventDefault();
+          const t1 = e.touches[0];
+          const t2 = e.touches[1];
+          const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+          const factor = dist / touchStartRef.current.distance;
+          const newScale = Math.max(1, Math.min(touchStartRef.current.scale * factor, 4));
+          
+          const midX = (t1.clientX + t2.clientX) / 2;
+          const midY = (t1.clientY + t2.clientY) / 2;
+          
+          setScale(newScale);
+          if (newScale > 1) {
+            setPosition({
+              x: midX - touchStartRef.current.x,
+              y: midY - touchStartRef.current.y
+            });
+          } else {
+            setPosition({ x: 0, y: 0 });
+          }
+        } else if (e.touches.length === 1 && currentScale > 1) {
+          if (e.cancelable) e.preventDefault();
+          const t = e.touches[0];
+          setPosition({
+            x: t.clientX - touchStartRef.current.x,
+            y: t.clientY - touchStartRef.current.y
+          });
+        }
+      };
+
+      const handleEnd = (e: TouchEvent) => {
+        const currentScale = scaleRef.current;
+        const currentPos = positionRef.current;
+
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          touchStartRef.current = {
+            distance: 0,
+            scale: currentScale,
+            x: t.clientX - currentPos.x,
+            y: t.clientY - currentPos.y
+          };
+        }
+      };
+
+      node.addEventListener('touchstart', handleStart, { passive: false });
+      node.addEventListener('touchmove', handleMove, { passive: false });
+      node.addEventListener('touchend', handleEnd, { passive: false });
+
+      activeTouchCleanupRef.current = () => {
+        node.removeEventListener('touchstart', handleStart);
+        node.removeEventListener('touchmove', handleMove);
+        node.removeEventListener('touchend', handleEnd);
       };
     }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length === 2 && touchStartRef.current.distance > 0) {
-      e.preventDefault();
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const factor = dist / touchStartRef.current.distance;
-      const newScale = Math.max(1, Math.min(touchStartRef.current.scale * factor, 4));
-      
-      const midX = (t1.clientX + t2.clientX) / 2;
-      const midY = (t1.clientY + t2.clientY) / 2;
-      
-      setScale(newScale);
-      if (newScale > 1) {
-        setPosition({
-          x: midX - touchStartRef.current.x,
-          y: midY - touchStartRef.current.y
-        });
-      } else {
-        setPosition({ x: 0, y: 0 });
-      }
-    } else if (e.touches.length === 1 && scale > 1) {
-      // Allow panning when zoomed in
-      const t = e.touches[0];
-      setPosition({
-        x: t.clientX - touchStartRef.current.x,
-        y: t.clientY - touchStartRef.current.y
-      });
-    }
-  };
-
-  const handleTouchEnd = () => {
-    // Intentionally no auto-reset on touchend to preserve zoom level and coordinates
-  };
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !fileId || !provider) {
@@ -487,17 +535,16 @@ export default function FilePreviewModal({
               {/* Case 5: Standard Image Preview */}
               {!isGoogleDrive && !isOffice && !isCsv && category === 'image' && objectUrl && (
                 <div 
+                  ref={containerRef}
                   className="w-full h-full flex items-center justify-center overflow-hidden"
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
+                  style={{ touchAction: 'none' }}
                 >
                   <img
                     src={objectUrl}
                     alt={name}
                     style={{
                       transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                      touchAction: scale > 1 ? 'none' : 'auto',
+                      touchAction: 'none',
                       userSelect: 'none',
                       WebkitUserSelect: 'none'
                     }}
