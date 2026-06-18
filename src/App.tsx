@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -66,6 +66,18 @@ export default function App() {
   const [uploadTrigger, setUploadTrigger] = useState(0);
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const getSearchPlaceholder = () => {
     if (location.pathname === '/shared') return 'Search shared files...';

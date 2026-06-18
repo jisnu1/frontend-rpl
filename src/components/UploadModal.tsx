@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UploadCloud, Cloud, HardDrive } from 'lucide-react';
 import Button from './ui/Button';
 import Modal from './ui/Modal';
-import { fetchExternalAccounts, fetchGoogleDriveStorage, getGoogleAuthUrl, GoogleDriveStorageDto } from '../api/externalAccounts';
+import { fetchExternalAccounts, fetchGoogleDriveStorage, getGoogleAuthUrl, connectExternalAccount, GoogleDriveStorageDto } from '../api/externalAccounts';
 import { useActivity } from '../context/ActivityContext';
 
 interface UploadModalProps {
@@ -185,9 +185,41 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, folderId
                   key="connect-gdrive"
                   type="button"
                   onClick={async () => {
+                    if (!window.google) {
+                      alert('Google SDK belum siap. Silakan coba sesaat lagi.');
+                      return;
+                    }
                     try {
-                      const url = await getGoogleAuthUrl();
-                      window.location.href = url;
+                      const clientId = await getGoogleAuthUrl();
+                      if (!clientId) {
+                        throw new Error('Google Client ID tidak ditemukan di backend.');
+                      }
+
+                      const client = window.google.accounts.oauth2.initCodeClient({
+                        client_id: clientId,
+                        scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+                        ux_mode: 'popup',
+                        callback: async (response: any) => {
+                          if (response.error) {
+                            alert(`Otorisasi gagal: ${response.error}`);
+                            return;
+                          }
+                          if (response.code) {
+                            try {
+                              setIsLoadingProviders(true);
+                              await connectExternalAccount(response.code);
+                              if (onUploadSuccess) onUploadSuccess();
+                              onClose();
+                            } catch (err: any) {
+                              console.error(err);
+                              alert(err.response?.data?.message || 'Gagal menyimpan akun Google Drive.');
+                            } finally {
+                              setIsLoadingProviders(false);
+                            }
+                          }
+                        },
+                      });
+                      client.requestCode();
                     } catch (err) {
                       console.error('Failed to get Google auth URL', err);
                     }

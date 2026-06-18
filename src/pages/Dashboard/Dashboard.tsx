@@ -26,7 +26,7 @@ import {
   FolderResponse,
   FolderContentResponse
 } from '../../api/folders';
-import { fetchExternalAccounts, getGoogleAuthUrl, ExternalAccountDto } from '../../api/externalAccounts';
+import { fetchExternalAccounts, getGoogleAuthUrl, connectExternalAccount, ExternalAccountDto } from '../../api/externalAccounts';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import ShareModal from '../../components/ShareModal';
@@ -205,12 +205,45 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '', onStora
   };
 
   const handleConnectGoogleDrive = async () => {
+    if (!window.google) {
+      toastError('Google SDK belum siap. Silakan coba sesaat lagi.');
+      return;
+    }
     try {
-      const url = await getGoogleAuthUrl();
-      window.location.href = url;
-    } catch (err) {
+      const clientId = await getGoogleAuthUrl();
+      if (!clientId) {
+        throw new Error('Google Client ID tidak ditemukan di backend.');
+      }
+
+      const client = window.google.accounts.oauth2.initCodeClient({
+        client_id: clientId,
+        scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        ux_mode: 'popup',
+        callback: async (response: any) => {
+          if (response.error) {
+            toastError(`Otorisasi gagal: ${response.error}`);
+            return;
+          }
+          if (response.code) {
+            try {
+              setIsLoading(true);
+              await connectExternalAccount(response.code);
+              await loadAccounts();
+              await loadContents();
+              toastSuccess('Akun Google Drive berhasil terhubung!');
+            } catch (err: any) {
+              console.error(err);
+              toastError(err.response?.data?.message || 'Gagal menyimpan akun Google Drive.');
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        },
+      });
+      client.requestCode();
+    } catch (err: any) {
       console.error(err);
-      toastError('Gagal mendapatkan URL otentikasi Google.');
+      toastError('Gagal memulai proses otorisasi Google.');
     }
   };
 

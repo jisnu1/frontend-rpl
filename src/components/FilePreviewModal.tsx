@@ -102,11 +102,77 @@ export default function FilePreviewModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Mobile Pinch-to-Zoom & Panning states
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const touchStartRef = React.useRef({ distance: 0, scale: 1, x: 0, y: 0 });
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const midX = (t1.clientX + t2.clientX) / 2;
+      const midY = (t1.clientY + t2.clientY) / 2;
+      touchStartRef.current = {
+        distance: dist,
+        scale: scale,
+        x: midX - position.x,
+        y: midY - position.y
+      };
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStartRef.current = {
+        distance: 0,
+        scale: scale,
+        x: t.clientX - position.x,
+        y: t.clientY - position.y
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 2 && touchStartRef.current.distance > 0) {
+      e.preventDefault();
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const factor = dist / touchStartRef.current.distance;
+      const newScale = Math.max(1, Math.min(touchStartRef.current.scale * factor, 4));
+      
+      const midX = (t1.clientX + t2.clientX) / 2;
+      const midY = (t1.clientY + t2.clientY) / 2;
+      
+      setScale(newScale);
+      if (newScale > 1) {
+        setPosition({
+          x: midX - touchStartRef.current.x,
+          y: midY - touchStartRef.current.y
+        });
+      } else {
+        setPosition({ x: 0, y: 0 });
+      }
+    } else if (e.touches.length === 1 && scale > 1) {
+      // Allow panning when zoomed in
+      const t = e.touches[0];
+      setPosition({
+        x: t.clientX - touchStartRef.current.x,
+        y: t.clientY - touchStartRef.current.y
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Intentionally no auto-reset on touchend to preserve zoom level and coordinates
+  };
+
   useEffect(() => {
     if (!isOpen || !fileId || !provider) {
       setObjectUrl(null);
       setError(null);
       setTextContent(null);
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
       return;
     }
 
@@ -302,13 +368,13 @@ export default function FilePreviewModal({
           </div>
           
           <div className="flex items-center gap-2 shrink-0">
-            {!isGoogleDrive && category === 'pdf' && objectUrl && (
+            {!isGoogleDrive && (category === 'pdf' || category === 'image') && objectUrl && (
               <button
                 onClick={() => {
                   window.open(objectUrl, '_blank');
                 }}
                 className="inline-flex items-center justify-center font-bold rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-4 gap-2 cursor-pointer transition-all duration-200"
-                title="Buka PDF di Tab Baru"
+                title="Buka Berkas di Tab Baru"
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Buka Penuh</span>
@@ -420,12 +486,25 @@ export default function FilePreviewModal({
 
               {/* Case 5: Standard Image Preview */}
               {!isGoogleDrive && !isOffice && !isCsv && category === 'image' && objectUrl && (
-                <img
-                  src={objectUrl}
-                  alt={name}
-                  onError={() => setError('Browser gagal memuat gambar ini. Kemungkinan format tidak didukung.')}
-                  className="max-w-full max-h-full rounded-xl object-contain shadow-lg border border-white/5 transition-transform duration-300 hover:scale-[1.01]"
-                />
+                <div 
+                  className="w-full h-full flex items-center justify-center overflow-hidden"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <img
+                    src={objectUrl}
+                    alt={name}
+                    style={{
+                      transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                      touchAction: scale > 1 ? 'none' : 'auto',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none'
+                    }}
+                    onError={() => setError('Browser gagal memuat gambar ini. Kemungkinan format tidak didukung.')}
+                    className="max-w-full max-h-full rounded-xl object-contain shadow-lg border border-white/5 select-none"
+                  />
+                </div>
               )}
 
               {/* Case 6: Standard PDF Preview */}
