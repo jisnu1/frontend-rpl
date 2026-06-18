@@ -163,7 +163,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/my-drive" replace />} />
             <Route path="/login" element={<Navigate to="/my-drive" replace />} />
             <Route path="/register" element={<Navigate to="/my-drive" replace />} />
-            <Route path="/my-drive" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
+            <Route path="/my-drive" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} onStorageChange={handleUploadSuccess} /></ProtectedRoute>} />
             <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/migration" element={<ProtectedRoute><Migration isSidebarMinimized={isSidebarMinimized} /></ProtectedRoute>} />

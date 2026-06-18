@@ -357,7 +357,7 @@ export default function FileBrowser({
                                     e.stopPropagation();
                                     onShareFile(file);
                                   }}
-                                  className="hidden sm:flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
+                                  className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
                                   title="Bagikan Akses Berkas"
                                 >
                                   <Share2 className="w-4 h-4" />
@@ -563,7 +563,7 @@ export default function FileBrowser({
                                 e.stopPropagation();
                                 onShareFile(file);
                               }}
-                              className="hidden sm:flex p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
+                              className="flex p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
                               title="Bagikan"
                             >
                               <Share2 className="w-3.5 h-3.5" />

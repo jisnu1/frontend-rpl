@@ -16,6 +16,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const isMobileDevice = () => {
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -90,6 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const data = await refreshToken();
             if (data && data.accessToken) {
               setAccessToken(data.accessToken);
+              if (isMobileDevice()) {
+                localStorage.setItem('horizon_access_token', data.accessToken);
+              }
               const profile = await fetchUserProfile(data.accessToken);
               setUser(profile);
               
@@ -122,11 +129,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Try checking session on initial load
   useEffect(() => {
     async function checkSession() {
+      // If mobile, try to load access token from localStorage first
+      if (isMobileDevice()) {
+        const savedToken = localStorage.getItem('horizon_access_token');
+        if (savedToken) {
+          try {
+            // Verify saved token by fetching user profile
+            const profile = await fetchUserProfile(savedToken);
+            setAccessToken(savedToken);
+            setUser(profile);
+            setIsLoading(false);
+            return;
+          } catch (err) {
+            console.warn('Saved access token is invalid or expired, trying to refresh...', err);
+            localStorage.removeItem('horizon_access_token');
+          }
+        }
+      }
+
       // Fallback to refresh token cookie on initial load
       try {
         const data = await refreshToken();
         if (data && data.accessToken) {
           setAccessToken(data.accessToken);
+          if (isMobileDevice()) {
+            localStorage.setItem('horizon_access_token', data.accessToken);
+          }
           const profile = await fetchUserProfile(data.accessToken);
           setUser(profile);
         } else {
@@ -144,6 +172,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: LoginRequest) => {
     const res = await loginUser(data);
     setAccessToken(res.accessToken);
+    if (isMobileDevice()) {
+      localStorage.setItem('horizon_access_token', res.accessToken);
+    }
     const profile = await fetchUserProfile(res.accessToken);
     setUser(profile);
   };
@@ -160,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setAccessToken(null);
       setUser(null);
+      localStorage.removeItem('horizon_access_token');
     }
   };
 

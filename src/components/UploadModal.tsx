@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UploadCloud, Cloud, HardDrive } from 'lucide-react';
 import Button from './ui/Button';
 import Modal from './ui/Modal';
-import { fetchExternalAccounts, fetchGoogleDriveStorage, GoogleDriveStorageDto } from '../api/externalAccounts';
+import { fetchExternalAccounts, fetchGoogleDriveStorage, getGoogleAuthUrl, GoogleDriveStorageDto } from '../api/externalAccounts';
 import { useActivity } from '../context/ActivityContext';
 
 interface UploadModalProps {
@@ -178,6 +178,35 @@ export default function UploadModal({ isOpen, onClose, onUploadSuccess, folderId
                   </button>
                 );
               })}
+
+              {/* If no Google Drive is connected, show a helper button to connect */}
+              {!providers.some(p => p.type === 'GOOGLE_DRIVE') && (
+                <button
+                  key="connect-gdrive"
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const url = await getGoogleAuthUrl();
+                      window.location.href = url;
+                    } catch (err) {
+                      console.error('Failed to get Google auth URL', err);
+                    }
+                  }}
+                  className="flex items-start gap-3 p-3.5 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-left transition-all duration-200 cursor-pointer"
+                >
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+                    <HardDrive className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-extrabold text-primary flex items-center gap-1">
+                      + Hubungkan Google Drive
+                    </p>
+                    <p className="text-[10px] text-primary/70 font-semibold truncate mt-0.5">
+                      Belum ada akun terhubung
+                    </p>
+                  </div>
+                </button>
+              )}
             </div>
           )}
         </div>

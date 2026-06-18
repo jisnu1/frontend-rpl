@@ -302,6 +302,19 @@ export default function FilePreviewModal({
           </div>
           
           <div className="flex items-center gap-2 shrink-0">
+            {!isGoogleDrive && category === 'pdf' && objectUrl && (
+              <button
+                onClick={() => {
+                  window.open(objectUrl, '_blank');
+                }}
+                className="inline-flex items-center justify-center font-bold rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-2 px-4 gap-2 cursor-pointer transition-all duration-200"
+                title="Buka PDF di Tab Baru"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Buka Penuh</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 if (fileId && provider) {
@@ -417,11 +430,13 @@ export default function FilePreviewModal({
 
               {/* Case 6: Standard PDF Preview */}
               {!isGoogleDrive && !isOffice && !isCsv && category === 'pdf' && objectUrl && (
-                <iframe
-                  src={objectUrl}
-                  title={name}
-                  className="w-full h-full rounded-xl border border-white/10 bg-white"
-                />
+                <div className="w-full h-full overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <iframe
+                    src={objectUrl}
+                    title={name}
+                    className="w-full h-full rounded-xl border border-white/10 bg-white"
+                  />
+                </div>
               )}
 
               {/* Case 7: Video Preview */}

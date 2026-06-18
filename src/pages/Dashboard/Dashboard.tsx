@@ -60,9 +60,10 @@ export interface DashboardFile extends FileResponse {
 interface DashboardProps {
   uploadTrigger?: number;
   searchQuery?: string;
+  onStorageChange?: () => void;
 }
 
-export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: DashboardProps) {
+export default function Dashboard({ uploadTrigger = 0, searchQuery = '', onStorageChange }: DashboardProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -486,6 +487,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       setNewFolderName('');
       setIsCreateFolderOpen(false);
       loadContents();
+      onStorageChange?.();
     } catch (err: any) {
       console.error(err);
       toastError(err.response?.data?.message || 'Gagal membuat folder.');
@@ -513,6 +515,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         }
       }
       loadContents();
+      onStorageChange?.();
     } catch (err: any) {
       console.error(err);
       toastError(err.response?.data?.message || 'Gagal menghapus folder.');
@@ -529,6 +532,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
       await deleteFile(confirmDeleteFile.id, confirmDeleteFile.provider);
       toastSuccess(`Berkas "${confirmDeleteFile.originalFileName}" berhasil dihapus.`);
       loadContents();
+      onStorageChange?.();
     } catch (err) {
       console.error('Failed to delete file', err);
       toastError('Gagal menghapus berkas. Silakan coba lagi.');
@@ -579,6 +583,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '' }: Dashb
         toastSuccess('Item berhasil dipindahkan.');
       }
       loadContents();
+      onStorageChange?.();
     } catch (err: any) {
       console.error(err);
       toastError(err.response?.data?.message || 'Gagal memindahkan item.');
