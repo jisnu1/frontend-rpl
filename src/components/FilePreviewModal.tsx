@@ -140,6 +140,10 @@ export default function FilePreviewModal({
           }
           lastTap = now;
 
+          if (currentScale > 1) {
+            e.preventDefault(); // Prevent native dragging/scrolling when zoomed in
+          }
+
           const t = e.touches[0];
           touchStartRef.current = {
             distance: 0,
@@ -148,6 +152,7 @@ export default function FilePreviewModal({
             y: t.clientY - currentPos.y
           };
         } else if (e.touches.length === 2) {
+          e.preventDefault(); // Prevent default browser pinch behavior at start
           const t1 = e.touches[0];
           const t2 = e.touches[1];
           const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
@@ -165,11 +170,25 @@ export default function FilePreviewModal({
       const handleMove = (e: TouchEvent) => {
         const currentScale = scaleRef.current;
 
-        if (e.touches.length === 2 && touchStartRef.current.distance > 0) {
+        if (e.touches.length === 2) {
           if (e.cancelable) e.preventDefault();
           const t1 = e.touches[0];
           const t2 = e.touches[1];
           const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+          
+          // Safeguard: dynamically initialize distance and midpoint if not done yet
+          if (touchStartRef.current.distance === 0) {
+            const midX = (t1.clientX + t2.clientX) / 2;
+            const midY = (t1.clientY + t2.clientY) / 2;
+            touchStartRef.current = {
+              distance: dist,
+              scale: currentScale,
+              x: midX - positionRef.current.x,
+              y: midY - positionRef.current.y
+            };
+            return;
+          }
+
           const factor = dist / touchStartRef.current.distance;
           const newScale = Math.max(1, Math.min(touchStartRef.current.scale * factor, 4));
           
@@ -218,11 +237,16 @@ export default function FilePreviewModal({
         e.preventDefault(); // Disable native Safari pinch-to-zoom viewport action
       };
 
+      const handleDragStart = (e: Event) => {
+        e.preventDefault(); // Disable browser native image dragging
+      };
+
       node.addEventListener('touchstart', handleStart, { passive: false });
       node.addEventListener('touchmove', handleMove, { passive: false });
       node.addEventListener('touchend', handleEnd, { passive: false });
       node.addEventListener('gesturestart', handleGestureStart, { passive: false });
       node.addEventListener('gesturechange', handleGestureChange, { passive: false });
+      node.addEventListener('dragstart', handleDragStart, { passive: false });
 
       activeTouchCleanupRef.current = () => {
         node.removeEventListener('touchstart', handleStart);
@@ -230,6 +254,7 @@ export default function FilePreviewModal({
         node.removeEventListener('touchend', handleEnd);
         node.removeEventListener('gesturestart', handleGestureStart);
         node.removeEventListener('gesturechange', handleGestureChange);
+        node.removeEventListener('dragstart', handleDragStart);
       };
     }
   }, []);
@@ -562,6 +587,8 @@ export default function FilePreviewModal({
                   <img
                     src={objectUrl}
                     alt={name}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                     style={{
                       transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
                       touchAction: 'none',
