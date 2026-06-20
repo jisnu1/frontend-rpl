@@ -205,7 +205,7 @@ export default function UpgradeModal({
                 <iframe
                   src={invoiceUrl}
                   className="w-full h-full border-0"
-                  title="Tagihan Xendit"
+                  title="Pembayaran Midtrans"
                 />
               </div>
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
