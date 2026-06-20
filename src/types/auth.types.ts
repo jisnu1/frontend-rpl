@@ -29,6 +29,11 @@ export interface SubscriptionRequest {
   status: string;
   createdAt: string;
   updatedAt: string;
+  xenditInvoiceId?: string;
+  invoiceUrl?: string;
+  externalId?: string;
+  amount?: number;
+  paymentStatus?: string;
 }
 
 export interface LoginResponse {

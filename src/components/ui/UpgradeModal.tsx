@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Loader2, Sparkles, X, BookOpen, User } from 'lucide-react';
-import { requestSubscriptionUpgrade, fetchMySubscriptionRequest } from '../../api/auth';
+import { requestSubscriptionUpgrade, fetchMySubscriptionRequest, fetchUserProfile } from '../../api/auth';
 import { SubscriptionRequest } from '../../types/auth.types';
+import { useAuth } from '../../context/AuthContext';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function UpgradeModal({
   currentTier,
   onSuccess
 }: UpgradeModalProps) {
+  const { updateUserProfileState, accessToken } = useAuth();
   const [pendingRequest, setPendingRequest] = useState<SubscriptionRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export default function UpgradeModal({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [selectedDetailPlan, setSelectedDetailPlan] = useState<any | null>(null);
   const [confirmTier, setConfirmTier] = useState<string | null>(null);
+  const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,6 +39,18 @@ export default function UpgradeModal({
     try {
       const req = await fetchMySubscriptionRequest();
       setPendingRequest(req);
+      if (req && req.status === 'PENDING' && req.invoiceUrl) {
+        setInvoiceUrl(req.invoiceUrl);
+      } else {
+        setInvoiceUrl(null);
+        // Update user profile globally if there is no pending transaction
+        try {
+          const profile = await fetchUserProfile(accessToken || undefined);
+          updateUserProfileState(profile);
+        } catch (profileErr) {
+          console.error("Gagal memperbarui profil user setelah cek pembayaran:", profileErr);
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -54,7 +69,11 @@ export default function UpgradeModal({
     try {
       const res = await requestSubscriptionUpgrade(tier);
       setPendingRequest(res);
-      setSuccessMsg("Permintaan upgrade berhasil diajukan! Menunggu persetujuan admin.");
+      if (res && res.invoiceUrl) {
+        setInvoiceUrl(res.invoiceUrl);
+      } else {
+        setSuccessMsg("Permintaan upgrade berhasil diajukan! Silakan hubungi admin.");
+      }
       if (onSuccess) onSuccess();
     } catch (err: any) {
       setErrorMsg(err.response?.data?.message || "Gagal mengajukan permintaan upgrade. Silakan coba lagi.");
@@ -94,7 +113,7 @@ export default function UpgradeModal({
       id: 'PREMIUM_INDIVIDUAL',
       name: 'Premium Individual',
       icon: Sparkles,
-      price: 'Berbayar (via Admin)',
+      price: 'Rp 20.000 / bulan',
       color: 'amber',
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
       features: [
@@ -117,7 +136,7 @@ export default function UpgradeModal({
       id: 'PREMIUM_ACADEMIC',
       name: 'Premium Academic',
       icon: BookOpen,
-      price: 'Khusus Akademik',
+      price: 'Rp 15.000 / bulan',
       color: 'cyan',
       badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200',
       features: [
@@ -153,9 +172,13 @@ export default function UpgradeModal({
 
         {/* Modal Header */}
         <div className="p-6 sm:p-8 border-b border-slate-100 text-center">
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">Upgrade Kapasitas Penyimpanan</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">
+            {invoiceUrl ? 'Pembayaran Tagihan Langganan' : 'Upgrade Kapasitas Penyimpanan'}
+          </h2>
           <p className="text-sm text-slate-500 font-bold mt-1.5">
-            Pilih paket langganan terbaik. Klik kartu paket untuk melihat detail deskripsi lengkap.
+            {invoiceUrl 
+              ? 'Selesaikan pembayaran tagihan Anda di bawah untuk mengaktifkan paket.' 
+              : 'Pilih paket langganan terbaik. Klik kartu paket untuk melihat detail deskripsi lengkap.'}
           </p>
         </div>
 
@@ -176,6 +199,37 @@ export default function UpgradeModal({
             <div className="flex justify-center items-center py-12">
               <Loader2 className="w-10 h-10 text-primary animate-spin" />
             </div>
+          ) : invoiceUrl ? (
+            <div className="space-y-4">
+              <div className="w-full h-[500px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm relative">
+                <iframe
+                  src={invoiceUrl}
+                  className="w-full h-full border-0"
+                  title="Tagihan Xendit"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setInvoiceUrl(null);
+                    loadPendingRequest();
+                  }}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl text-sm transition-all cursor-pointer"
+                >
+                  Kembali ke Pilihan Paket
+                </button>
+                <button
+                  onClick={async () => {
+                    setLoading(true);
+                    await loadPendingRequest();
+                    if (onSuccess) onSuccess();
+                  }}
+                  className="flex-1 py-3 bg-primary hover:bg-primary-dark text-white font-black rounded-xl text-sm transition-all shadow-md shadow-primary/15 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Cek Status Pembayaran</span>
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-3">
               {plans.map((plan) => {
@@ -193,9 +247,9 @@ export default function UpgradeModal({
                   buttonStyle = 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed';
                   isDisabled = true;
                 } else if (isPendingThis) {
-                  buttonText = 'Menunggu Persetujuan';
-                  buttonStyle = 'bg-amber-100 text-amber-800 border border-amber-200 cursor-not-allowed';
-                  isDisabled = true;
+                  buttonText = 'Selesaikan Pembayaran';
+                  buttonStyle = 'bg-amber-500 text-white hover:bg-amber-650 shadow-md shadow-amber-500/10 cursor-pointer';
+                  isDisabled = false; // Allow user to click to open pending invoice!
                 } else if (hasAnyPending) {
                   buttonText = 'Pilih Paket';
                   buttonStyle = 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed';
@@ -214,7 +268,7 @@ export default function UpgradeModal({
                       isCurrent 
                         ? 'border-primary shadow-lg ring-1 ring-primary/20 bg-primary/5' 
                         : isPendingThis
-                        ? 'border-amber-400 bg-amber-50/30'
+                        ? 'border-amber-450 bg-amber-50/30'
                         : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
                     }`}
                   >
@@ -264,7 +318,11 @@ export default function UpgradeModal({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleUpgradeClick(plan.id);
+                          if (isPendingThis && pendingRequest && pendingRequest.invoiceUrl) {
+                            setInvoiceUrl(pendingRequest.invoiceUrl);
+                          } else {
+                            handleUpgradeClick(plan.id);
+                          }
                         }}
                         disabled={isDisabled || actionLoading !== null}
                         className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${buttonStyle}`}
