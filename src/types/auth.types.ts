@@ -20,6 +20,8 @@ export interface UserInfo {
   storageQuota?: number;
   subscriptionTier?: string;
   subscriptionExpiresAt?: string;
+  academicEmail?: string;
+  studentVerified?: boolean;
 }
 
 export interface SubscriptionRequest {
