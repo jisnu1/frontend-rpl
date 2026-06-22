@@ -136,19 +136,7 @@ function FileRow({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileRo
       <td className="px-4 sm:px-8 py-3.5 sm:py-5 text-right relative">
         <div ref={menuRef} className="relative inline-block text-left">
           <div className="flex items-center justify-end gap-2">
-            {isPdf && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/recap?fileId=${file.id}`);
-                }}
-                className="px-3 py-1.5 rounded-lg text-primary hover:text-indigo-700 hover:bg-indigo-50/50 text-[10px] font-bold inline-flex items-center gap-1 transition-all border border-indigo-100"
-                title="Analisis AI Recap"
-              >
-                <Sparkles className="w-3 h-3" />
-                AI Recap
-              </button>
-            )}
+
 
             <button
               onClick={(e) => {
@@ -340,18 +328,7 @@ function FileCard({ file, onPreviewClick, onRemoveAccess, onManageClick }: FileC
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400">{formatSize(file.size)}</span>
-          {isPdf && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/recap?fileId=${file.id}`);
-              }}
-              className="p-1 rounded bg-indigo-50 border border-indigo-100 text-primary hover:bg-indigo-100 transition-colors"
-              title="AI Recap"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-            </button>
-          )}
+
         </div>
       </div>
     </Card>

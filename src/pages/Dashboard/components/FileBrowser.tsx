@@ -33,7 +33,6 @@ interface FileBrowserProps {
   onShareFile: (file: DashboardFile) => void;
   onDeleteFile: (file: DashboardFile) => void;
   onPreviewFile: (file: DashboardFile) => void;
-  onRecapClick: (fileId: string) => void;
 }
 
 export default function FileBrowser({
@@ -55,8 +54,7 @@ export default function FileBrowser({
   onDownloadFile,
   onShareFile,
   onDeleteFile,
-  onPreviewFile,
-  onRecapClick
+  onPreviewFile
 }: FileBrowserProps) {
   const isEmpty = !isLoading && filteredFiles.length === 0 && filteredFolders.length === 0;
 
@@ -330,23 +328,11 @@ export default function FileBrowser({
 
                             <td className="pl-1 pr-3 md:pl-2 md:pr-6 py-4 md:py-5" onClick={(e) => e.stopPropagation()}>
                               <div className="flex justify-end gap-1 md:gap-2 shrink-0 relative z-10">
-                                {isPdf && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onRecapClick(file.id);
-                                    }}
-                                    className="hidden md:flex items-center justify-center p-1.5 rounded-lg text-primary hover:text-indigo-700 hover:bg-indigo-50/50 cursor-pointer"
-                                    title="Analisis AI Recap"
-                                  >
-                                    <Sparkles className="w-4 h-4" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDownloadFile(file);
-                                  }}
+                                 <button
+                                   onClick={(e) => {
+                                       e.stopPropagation();
+                                       onDownloadFile(file);
+                                   }}
                                   className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
                                   title="Unduh Berkas"
                                 >
@@ -423,17 +409,8 @@ export default function FileBrowser({
 
                         {/* Actions */}
                         <div className="flex items-center gap-1 shrink-0 animate-fadeIn" onClick={e => e.stopPropagation()}>
-                          {isPdf && (
-                            <button
-                              onClick={() => onRecapClick(file.id)}
-                              className="p-2 text-primary hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
-                              title="AI Recap"
-                            >
-                              <Sparkles className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => onDownloadFile(file)}
+                           <button
+                             onClick={() => onDownloadFile(file)}
                             className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                             title="Download"
                           >
@@ -536,23 +513,11 @@ export default function FileBrowser({
                         >
                           <span className="text-[10px] sm:text-xs font-bold text-slate-500">{formatSize(file.size)}</span>
                           <div className="flex gap-0.5 sm:gap-1 w-full sm:w-auto justify-end">
-                            {isPdf && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onRecapClick(file.id);
-                                }}
-                                className="p-1 rounded-lg text-primary hover:bg-indigo-50/50 transition-colors cursor-pointer shrink-0"
-                                title="AI Recap"
-                              >
-                                <Sparkles className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDownloadFile(file);
-                              }}
+                             <button
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 onDownloadFile(file);
+                               }}
                               className="p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
                               title="Download"
                             >

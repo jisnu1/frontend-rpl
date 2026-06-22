@@ -12,7 +12,8 @@ import {
   Settings,
   HardDrive,
   RefreshCw,
-  Shield
+  Shield,
+  Brain
 } from 'lucide-react';
 import Button from './ui/Button';
 import { fetchUserStorage, UserStorageResponse } from '../api/storage';
@@ -96,6 +97,7 @@ export default function Sidebar({
 
   const navLinks = [
     { name: 'My Drive', path: '/my-drive', icon: FolderOpen },
+    { name: 'AI Workspace', path: '/workspace', icon: Brain },
     { name: 'Shared', path: '/shared', icon: Users },
     { name: 'Migration', path: '/migration', icon: RefreshCw },
     { name: 'Settings', path: '/settings', icon: Settings },

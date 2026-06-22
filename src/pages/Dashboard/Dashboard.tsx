@@ -880,7 +880,6 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '', onStora
             onShareFile={setActiveShareFile}
             onDeleteFile={setConfirmDeleteFile}
             onPreviewFile={setActivePreviewFile}
-            onRecapClick={(fileId) => navigate(`/recap?fileId=${fileId}`)}
           />
         </>
       )}

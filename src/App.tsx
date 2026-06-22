@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import UploadModal from './components/UploadModal';
 import Dashboard from './pages/Dashboard/Dashboard';
-import Recap from './pages/Recap/Recap';
+import WorkspaceNotebook from './pages/Workspace/WorkspaceNotebook';
 import Shared from './pages/Shared/Shared';
 import Settings from './pages/Settings/Settings';
 import Migration from './pages/Migration/Migration';
@@ -176,7 +176,7 @@ export default function App() {
             <Route path="/login" element={<Navigate to="/my-drive" replace />} />
             <Route path="/register" element={<Navigate to="/my-drive" replace />} />
             <Route path="/my-drive" element={<ProtectedRoute><Dashboard uploadTrigger={uploadTrigger} searchQuery={searchQuery} onStorageChange={handleUploadSuccess} /></ProtectedRoute>} />
-            <Route path="/recap" element={<ProtectedRoute><Recap uploadTrigger={uploadTrigger} searchQuery={searchQuery} /></ProtectedRoute>} />
+            <Route path="/workspace" element={<ProtectedRoute><WorkspaceNotebook /></ProtectedRoute>} />
             <Route path="/shared" element={<ProtectedRoute><Shared searchQuery={searchQuery} /></ProtectedRoute>} />
             <Route path="/migration" element={<ProtectedRoute><Migration isSidebarMinimized={isSidebarMinimized} /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
