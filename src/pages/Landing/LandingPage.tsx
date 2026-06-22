@@ -19,7 +19,11 @@ import {
   Check,
   Cpu,
   Layers,
-  Sliders
+  Sliders,
+  HardDrive,
+  AlertTriangle,
+  Loader2,
+  File
 } from 'lucide-react';
 import { submitBugReport } from '../../api/reports';
 
@@ -59,27 +63,53 @@ export default function LandingPage() {
   const [activeShowcaseTab, setActiveShowcaseTab] = useState<'migration' | 'ai' | 'storage'>('migration');
 
   // --- INTERACTIVE DEMO STATES ---
+  // Custom Alert Modal States
+  const [showDemoAlert, setShowDemoAlert] = useState(false);
+  const [demoAlertTitle, setDemoAlertTitle] = useState('Informasi Demo');
+  const [demoAlertMessage, setDemoAlertMessage] = useState('');
+
+  const triggerDemoAlert = (title: string, message: string) => {
+    setDemoAlertTitle(title);
+    setDemoAlertMessage(message);
+    setShowDemoAlert(true);
+  };
+
+  // Helper function to format bytes dynamically
+  const formatBytes = (bytes: number, decimals = 1) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  };
+
   // 1. Migration Demo
   const [migrationChecked, setMigrationChecked] = useState<number[]>([0, 1]);
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'running' | 'done'>('idle');
   const [migrationProgress, setMigrationProgress] = useState(0);
-  const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
   const [migrationSpeed, setMigrationSpeed] = useState('0 MB/s');
+  const [sourceProvider, setSourceProvider] = useState('GOOGLE_DRIVE');
+  const [targetProvider, setTargetProvider] = useState('STORAGE_NODE');
   
-  const migrationFiles = [
+  const [migrationFiles, setMigrationFiles] = useState([
     { name: '📄 Tugas_Praktikum_RPL.zip', size: '250 MB' },
     { name: '📄 Video_Presentasi_Horizon.mp4', size: '1.8 GB' },
     { name: '📄 Jurnal_Riset_Infrastruktur.pdf', size: '15 MB' },
     { name: '📄 Dataset_ML_Kuantitatif.csv', size: '850 MB' }
-  ];
+  ]);
 
   // 2. AI Workspace Demo
   const [aiChatMessages, setAiChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
-    { sender: 'ai', text: 'Halo! Saya asisten AI Horizon. Silakan klik pertanyaan siap-pakai di bawah atau ketik pesan kustom untuk memindai dokumen Anda!' }
+    { sender: 'ai', text: 'Halo! Saya asisten AI Horizon. Silakan klik pertanyaan siap-pakai di bawah, ketik pesan kustom, atau tautkan berkas lokal Anda untuk mulai menganalisis!' }
   ]);
   const [aiIsTyping, setAiIsTyping] = useState(false);
   const [aiCustomInput, setAiCustomInput] = useState('');
   const [aiSelectedDoc, setAiSelectedDoc] = useState('Laporan_Kinerja_Q4.pdf');
+  const [aiWorkspaceFiles, setAiWorkspaceFiles] = useState([
+    { name: 'Laporan_Kinerja_Q4.pdf', size: '12.8 MB', type: 'PDF Ringkasan' },
+    { name: 'Jurnal_Riset_AI.pdf', size: '4.5 MB', type: 'Dokumen Riset' }
+  ]);
 
   // 3. Storage Node Demo
   const [storageFiles, setStorageFiles] = useState([
@@ -90,42 +120,47 @@ export default function LandingPage() {
   const [storageUsed, setStorageUsed] = useState(367.2); // MB
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
 
+  // Trigger marketing popup when storage limit exceeded
+  useEffect(() => {
+    if (storageUsed > 1024) {
+      triggerDemoAlert(
+        'Kapasitas Penyimpanan Penuh!',
+        `Penyimpanan simulasi Anda telah mencapai ${storageUsed} MB (melebihi batas 1.0 GB paket Freemium). Silakan upgrade ke paket Premium Academic atau Premium Individual untuk memperluas penyimpanan hingga 15 GB!`
+      );
+    }
+  }, [storageUsed]);
+
   // --- INTERACTIVE DEMO HANDLERS ---
   const startMigrationDemo = () => {
+    if (migrationChecked.length === 0) {
+      triggerDemoAlert(
+        'Pilih Berkas Terlebih Dahulu',
+        'Silakan centang setidaknya satu berkas di sebelah kiri sebelum memulai migrasi batch server-to-server.'
+      );
+      return;
+    }
     if (migrationStatus === 'running') return;
     setMigrationStatus('running');
     setMigrationProgress(0);
-    setMigrationLogs(['[1/5] Menghubungkan ke API Google Drive...', '[2/5] Mempersiapkan thread transfer aman...']);
     setMigrationSpeed('85 MB/s');
     
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 10;
+      progress += 5;
+      if (progress > 100) progress = 100;
       setMigrationProgress(progress);
       
-      if (progress === 20) {
-        setMigrationLogs(prev => [...prev, '[3/5] Mengalokasikan node VPS Storage Horizon...']);
-      } else if (progress === 50) {
-        setMigrationLogs(prev => [...prev, `[4/5] Memulai transfer server-to-server: ${migrationChecked.length} berkas terpilih...`]);
-      } else if (progress === 80) {
-        setMigrationLogs(prev => [...prev, '[5/5] Melakukan enkripsi hash & verifikasi checksum SHA-256...']);
-      } else if (progress >= 100) {
+      if (progress >= 100) {
         clearInterval(interval);
         setMigrationStatus('done');
         setMigrationSpeed('0 MB/s');
-        setMigrationLogs(prev => [
-          ...prev, 
-          '✓ Migrasi Selesai! File berhasil disimpan secara aman di Storage Node VPS.',
-          '✓ Total kuota internet ponsel Anda digunakan: 0 MB (100% Hemat Kuota Lokal).'
-        ]);
       }
-    }, 500);
+    }, 250);
   };
 
   const resetMigrationDemo = () => {
     setMigrationStatus('idle');
     setMigrationProgress(0);
-    setMigrationLogs([]);
     setMigrationSpeed('0 MB/s');
   };
 
@@ -463,23 +498,53 @@ export default function LandingPage() {
                     <div className="space-y-6 animate-fadeIn">
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         
-                        {/* Left Side: GDrive Source */}
-                        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                        {/* Left Side: Source Explorer */}
+                        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
                           <div className="space-y-4">
                             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                               <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                <Cloud className="w-4 h-4 text-primary" /> Sumber: Google Drive
+                                <Cloud className="w-4 h-4 text-primary" /> Koneksi Storage Node
                               </span>
                               <span className="text-[10px] bg-blue-50 text-primary border border-blue-100 font-extrabold px-2 py-0.5 rounded-full">
                                 Terkoneksi API
                               </span>
                             </div>
                             
+                            {/* Storage Provider Dropdowns */}
+                            <div className="flex gap-2">
+                              <div className="flex-1 flex flex-col gap-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Sumber Data</span>
+                                <select
+                                  value={sourceProvider}
+                                  onChange={(e) => setSourceProvider(e.target.value)}
+                                  disabled={migrationStatus === 'running'}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer disabled:opacity-60"
+                                >
+                                  <option value="GOOGLE_DRIVE">Google Drive</option>
+                                  <option value="DROPBOX">Dropbox</option>
+                                  <option value="ONEDRIVE">OneDrive</option>
+                                </select>
+                              </div>
+                              <div className="flex-1 flex flex-col gap-1">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tujuan Transfer</span>
+                                <select
+                                  value={targetProvider}
+                                  onChange={(e) => setTargetProvider(e.target.value)}
+                                  disabled={migrationStatus === 'running'}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer disabled:opacity-60"
+                                >
+                                  <option value="STORAGE_NODE">Storage VPS 1</option>
+                                  <option value="STORAGE_NODE_2">Storage VPS 2</option>
+                                </select>
+                              </div>
+                            </div>
+
                             <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
-                              Centang berkas raksasa di Google Drive Anda untuk dipindahkan ke VPS Storage Node personal:
+                              Pilih file dari {sourceProvider === 'GOOGLE_DRIVE' ? 'Google Drive' : sourceProvider === 'DROPBOX' ? 'Dropbox' : 'OneDrive'} untuk ditransfer:
                             </p>
 
-                            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                            {/* Checklist of files */}
+                            <div className="space-y-2 max-h-[170px] overflow-y-auto pr-1 custom-scrollbar">
                               {migrationFiles.map((file, idx) => (
                                 <label 
                                   key={idx}
@@ -509,6 +574,29 @@ export default function LandingPage() {
                                 </label>
                               ))}
                             </div>
+
+                            {/* Add Local File to Simulator */}
+                            <div className="pt-2">
+                              <label className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-xl text-[10px] font-black text-slate-500 hover:text-primary transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>+ Tautkan Berkas Lokal (Simulasi)</span>
+                                <input 
+                                  type="file" 
+                                  className="hidden" 
+                                  disabled={migrationStatus === 'running'}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const newFile = {
+                                        name: `📄 ${file.name}`,
+                                        size: formatBytes(file.size)
+                                      };
+                                      setMigrationFiles(prev => [...prev, newFile]);
+                                      setMigrationChecked(prev => [...prev, migrationFiles.length]);
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </div>
                           </div>
 
                           <div className="pt-4 border-t border-slate-100 flex gap-2">
@@ -524,7 +612,7 @@ export default function LandingPage() {
                             ) : migrationStatus === 'running' ? (
                               <div className="flex-1 py-3 bg-blue-50 border border-blue-200 text-primary text-xs font-black rounded-xl text-center flex items-center justify-center gap-2 animate-pulse">
                                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                Mentransfer Server-to-Server ({migrationProgress}%)
+                                Mentransfer Batch ({migrationProgress}%)
                               </div>
                             ) : (
                               <button
@@ -537,46 +625,135 @@ export default function LandingPage() {
                           </div>
                         </div>
 
-                        {/* Right Side: Log & Console Visualizer */}
-                        <div className="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 p-5 flex flex-col justify-between text-slate-350 shadow-inner min-h-[260px]">
-                          <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-primary" /> Konsol Proses Real-Time
-                              </span>
-                              {migrationStatus === 'running' && (
-                                <span className="text-[10px] text-emerald-500 font-extrabold animate-pulse">
-                                  Kecepatan: {migrationSpeed}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Logs scrollbox */}
-                            <div className="space-y-1.5 font-mono text-[10px] sm:text-xs leading-normal max-h-[160px] overflow-y-auto pr-1">
-                              {migrationLogs.length === 0 ? (
-                                <p className="text-slate-600 italic">Pilih berkas di samping kiri lalu klik tombol "Mulai Migrasi Instant" untuk memulai visualisasi transfer data.</p>
-                              ) : (
-                                migrationLogs.map((log, idx) => (
-                                  <p key={idx} className={log.startsWith('✓') ? 'text-emerald-400 font-bold' : log.startsWith('[') ? 'text-slate-400' : 'text-slate-300'}>
-                                    {log}
-                                  </p>
-                                ))
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Progress bar info */}
-                          {migrationStatus !== 'idle' && (
-                            <div className="space-y-2 pt-4 border-t border-slate-800">
-                              <div className="flex justify-between text-[10px] font-bold">
-                                <span>Alokasi Storage Node VPS Horizon</span>
-                                <span className="text-primary font-black">{migrationProgress}%</span>
+                        {/* Right Side: Real Batch Progress Dashboard Mockup */}
+                        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-150 p-5 flex flex-col justify-between shadow-sm h-[480px]">
+                          {migrationStatus === 'idle' ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 animate-fadeIn">
+                              <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200 shadow-inner">
+                                <RefreshCw className="w-7 h-7" />
                               </div>
-                              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                                <div 
-                                  className="bg-primary h-full rounded-full transition-all duration-300"
-                                  style={{ width: `${migrationProgress}%` }}
-                                />
+                              <div className="space-y-2 max-w-sm">
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Dasbor Progress Migrasi</h4>
+                                <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
+                                  Pilih beberapa berkas di kiri, pilih penyedia cloud tujuan, kemudian klik tombol "Mulai Migrasi Instant" untuk mensimulasikan pemindahan sekuensial secara batch.
+                                </p>
+                              </div>
+                              <div className="pt-2 flex flex-wrap justify-center gap-2 text-[10px] font-bold text-slate-500">
+                                <span className="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">Tanpa Bandwidth Lokal</span>
+                                <span className="bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">Proses Background</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex-1 flex flex-col justify-between animate-fadeIn">
+                              <div className="space-y-4">
+                                <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                                  <div>
+                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Progress Migrasi Batch</h4>
+                                    <span className="text-[9px] text-slate-400 font-extrabold font-mono uppercase">Batch ID: BATCH-{sourceProvider.substring(0, 3)}-{targetProvider.substring(0, 3)}</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                      migrationStatus === 'done' ? 'bg-emerald-100 text-emerald-700' : 'bg-primary/10 text-primary animate-pulse'
+                                    }`}>
+                                      {migrationStatus === 'done' ? 'Selesai' : 'Berjalan'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Global progress info */}
+                                <div className="bg-slate-50 border border-slate-150 p-3.5 rounded-2xl space-y-2">
+                                  <div className="flex justify-between text-xs font-bold text-slate-600">
+                                    <span>Progres Keseluruhan</span>
+                                    <span className="text-primary font-black">{migrationProgress}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                    <div 
+                                      className="bg-primary h-full rounded-full transition-all duration-300"
+                                      style={{ width: `${migrationProgress}%` }}
+                                    />
+                                  </div>
+                                  <div className="flex justify-between text-[9px] font-black text-slate-400">
+                                    <span>Status: {migrationStatus === 'done' ? 'Semua berkas ditransfer' : 'Menyalin berkas...'}</span>
+                                    <span>Kecepatan: {migrationStatus === 'done' ? '0 MB/s' : '85 MB/s'}</span>
+                                  </div>
+                                </div>
+
+                                {/* File-by-file batch details list */}
+                                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                  {migrationChecked.map((checkedIdx, i) => {
+                                    const file = migrationFiles[checkedIdx];
+                                    if (!file) return null;
+                                    
+                                    const N = migrationChecked.length;
+                                    const startVal = i * (100 / N);
+                                    const endVal = (i + 1) * (100 / N);
+                                    
+                                    let taskProgress = 0;
+                                    let statusText = 'Antrean';
+                                    let statusStyle = 'bg-slate-100 text-slate-500 border border-slate-200';
+                                    
+                                    if (migrationProgress >= endVal) {
+                                      taskProgress = 100;
+                                      statusText = 'Selesai';
+                                      statusStyle = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+                                    } else if (migrationProgress < startVal) {
+                                      taskProgress = 0;
+                                      statusText = 'Antrean';
+                                      statusStyle = 'bg-slate-100 text-slate-500 border border-slate-200';
+                                    } else {
+                                      taskProgress = Math.round(((migrationProgress - startVal) / (endVal - startVal)) * 100);
+                                      statusText = 'Menyalin';
+                                      statusStyle = 'bg-blue-50 text-primary border border-blue-200';
+                                    }
+
+                                    return (
+                                      <div key={i} className="p-3 bg-white border border-slate-150 rounded-xl space-y-2 transition-all hover:border-slate-250">
+                                        <div className="flex justify-between items-center gap-2">
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                                            <span className="text-xs font-bold text-slate-700 truncate">{file.name.replace('📄 ', '')}</span>
+                                          </div>
+                                          <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${statusStyle}`}>
+                                            {statusText}
+                                          </span>
+                                        </div>
+
+                                        {/* Direction logic flow: cloud source -> cloud target */}
+                                        <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
+                                          <span className="flex items-center gap-1">
+                                            {sourceProvider === 'GOOGLE_DRIVE' ? <HardDrive className="w-3 h-3 text-sky-500" /> : <Cloud className="w-3 h-3 text-blue-500" />}
+                                            {sourceProvider === 'GOOGLE_DRIVE' ? 'GDrive' : sourceProvider === 'DROPBOX' ? 'Dropbox' : 'OneDrive'}
+                                          </span>
+                                          <ArrowRight className="w-2.5 h-2.5 text-slate-350" />
+                                          <span className="flex items-center gap-1">
+                                            <Database className="w-3 h-3 text-primary" />
+                                            {targetProvider === 'STORAGE_NODE' ? 'VPS Storage 1' : 'VPS Storage 2'}
+                                          </span>
+                                          <span className="ml-auto font-mono">{file.size}</span>
+                                        </div>
+
+                                        {/* Individual file progress bar */}
+                                        <div className="space-y-1">
+                                          <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                                            <div 
+                                              className={`h-full transition-all duration-300 ${statusText === 'Selesai' ? 'bg-emerald-500' : 'bg-primary'}`}
+                                              style={{ width: `${taskProgress}%` }}
+                                            />
+                                          </div>
+                                          <div className="flex justify-between text-[8px] font-bold text-slate-400 font-mono">
+                                            <span>Progres Berkas</span>
+                                            <span>{taskProgress}%</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-400">
+                                <span>Migrasi via Horizon Core Server</span>
+                                <span className="font-mono">Hemat Kuota Lokal: 100%</span>
                               </div>
                             </div>
                           )}
@@ -585,48 +762,35 @@ export default function LandingPage() {
                       </div>
                     </div>
                   )}
-
                   {/* Tab Content 2: AI Workspace */}
                   {activeShowcaseTab === 'ai' && (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
                       
                       {/* Left: Document Selection sidebar */}
-                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
                         <div className="space-y-4">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
                             Berkas Terkait Workspace
                           </span>
                           
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => setAiSelectedDoc('Laporan_Kinerja_Q4.pdf')}
-                              className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
-                                aiSelectedDoc === 'Laporan_Kinerja_Q4.pdf'
-                                  ? 'border-primary bg-blue-50/10'
-                                  : 'border-slate-100 hover:border-slate-200'
-                              }`}
-                            >
-                              <FileText className={`w-8 h-8 ${aiSelectedDoc === 'Laporan_Kinerja_Q4.pdf' ? 'text-primary' : 'text-slate-400'}`} />
-                              <div className="min-w-0 flex-1">
-                                <h4 className="text-xs font-black text-slate-800 truncate">Laporan_Kinerja_Q4.pdf</h4>
-                                <span className="text-[10px] text-slate-400 font-semibold">12.8 MB • PDF Ringkasan</span>
-                              </div>
-                            </button>
-
-                            <button
-                              onClick={() => setAiSelectedDoc('Jurnal_Riset_AI.pdf')}
-                              className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
-                                aiSelectedDoc === 'Jurnal_Riset_AI.pdf'
-                                  ? 'border-primary bg-blue-50/10'
-                                  : 'border-slate-100 hover:border-slate-200'
-                              }`}
-                            >
-                              <FileText className={`w-8 h-8 ${aiSelectedDoc === 'Jurnal_Riset_AI.pdf' ? 'text-primary' : 'text-slate-400'}`} />
-                              <div className="min-w-0 flex-1">
-                                <h4 className="text-xs font-black text-slate-800 truncate">Jurnal_Riset_AI.pdf</h4>
-                                <span className="text-[10px] text-slate-400 font-semibold">4.5 MB • Dokumen Riset</span>
-                              </div>
-                            </button>
+                          <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                            {aiWorkspaceFiles.map((doc, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setAiSelectedDoc(doc.name)}
+                                className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
+                                  aiSelectedDoc === doc.name
+                                    ? 'border-primary bg-blue-50/10'
+                                    : 'border-slate-100 hover:border-slate-200'
+                                }`}
+                              >
+                                <FileText className={`w-8 h-8 shrink-0 ${aiSelectedDoc === doc.name ? 'text-primary' : 'text-slate-400'}`} />
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="text-xs font-black text-slate-800 truncate">{doc.name}</h4>
+                                  <span className="text-[10px] text-slate-400 font-semibold">{doc.size} • {doc.type}</span>
+                                </div>
+                              </button>
+                            ))}
                           </div>
 
                           <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl space-y-1.5">
@@ -641,23 +805,41 @@ export default function LandingPage() {
                           </div>
                         </div>
 
-                        <button 
-                          onClick={() => alert("Pada dasbor asli, Anda dapat menyeret & menjatuhkan file langsung dari cloud/lokal ke area ini.")}
-                          className="w-full mt-4 py-2.5 border border-dashed border-slate-300 hover:border-primary hover:bg-slate-50 text-[11px] font-black text-slate-500 hover:text-primary rounded-xl transition-all text-center cursor-pointer"
-                        >
-                          + Tautkan File Lainnya
-                        </button>
+                        <label className="w-full mt-4 py-2.5 border border-dashed border-slate-300 hover:border-primary hover:bg-slate-50 text-[11px] font-black text-slate-500 hover:text-primary rounded-xl transition-all text-center cursor-pointer block">
+                          <span>+ Tautkan File Lainnya</span>
+                          <input
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const newFile = {
+                                  name: file.name,
+                                  size: formatBytes(file.size),
+                                  type: file.type.includes('pdf') ? 'PDF Ringkasan' : 'Dokumen Kustom'
+                                };
+                                setAiWorkspaceFiles(prev => [...prev, newFile]);
+                                setAiSelectedDoc(file.name);
+                                setAiChatMessages(prev => [
+                                  ...prev,
+                                  { sender: 'user', text: `Tautkan berkas: ${file.name} (${newFile.size})` },
+                                  { sender: 'ai', text: `Halo! Berkas "${file.name}" berhasil diunggah secara lokal di memori browser. Saya siap memproses ringkasan atau melayani pertanyaan Anda mengenai berkas ini secara terisolasi.` }
+                                ]);
+                              }
+                            }}
+                          />
+                        </label>
                       </div>
 
                       {/* Center: Scrollable Chat Panel */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[340px]">
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[480px]">
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
-                          <span className="text-xs font-black text-slate-800">
+                          <span className="text-xs font-black text-slate-800 truncate max-w-[250px] sm:max-w-md">
                             Diskusi Aktif: <span className="text-primary font-bold">{aiSelectedDoc}</span>
                           </span>
                           <button 
                             onClick={() => setAiChatMessages([{ sender: 'ai', text: 'Riwayat obrolan dibersihkan.' }])}
-                            className="text-[10px] font-bold text-slate-400 hover:text-slate-650"
+                            className="text-[10px] font-bold text-slate-400 hover:text-slate-600"
                           >
                             Bersihkan Chat
                           </button>
@@ -758,7 +940,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
                       
                       {/* Left: Storage Gauge */}
-                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
                         <div className="space-y-4">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
                             Storage Node status
@@ -772,7 +954,7 @@ export default function LandingPage() {
                               <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                                 <div 
                                   className="bg-purple-600 h-full transition-all duration-300"
-                                  style={{ width: `${(storageUsed / 1024) * 100}%` }}
+                                  style={{ width: `${Math.min(100, (storageUsed / 1024) * 100)}%` }}
                                 />
                               </div>
                               <div className="flex justify-between text-[9px] font-bold text-slate-400">
@@ -787,23 +969,47 @@ export default function LandingPage() {
                           </p>
                         </div>
 
-                        <button
-                          onClick={addMockStorageFile}
-                          className="w-full mt-4 py-3 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          + Tambah File Simulasi (Mock)
-                        </button>
+                        <div className="space-y-2">
+                          <button
+                            onClick={addMockStorageFile}
+                            className="w-full py-2.5 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            + Tambah Berkas (Mock)
+                          </button>
+                          <label className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-black rounded-xl shadow-sm transition-all text-center flex items-center justify-center gap-2 cursor-pointer block">
+                            <span>+ Unggah Berkas Lokal</span>
+                            <input 
+                              type="file" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const newFile = {
+                                    id: String(Date.now()),
+                                    name: file.name,
+                                    size: formatBytes(file.size),
+                                    isShared: false,
+                                    shareLink: ''
+                                  };
+                                  setStorageFiles(prev => [...prev, newFile]);
+                                  const sizeMb = file.size / (1024 * 1024);
+                                  setStorageUsed(prev => parseFloat((prev + sizeMb).toFixed(1)));
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
 
                       {/* Right: File Explorer Table */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[340px] overflow-hidden">
-                        <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[480px] overflow-hidden">
+                        <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-widest block pb-2 border-b border-slate-100">
                             File Manager: /Penyimpanan-Horizon
                           </span>
                           
                           {storageFiles.length === 0 ? (
-                            <div className="py-12 text-center space-y-2">
+                            <div className="py-12 text-center space-y-2 animate-fadeIn">
                               <p className="text-xs text-slate-400 font-bold">Direktori ini kosong.</p>
                               <button 
                                 onClick={addMockStorageFile}
@@ -817,7 +1023,7 @@ export default function LandingPage() {
                               {storageFiles.map((file) => (
                                 <div 
                                   key={file.id} 
-                                  className="flex flex-col p-3 bg-slate-50 border border-slate-150 rounded-xl space-y-2 transition-all hover:bg-slate-100/50"
+                                  className="flex flex-col p-3 bg-slate-50 border border-slate-150 rounded-xl space-y-2 transition-all hover:bg-slate-100/50 animate-fadeIn"
                                 >
                                   <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-2.5 min-w-0">
@@ -1531,6 +1737,38 @@ export default function LandingPage() {
                 </form>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Alert Modal for Demo Interactions */}
+      {showDemoAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay backdrop */}
+          <div 
+            onClick={() => setShowDemoAlert(false)}
+            className="absolute inset-0 bg-slate-950/65 backdrop-blur-sm transition-opacity" 
+          />
+          
+          {/* Modal Content */}
+          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.2)] border border-slate-100 overflow-hidden animate-scaleUp z-10 p-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-primary border border-blue-100 shadow-sm flex items-center justify-center mx-auto">
+              <MessageSquareWarning className="w-7 h-7" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-base font-black text-slate-800">{demoAlertTitle}</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                {demoAlertMessage}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowDemoAlert(false)}
+              className="w-full py-3 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md transition-all cursor-pointer"
+            >
+              Saya Mengerti
+            </button>
           </div>
         </div>
       )}

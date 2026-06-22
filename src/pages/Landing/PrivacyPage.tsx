@@ -497,7 +497,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-500 py-10 px-6 border-t border-slate-800 text-center text-xs font-semibold">
-        <p>&copy; {new Date().getFullYear()} Horizon Cloud Team. Seluruh hak cipta dilindungi undang-undang.</p>
+        <p>&copy; 2025 EmuyForge Team. Seluruh hak cipta dilindungi undang-undang.</p>
       </footer>
     </div>
   );
