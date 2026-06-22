@@ -457,7 +457,7 @@ export default function LandingPage() {
                 Simulator Interaktif
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Coba Demo Fitur Horizon Cloud Tanpa Backend
+                Coba Demo Fitur Horizon Cloud
               </h2>
               <p className="text-sm text-slate-500 font-semibold leading-relaxed">
                 Visualisasikan kemudahan migrasi batch instan cloud-to-cloud (drive-to-drive), obrolan cerdas asisten AI dengan dokumen privat, serta manajemen file Storage Node lokal langsung di simulator bawah ini.
@@ -1022,8 +1022,7 @@ export default function LandingPage() {
                             onClick={addMockStorageFile}
                             className="w-full py-2.5 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
                           >
-                            + Tambah Berkas (Mock)
-                          </button>
+                            + Tambah Berkas                          </button>
                           <label className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-black rounded-xl shadow-sm transition-all text-center flex items-center justify-center gap-2 cursor-pointer block">
                             <span>+ Unggah Berkas Lokal</span>
                             <input 
