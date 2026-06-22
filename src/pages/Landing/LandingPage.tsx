@@ -58,6 +58,149 @@ export default function LandingPage() {
   // Showcase tab states
   const [activeShowcaseTab, setActiveShowcaseTab] = useState<'migration' | 'ai' | 'storage'>('migration');
 
+  // --- INTERACTIVE DEMO STATES ---
+  // 1. Migration Demo
+  const [migrationChecked, setMigrationChecked] = useState<number[]>([0, 1]);
+  const [migrationStatus, setMigrationStatus] = useState<'idle' | 'running' | 'done'>('idle');
+  const [migrationProgress, setMigrationProgress] = useState(0);
+  const [migrationLogs, setMigrationLogs] = useState<string[]>([]);
+  const [migrationSpeed, setMigrationSpeed] = useState('0 MB/s');
+  
+  const migrationFiles = [
+    { name: '📄 Tugas_Praktikum_RPL.zip', size: '250 MB' },
+    { name: '📄 Video_Presentasi_Horizon.mp4', size: '1.8 GB' },
+    { name: '📄 Jurnal_Riset_Infrastruktur.pdf', size: '15 MB' },
+    { name: '📄 Dataset_ML_Kuantitatif.csv', size: '850 MB' }
+  ];
+
+  // 2. AI Workspace Demo
+  const [aiChatMessages, setAiChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
+    { sender: 'ai', text: 'Halo! Saya asisten AI Horizon. Silakan klik pertanyaan siap-pakai di bawah atau ketik pesan kustom untuk memindai dokumen Anda!' }
+  ]);
+  const [aiIsTyping, setAiIsTyping] = useState(false);
+  const [aiCustomInput, setAiCustomInput] = useState('');
+  const [aiSelectedDoc, setAiSelectedDoc] = useState('Laporan_Kinerja_Q4.pdf');
+
+  // 3. Storage Node Demo
+  const [storageFiles, setStorageFiles] = useState([
+    { id: '1', name: 'Kuliah_Algoritma_StrukturData.pdf', size: '4.8 MB', isShared: false, shareLink: '' },
+    { id: '2', name: 'Video_Demonstrasi_Proyek.mp4', size: '350 MB', isShared: true, shareLink: 'https://horizoncloud.my.id/shared/v-demo-99' },
+    { id: '3', name: 'Slide_Presentasi_Final.pptx', size: '12.4 MB', isShared: false, shareLink: '' }
+  ]);
+  const [storageUsed, setStorageUsed] = useState(367.2); // MB
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+
+  // --- INTERACTIVE DEMO HANDLERS ---
+  const startMigrationDemo = () => {
+    if (migrationStatus === 'running') return;
+    setMigrationStatus('running');
+    setMigrationProgress(0);
+    setMigrationLogs(['[1/5] Menghubungkan ke API Google Drive...', '[2/5] Mempersiapkan thread transfer aman...']);
+    setMigrationSpeed('85 MB/s');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setMigrationProgress(progress);
+      
+      if (progress === 20) {
+        setMigrationLogs(prev => [...prev, '[3/5] Mengalokasikan node VPS Storage Horizon...']);
+      } else if (progress === 50) {
+        setMigrationLogs(prev => [...prev, `[4/5] Memulai transfer server-to-server: ${migrationChecked.length} berkas terpilih...`]);
+      } else if (progress === 80) {
+        setMigrationLogs(prev => [...prev, '[5/5] Melakukan enkripsi hash & verifikasi checksum SHA-256...']);
+      } else if (progress >= 100) {
+        clearInterval(interval);
+        setMigrationStatus('done');
+        setMigrationSpeed('0 MB/s');
+        setMigrationLogs(prev => [
+          ...prev, 
+          '✓ Migrasi Selesai! File berhasil disimpan secara aman di Storage Node VPS.',
+          '✓ Total kuota internet ponsel Anda digunakan: 0 MB (100% Hemat Kuota Lokal).'
+        ]);
+      }
+    }, 500);
+  };
+
+  const resetMigrationDemo = () => {
+    setMigrationStatus('idle');
+    setMigrationProgress(0);
+    setMigrationLogs([]);
+    setMigrationSpeed('0 MB/s');
+  };
+
+  const sendAiMessage = (text: string) => {
+    if (!text.trim() || aiIsTyping) return;
+    
+    setAiChatMessages(prev => [...prev, { sender: 'user', text }]);
+    setAiIsTyping(true);
+    
+    setTimeout(() => {
+      setAiIsTyping(false);
+      let aiReply = "Sebagai demo asisten AI Horizon Cloud, saya dapat menganalisis dan menjawab pertanyaan spesifik dari berkas referensi Anda. Coba klik pertanyaan siap-pakai di bawah!";
+      
+      const lower = text.toLowerCase();
+      if (lower.includes('kesimpulan') || lower.includes('summary') || lower.includes('rangkum')) {
+        aiReply = "Berdasarkan dokumen Laporan_Kinerja_Q4.pdf, kesimpulan utamanya adalah Horizon Cloud berhasil memangkas latensi transfer data server-to-server sebesar 78%, menghemat kuota internet pengguna hingga 100%, serta memproses ringkasan dokumen 3x lebih cepat melalui caching model Gemini.";
+      } else if (lower.includes('metodologi') || lower.includes('cara') || lower.includes('sistem')) {
+         aiReply = "Metodologi evaluasi sistem Horizon Cloud meliputi pengujian throughput migrasi data, analisis token rate-limiting, isolasi folder pengguna pada database R2DBC, serta enkripsi SSL/TLS transit end-to-end.";
+      } else if (lower.includes('harga') || lower.includes('biaya') || lower.includes('paket')) {
+         aiReply = "Horizon Cloud menawarkan 3 paket: Freemium (Gratis, 2 Workspaces, 1 GB Storage VPS), Academic (Rp 15.000/bln, 15 Workspaces, 10 GB Storage), dan Premium Individual (Rp 20.000/bln, Unlimited Workspaces, 15 GB Storage).";
+      }
+      
+      setAiChatMessages(prev => [...prev, { sender: 'ai', text: aiReply }]);
+    }, 1000);
+  };
+
+  const deleteStorageFile = (id: string) => {
+    const fileToDelete = storageFiles.find(f => f.id === id);
+    if (!fileToDelete) return;
+    setStorageFiles(prev => prev.filter(f => f.id !== id));
+    let sizeInMb = 0;
+    if (fileToDelete.size.includes('MB')) {
+      sizeInMb = parseFloat(fileToDelete.size);
+    } else if (fileToDelete.size.includes('KB')) {
+      sizeInMb = parseFloat(fileToDelete.size) / 1024;
+    }
+    setStorageUsed(prev => Math.max(0, parseFloat((prev - sizeInMb).toFixed(1))));
+  };
+
+  const toggleShareStorageFile = (id: string) => {
+    setStorageFiles(prev => prev.map(f => {
+      if (f.id === id) {
+        const newShared = !f.isShared;
+        return {
+          ...f,
+          isShared: newShared,
+          shareLink: newShared ? `https://horizoncloud.my.id/shared/h-file-${f.id}-${Math.floor(Math.random() * 1000)}` : ''
+        };
+      }
+      return f;
+    }));
+  };
+
+  const copyStorageLink = (id: string, link: string) => {
+    navigator.clipboard.writeText(link);
+    setCopiedLinkId(id);
+    setTimeout(() => setCopiedLinkId(null), 2000);
+  };
+
+  const addMockStorageFile = () => {
+    const names = ['Foto_Angkatan_2025.jpg', 'Project_RPL_Fix.zip', 'Tugas_Database_Lanjut.docx', 'Curriculum_Vitae.pdf'];
+    const randomName = names[Math.floor(Math.random() * names.length)];
+    const randomSizeMb = Math.floor(Math.random() * 80) + 5;
+    const newId = String(Date.now());
+    const newFile = {
+      id: newId,
+      name: `${newId.substring(8)}_${randomName}`,
+      size: `${randomSizeMb} MB`,
+      isShared: false,
+      shareLink: ''
+    };
+    setStorageFiles(prev => [...prev, newFile]);
+    setStorageUsed(prev => parseFloat((prev + randomSizeMb).toFixed(1)));
+  };
+
   // Pricing calculator state (workspaces count)
   const [workspacesCount, setWorkspacesCount] = useState<number>(2);
 
@@ -256,182 +399,476 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Showcase Mockup Section */}
-            <div className="pt-16 max-w-4xl mx-auto">
-              <div className="bg-white p-3 rounded-3xl shadow-[0_30px_80px_-15px_rgba(0,74,198,0.12)] border border-slate-200/60">
-                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 sm:p-6 text-left space-y-6">
-                  {/* Mockup Header & Tabs */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3.5 h-3.5 rounded-full bg-rose-400" />
-                      <div className="w-3.5 h-3.5 rounded-full bg-amber-400" />
-                      <div className="w-3.5 h-3.5 rounded-full bg-emerald-400" />
-                      <span className="text-xs font-bold text-slate-400 ml-2">Horizon Dashboard Demo</span>
+            <div className="pt-16 max-w-5xl mx-auto">
+              <div className="bg-white p-4 rounded-3xl shadow-[0_40px_100px_-20px_rgba(0,74,198,0.15)] border border-slate-200/80">
+                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 sm:p-8 text-left space-y-6">
+                  
+                  {/* Mockup Window Header & Tabs */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex gap-1.5">
+                        <span className="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm" />
+                        <span className="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block shadow-sm" />
+                        <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
+                      </div>
+                      <div className="h-4 w-px bg-slate-200 mx-1" />
+                      <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Demo Horizon Live</span>
+                      </div>
                     </div>
-                    <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 overflow-x-auto">
+                    
+                    <div className="flex bg-slate-200/80 p-1.5 rounded-2xl gap-1.5 overflow-x-auto shadow-inner">
                       <button
                         id="showcase-tab-migration"
                         onClick={() => setActiveShowcaseTab('migration')}
-                        className={`px-4 py-2 text-xs font-black rounded-lg transition-all whitespace-nowrap ${
+                        className={`px-5 py-2.5 text-xs font-black rounded-xl transition-all whitespace-nowrap flex items-center gap-2 ${
                           activeShowcaseTab === 'migration' 
-                            ? 'bg-white text-primary shadow-sm' 
+                            ? 'bg-white text-primary shadow-md translate-y-0' 
                             : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
+                        <RefreshCw className={`w-3.5 h-3.5 ${activeShowcaseTab === 'migration' && migrationStatus === 'running' ? 'animate-spin' : ''}`} />
                         Migrasi Server-to-Server
                       </button>
                       <button
                         id="showcase-tab-ai"
                         onClick={() => setActiveShowcaseTab('ai')}
-                        className={`px-4 py-2 text-xs font-black rounded-lg transition-all whitespace-nowrap ${
+                        className={`px-5 py-2.5 text-xs font-black rounded-xl transition-all whitespace-nowrap flex items-center gap-2 ${
                           activeShowcaseTab === 'ai' 
-                            ? 'bg-white text-primary shadow-sm' 
+                            ? 'bg-white text-primary shadow-md' 
                             : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
+                        <FileText className="w-3.5 h-3.5" />
                         AI Workspace
                       </button>
                       <button
                         id="showcase-tab-storage"
                         onClick={() => setActiveShowcaseTab('storage')}
-                        className={`px-4 py-2 text-xs font-black rounded-lg transition-all whitespace-nowrap ${
+                        className={`px-5 py-2.5 text-xs font-black rounded-xl transition-all whitespace-nowrap flex items-center gap-2 ${
                           activeShowcaseTab === 'storage' 
-                            ? 'bg-white text-primary shadow-sm' 
+                            ? 'bg-white text-primary shadow-md' 
                             : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
+                        <Database className="w-3.5 h-3.5" />
                         Storage Node VPS
                       </button>
                     </div>
                   </div>
 
-                  {/* Tab Contents */}
+                  {/* Tab Content 1: Migrasi Server-to-Server */}
                   {activeShowcaseTab === 'migration' && (
-                    <div className="space-y-4 animate-fadeIn">
-                      <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4 bg-white p-6 rounded-2xl border border-slate-150 shadow-sm">
-                        <div className="md:col-span-2 flex flex-col items-center justify-center p-4 bg-blue-50/50 border border-blue-100 rounded-xl text-center space-y-2">
-                          <Cloud className="w-8 h-8 text-primary" />
-                          <h4 className="text-xs font-bold text-slate-800">Google Drive</h4>
-                          <span className="text-[10px] text-slate-400 font-semibold">Folder: /Kuliah/Video</span>
-                        </div>
-                        <div className="md:col-span-1 flex flex-col items-center justify-center space-y-1">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center animate-pulse">
-                            <RefreshCw className="w-4 h-4 animate-spin" />
+                    <div className="space-y-6 animate-fadeIn">
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        
+                        {/* Left Side: GDrive Source */}
+                        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                              <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <Cloud className="w-4 h-4 text-primary" /> Sumber: Google Drive
+                              </span>
+                              <span className="text-[10px] bg-blue-50 text-primary border border-blue-100 font-extrabold px-2 py-0.5 rounded-full">
+                                Terkoneksi API
+                              </span>
+                            </div>
+                            
+                            <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
+                              Centang berkas raksasa di Google Drive Anda untuk dipindahkan ke VPS Storage Node personal:
+                            </p>
+
+                            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                              {migrationFiles.map((file, idx) => (
+                                <label 
+                                  key={idx}
+                                  className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
+                                    migrationChecked.includes(idx)
+                                      ? 'border-primary bg-blue-50/20'
+                                      : 'border-slate-150 hover:border-slate-250 bg-slate-50/50'
+                                  } ${migrationStatus === 'running' ? 'pointer-events-none opacity-60' : ''}`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <input 
+                                      type="checkbox"
+                                      checked={migrationChecked.includes(idx)}
+                                      onChange={() => {
+                                        if (migrationChecked.includes(idx)) {
+                                          setMigrationChecked(migrationChecked.filter(i => i !== idx));
+                                        } else {
+                                          setMigrationChecked([...migrationChecked, idx]);
+                                        }
+                                      }}
+                                      disabled={migrationStatus === 'running'}
+                                      className="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded cursor-pointer"
+                                    />
+                                    <span className="text-xs font-bold text-slate-700 truncate">{file.name}</span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 font-extrabold shrink-0 ml-2">{file.size}</span>
+                                </label>
+                              ))}
+                            </div>
                           </div>
-                          <span className="text-[10px] text-emerald-600 font-extrabold text-center uppercase tracking-wider">Server-to-Server</span>
-                          <span className="text-[9px] text-slate-400 text-center font-bold">100% Hemat Kuota</span>
+
+                          <div className="pt-4 border-t border-slate-100 flex gap-2">
+                            {migrationStatus === 'idle' ? (
+                              <button
+                                onClick={startMigrationDemo}
+                                disabled={migrationChecked.length === 0}
+                                className="flex-1 py-3 bg-primary hover:bg-[#003da3] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-xs font-black rounded-xl shadow-md shadow-primary/10 hover:shadow-lg transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                Mulai Migrasi Instant
+                              </button>
+                            ) : migrationStatus === 'running' ? (
+                              <div className="flex-1 py-3 bg-blue-50 border border-blue-200 text-primary text-xs font-black rounded-xl text-center flex items-center justify-center gap-2 animate-pulse">
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                Mentransfer Server-to-Server ({migrationProgress}%)
+                              </div>
+                            ) : (
+                              <button
+                                onClick={resetMigrationDemo}
+                                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl border border-slate-200 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                              >
+                                Ulangi Simulasi Demo
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="md:col-span-2 flex flex-col items-center justify-center p-4 bg-purple-50/50 border border-purple-100 rounded-xl text-center space-y-2">
-                          <Database className="w-8 h-8 text-purple-600" />
-                          <h4 className="text-xs font-bold text-slate-800">Storage Node VPS</h4>
-                          <span className="text-[10px] text-slate-400 font-semibold">Folder: /Penyimpanan-Horizon</span>
+
+                        {/* Right Side: Log & Console Visualizer */}
+                        <div className="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 p-5 flex flex-col justify-between text-slate-350 shadow-inner min-h-[260px]">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-primary" /> Konsol Proses Real-Time
+                              </span>
+                              {migrationStatus === 'running' && (
+                                <span className="text-[10px] text-emerald-500 font-extrabold animate-pulse">
+                                  Kecepatan: {migrationSpeed}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Logs scrollbox */}
+                            <div className="space-y-1.5 font-mono text-[10px] sm:text-xs leading-normal max-h-[160px] overflow-y-auto pr-1">
+                              {migrationLogs.length === 0 ? (
+                                <p className="text-slate-600 italic">Pilih berkas di samping kiri lalu klik tombol "Mulai Migrasi Instant" untuk memulai visualisasi transfer data.</p>
+                              ) : (
+                                migrationLogs.map((log, idx) => (
+                                  <p key={idx} className={log.startsWith('✓') ? 'text-emerald-400 font-bold' : log.startsWith('[') ? 'text-slate-400' : 'text-slate-300'}>
+                                    {log}
+                                  </p>
+                                ))
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Progress bar info */}
+                          {migrationStatus !== 'idle' && (
+                            <div className="space-y-2 pt-4 border-t border-slate-800">
+                              <div className="flex justify-between text-[10px] font-bold">
+                                <span>Alokasi Storage Node VPS Horizon</span>
+                                <span className="text-primary font-black">{migrationProgress}%</span>
+                              </div>
+                              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-primary h-full rounded-full transition-all duration-300"
+                                  style={{ width: `${migrationProgress}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-3">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-slate-700">File: Kuliah_Sistem_Operasi_Lengkap.mp4</span>
-                          <span className="font-extrabold text-primary">94% (4.2 GB / 4.5 GB)</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                          <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: '94%' }} />
-                        </div>
-                        <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-                          <span>Kecepatan Transfer: ~48 MB/detik</span>
-                          <span className="text-emerald-600">✓ Kuota Internet Lokal Anda: 0 MB Terpakai</span>
-                        </div>
+
                       </div>
                     </div>
                   )}
 
+                  {/* Tab Content 2: AI Workspace */}
                   {activeShowcaseTab === 'ai' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
-                      <div className="bg-white p-4 rounded-2xl border border-slate-150 shadow-sm space-y-3">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Berkas Terunggah</span>
-                        <div className="flex items-center gap-3 p-3 bg-purple-50/50 border border-purple-100 rounded-xl">
-                          <FileText className="w-8 h-8 text-purple-600 shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-xs font-bold text-slate-800 truncate">Laporan_Skripsi_Final.pdf</h4>
-                            <span className="text-[9px] text-slate-400 font-semibold">12.8 MB • PDF Dokumen</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
+                      
+                      {/* Left: Document Selection sidebar */}
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                        <div className="space-y-4">
+                          <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
+                            Berkas Terkait Workspace
+                          </span>
+                          
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => setAiSelectedDoc('Laporan_Kinerja_Q4.pdf')}
+                              className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
+                                aiSelectedDoc === 'Laporan_Kinerja_Q4.pdf'
+                                  ? 'border-primary bg-blue-50/10'
+                                  : 'border-slate-100 hover:border-slate-200'
+                              }`}
+                            >
+                              <FileText className={`w-8 h-8 ${aiSelectedDoc === 'Laporan_Kinerja_Q4.pdf' ? 'text-primary' : 'text-slate-400'}`} />
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-black text-slate-800 truncate">Laporan_Kinerja_Q4.pdf</h4>
+                                <span className="text-[10px] text-slate-400 font-semibold">12.8 MB • PDF Ringkasan</span>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => setAiSelectedDoc('Jurnal_Riset_AI.pdf')}
+                              className={`w-full text-left p-3 rounded-xl border transition-all flex items-center gap-3 ${
+                                aiSelectedDoc === 'Jurnal_Riset_AI.pdf'
+                                  ? 'border-primary bg-blue-50/10'
+                                  : 'border-slate-100 hover:border-slate-200'
+                              }`}
+                            >
+                              <FileText className={`w-8 h-8 ${aiSelectedDoc === 'Jurnal_Riset_AI.pdf' ? 'text-primary' : 'text-slate-400'}`} />
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-black text-slate-800 truncate">Jurnal_Riset_AI.pdf</h4>
+                                <span className="text-[10px] text-slate-400 font-semibold">4.5 MB • Dokumen Riset</span>
+                              </div>
+                            </button>
+                          </div>
+
+                          <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl space-y-1.5">
+                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Estimasi Grounding Token:</span>
+                            <div className="flex justify-between text-[10px] font-bold text-slate-600">
+                              <span>7,842 Token Terpakai</span>
+                              <span>Limit: 20,000</span>
+                            </div>
+                            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                              <div className="bg-primary h-full" style={{ width: '39%' }} />
+                            </div>
                           </div>
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-xl space-y-2">
-                          <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wide">Ringkasan AI Instan</span>
-                          <p className="text-[10px] text-slate-600 font-semibold leading-relaxed">
-                            Dokumen ini membahas arsitektur migrasi database multicloud dengan isolasi Storage Node pada Horizon.
-                          </p>
-                        </div>
+
+                        <button 
+                          onClick={() => alert("Pada dasbor asli, Anda dapat menyeret & menjatuhkan file langsung dari cloud/lokal ke area ini.")}
+                          className="w-full mt-4 py-2.5 border border-dashed border-slate-300 hover:border-primary hover:bg-slate-50 text-[11px] font-black text-slate-500 hover:text-primary rounded-xl transition-all text-center cursor-pointer"
+                        >
+                          + Tautkan File Lainnya
+                        </button>
                       </div>
-                      <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[220px]">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Diskusikan Dokumen</span>
-                        <div className="space-y-3 flex-1 overflow-y-auto py-2">
-                          <div className="bg-slate-50 p-2.5 rounded-xl text-xs font-semibold text-slate-700 max-w-[85%] self-end ml-auto">
-                            Tolong jabarkan kesimpulan utama dari skripsi ini.
-                          </div>
-                          <div className="bg-primary/5 border border-primary/10 p-2.5 rounded-xl text-xs font-semibold text-slate-800 max-w-[85%]">
-                            <span className="text-[9px] font-black text-primary block uppercase tracking-wide mb-1">Horizon AI</span>
-                            Berdasarkan bab kesimpulan, pengujian membuktikan bahwa sistem migrasi server-to-server menghemat kuota internet pengguna hingga 100% dan mempercepat transfer file sebesar 4.2x.
-                          </div>
-                        </div>
-                        <div className="flex gap-2 pt-2 border-t border-slate-100">
-                          <input
-                            type="text"
-                            placeholder="Tanyakan sesuatu tentang dokumen ini..."
-                            disabled
-                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-600 placeholder-slate-400 focus:outline-none"
-                          />
-                          <button disabled className="bg-primary text-white p-1.5 rounded-xl opacity-60">
-                            <Send className="w-3.5 h-3.5" />
+
+                      {/* Center: Scrollable Chat Panel */}
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[340px]">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
+                          <span className="text-xs font-black text-slate-800">
+                            Diskusi Aktif: <span className="text-primary font-bold">{aiSelectedDoc}</span>
+                          </span>
+                          <button 
+                            onClick={() => setAiChatMessages([{ sender: 'ai', text: 'Riwayat obrolan dibersihkan.' }])}
+                            className="text-[10px] font-bold text-slate-400 hover:text-slate-650"
+                          >
+                            Bersihkan Chat
                           </button>
                         </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-xs leading-relaxed custom-scrollbar">
+                          {aiChatMessages.map((msg, idx) => (
+                            <div 
+                              key={idx} 
+                              className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                            >
+                              <div className={`p-3 rounded-2xl max-w-[85%] font-semibold shadow-sm ${
+                                msg.sender === 'user'
+                                  ? 'bg-primary text-white rounded-tr-none'
+                                  : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200/50'
+                              }`}>
+                                {msg.sender === 'ai' && (
+                                  <span className="text-[9px] font-black text-primary block uppercase tracking-wider mb-1">Horizon AI Assistant</span>
+                                )}
+                                <p>{msg.text}</p>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {aiIsTyping && (
+                            <div className="flex flex-col items-start animate-pulse">
+                              <div className="bg-slate-100 border border-slate-200/50 p-3 rounded-2xl rounded-tl-none text-slate-500 font-bold flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
+                                <span>Horizon AI sedang membaca...</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Interactive Suggestion Triggers */}
+                        <div className="shrink-0 pb-3">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Pertanyaan Rekomendasi:</span>
+                          <div className="flex gap-1.5 overflow-x-auto pb-1.5">
+                            <button
+                              onClick={() => sendAiMessage("Tolong buat kesimpulan utama dokumen ini.")}
+                              disabled={aiIsTyping}
+                              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-primary border border-blue-200 text-[10px] font-extrabold rounded-lg whitespace-nowrap transition-all cursor-pointer"
+                            >
+                              💡 Rangkum Dokumen
+                            </button>
+                            <button
+                              onClick={() => sendAiMessage("Metodologi apa yang digunakan dalam analisis?")}
+                              disabled={aiIsTyping}
+                              className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 text-[10px] font-extrabold rounded-lg whitespace-nowrap transition-all cursor-pointer"
+                            >
+                              💡 Tanya Metodologi
+                            </button>
+                            <button
+                              onClick={() => sendAiMessage("Berapa saja paket harga langganan Horizon Cloud?")}
+                              disabled={aiIsTyping}
+                              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 text-[10px] font-extrabold rounded-lg whitespace-nowrap transition-all cursor-pointer"
+                            >
+                              💡 Detail Paket Harga
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Input Area */}
+                        <form 
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            sendAiMessage(aiCustomInput);
+                            setAiCustomInput('');
+                          }}
+                          className="flex gap-2 shrink-0 border-t border-slate-100 pt-3"
+                        >
+                          <input
+                            type="text"
+                            value={aiCustomInput}
+                            onChange={(e) => setAiCustomInput(e.target.value)}
+                            disabled={aiIsTyping}
+                            placeholder="Ketik pertanyaan kustom tentang dokumen..."
+                            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-70"
+                          />
+                          <button 
+                            type="submit"
+                            disabled={!aiCustomInput.trim() || aiIsTyping}
+                            className="bg-primary hover:bg-[#003da3] disabled:bg-slate-150 disabled:text-slate-400 text-white p-2.5 rounded-xl shadow-md transition-all cursor-pointer"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </form>
                       </div>
+
                     </div>
                   )}
 
+                  {/* Tab Content 3: Storage Node VPS */}
                   {activeShowcaseTab === 'storage' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
-                      <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-4">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Status Penyimpanan VPS</span>
-                        <div className="relative flex items-center justify-center py-2">
-                          <div className="text-center">
-                            <span className="text-2xl font-black text-slate-800">10 GB</span>
-                            <span className="text-[10px] text-slate-400 font-bold block">Kapasitas Maksimal</span>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
+                      
+                      {/* Left: Storage Gauge */}
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between">
+                        <div className="space-y-4">
+                          <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
+                            Storage Node status
+                          </span>
+                          
+                          <div className="text-center py-4 bg-slate-50 border border-slate-150 rounded-2xl space-y-2">
+                            <span className="text-3xl font-black text-slate-800 tracking-tight">{storageUsed} MB</span>
+                            <span className="text-[10px] text-slate-400 font-extrabold block uppercase tracking-wider">Kapasitas Node Terpakai</span>
+                            
+                            <div className="px-6 space-y-2 pt-2">
+                              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-purple-600 h-full transition-all duration-300"
+                                  style={{ width: `${(storageUsed / 1024) * 100}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                                <span>0 GB</span>
+                                <span>Limit: 1.0 GB</span>
+                              </div>
+                            </div>
                           </div>
+
+                          <p className="text-[10px] text-slate-400 font-semibold leading-normal">
+                            Menghapus file di samping kanan akan mengurangi meteran penyimpanan personal secara otomatis.
+                          </p>
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-[10px] font-bold text-slate-600">
-                            <span>Penyimpanan Terpakai: 2.1 GB</span>
-                            <span>Sisa: 7.9 GB</span>
-                          </div>
-                          <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                            <div className="bg-purple-600 h-full rounded-full" style={{ width: '21%' }} />
-                          </div>
+
+                        <button
+                          onClick={addMockStorageFile}
+                          className="w-full mt-4 py-3 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          + Tambah File Simulasi (Mock)
+                        </button>
+                      </div>
+
+                      {/* Right: File Explorer Table */}
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[340px] overflow-hidden">
+                        <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+                          <span className="text-xs font-black text-slate-500 uppercase tracking-widest block pb-2 border-b border-slate-100">
+                            File Manager: /Penyimpanan-Horizon
+                          </span>
+                          
+                          {storageFiles.length === 0 ? (
+                            <div className="py-12 text-center space-y-2">
+                              <p className="text-xs text-slate-400 font-bold">Direktori ini kosong.</p>
+                              <button 
+                                onClick={addMockStorageFile}
+                                className="text-[10px] text-primary font-black underline cursor-pointer"
+                              >
+                                Tambah Berkas Sekarang
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-2.5">
+                              {storageFiles.map((file) => (
+                                <div 
+                                  key={file.id} 
+                                  className="flex flex-col p-3 bg-slate-50 border border-slate-150 rounded-xl space-y-2 transition-all hover:bg-slate-100/50"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <FileText className="w-4 h-4 text-primary shrink-0" />
+                                      <span className="text-xs font-bold text-slate-700 truncate">{file.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 shrink-0">
+                                      <span className="text-[10px] text-slate-400 font-extrabold">{file.size}</span>
+                                      <button 
+                                        onClick={() => deleteStorageFile(file.id)}
+                                        className="text-[10px] font-black text-rose-500 hover:text-rose-700 cursor-pointer"
+                                      >
+                                        Hapus
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/50 text-[10px] font-bold flex-wrap gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-slate-400">Status Berbagi:</span>
+                                      <button
+                                        onClick={() => toggleShareStorageFile(file.id)}
+                                        className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wide cursor-pointer transition-all ${
+                                          file.isShared
+                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                            : 'bg-slate-100 text-slate-500 border-slate-200'
+                                        }`}
+                                      >
+                                        {file.isShared ? 'Publik' : 'Privat'}
+                                      </button>
+                                    </div>
+
+                                    {file.isShared && (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-primary truncate max-w-[120px] sm:max-w-[180px] font-mono">{file.shareLink}</span>
+                                        <button
+                                          onClick={() => copyStorageLink(file.id, file.shareLink)}
+                                          className="text-[9px] font-black px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded hover:bg-blue-100 transition-colors cursor-pointer"
+                                        >
+                                          {copiedLinkId === file.id ? 'Tersalin!' : 'Salin'}
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-150 shadow-sm space-y-3">
-                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider block">Daftar Berkas Node Horizon</span>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between p-2.5 bg-slate-50/60 rounded-xl border border-slate-100">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <FileText className="w-4 h-4 text-primary shrink-0" />
-                              <span className="text-xs font-bold text-slate-700 truncate">Kuliah_Algoritma_StrukturData.pdf</span>
-                            </div>
-                            <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full font-bold">Tersimpan Aman</span>
-                          </div>
-                          <div className="flex items-center justify-between p-2.5 bg-slate-50/60 rounded-xl border border-slate-100">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <FileText className="w-4 h-4 text-purple-600 shrink-0" />
-                              <span className="text-xs font-bold text-slate-700 truncate">Video_Demonstrasi_Proyek.mp4</span>
-                            </div>
-                            <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full font-bold">Tersimpan Aman</span>
-                          </div>
-                          <div className="flex items-center justify-between p-2.5 bg-slate-50/60 rounded-xl border border-slate-100">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <Share2 className="w-4 h-4 text-amber-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-700 truncate">Slide_Presentasi_Final.pptx</span>
-                            </div>
-                            <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-full font-bold">Link Publik Aktif</span>
-                          </div>
-                        </div>
-                      </div>
+
                     </div>
                   )}
 
@@ -964,7 +1401,7 @@ export default function LandingPage() {
             </div>
             <span className="hidden md:inline text-slate-700">|</span>
             <p className="text-slate-500">
-              &copy; {new Date().getFullYear()} Horizon Cloud Team. Seluruh hak cipta dilindungi undang-undang.
+              &copy; 2025 EmuyForge Team. Seluruh hak cipta dilindungi undang-undang.
             </p>
           </div>
         </div>
