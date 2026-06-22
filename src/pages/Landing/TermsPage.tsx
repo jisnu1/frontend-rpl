@@ -57,7 +57,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-650 antialiased selection:bg-primary/20 selection:text-primary">
+    <div className="w-full min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-600 antialiased selection:bg-primary/20 selection:text-primary">
       
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-md border-b border-slate-150/80">
@@ -87,7 +87,7 @@ export default function TermsPage() {
       <section className="bg-white border-b border-slate-100 py-12 md:py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3">
-            <span className="px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-650 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 w-max">
+            <span className="px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-primary text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 w-max">
               <Lock className="w-4 h-4" />
               Ketentuan Hukum Resmi
             </span>
@@ -129,8 +129,8 @@ export default function TermsPage() {
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileTocOpen(false)} />
             <div className="relative w-full bg-white rounded-t-3xl p-6 border-t border-slate-200 space-y-4 shadow-2xl animate-slideUp max-h-[70vh] overflow-y-auto">
               <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                <span className="text-sm font-extrabold text-slate-850">Daftar Isi</span>
-                <button onClick={() => setIsMobileTocOpen(false)} className="text-slate-450 hover:text-slate-700" id="mobile-toc-close-terms">
+                <span className="text-sm font-extrabold text-slate-800">Daftar Isi</span>
+                <button onClick={() => setIsMobileTocOpen(false)} className="text-slate-500 hover:text-slate-700" id="mobile-toc-close-terms">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -210,7 +210,7 @@ export default function TermsPage() {
                 <div className="flex gap-3 items-start p-4 bg-slate-50 border border-slate-150 rounded-2xl">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <h5 className="text-xs font-black text-slate-850">Kepatuhan Hukum Lokal</h5>
+                    <h5 className="text-xs font-black text-slate-800">Kepatuhan Hukum Lokal</h5>
                     <p className="text-[11px] font-semibold text-slate-500 mt-1 leading-normal">
                       Anda harus secara hukum diizinkan untuk menggunakan layanan berbasis internet dan cloud sesuai dengan hukum yang berlaku di wilayah negara Republik Indonesia atau tempat Anda mengaksesnya.
                     </p>
@@ -220,7 +220,7 @@ export default function TermsPage() {
                 <div className="flex gap-3 items-start p-4 bg-slate-50 border border-slate-150 rounded-2xl">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <h5 className="text-xs font-black text-slate-850">Otoritas Kepemilikan Berkas</h5>
+                    <h5 className="text-xs font-black text-slate-800">Otoritas Kepemilikan Berkas</h5>
                     <p className="text-[11px] font-semibold text-slate-500 mt-1 leading-normal">
                       Anda harus memiliki kepemilikan penuh, lisensi, atau otorisasi resmi atas seluruh file yang Anda unggah, simpan, atau bagikan di platform Horizon Cloud.
                     </p>
@@ -257,13 +257,13 @@ export default function TermsPage() {
             <section id="larangan" className="space-y-5 scroll-mt-24">
               <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
                 <span className="text-sm font-black text-primary">03</span>
-                <h2 className="text-base font-extrabold text-slate-950 uppercase tracking-wide">
+                <h2 className="text-base font-extrabold text-slate-900 uppercase tracking-wide">
                   Larangan Penggunaan (Prohibited Actions)
                 </h2>
               </div>
               
               {/* Highlight callout box - rose warning */}
-              <div className="bg-rose-50 border border-rose-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-rose-500/5">
+              <div className="bg-rose-50 border border-rose-200/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-rose-500/5">
                 <h4 className="text-xs font-black text-rose-800 uppercase tracking-wider flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0" />
                   Konsekuensi Atas Penyalahgunaan Sistem
@@ -319,7 +319,7 @@ export default function TermsPage() {
               </div>
 
               {/* Highlight callout box - amber warning */}
-              <div className="bg-amber-50 border border-amber-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-amber-500/5">
+              <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-amber-500/5">
                 <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-2">
                   <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 animate-pulse" />
                   Imbauan Penting: Lakukan Backup Mandiri Sekunder

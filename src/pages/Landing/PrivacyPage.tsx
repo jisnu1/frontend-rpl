@@ -59,7 +59,7 @@ export default function PrivacyPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-650 antialiased selection:bg-primary/20 selection:text-primary">
+    <div className="w-full min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-600 antialiased selection:bg-primary/20 selection:text-primary">
       
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-md border-b border-slate-150/80">
@@ -131,8 +131,8 @@ export default function PrivacyPage() {
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileTocOpen(false)} />
             <div className="relative w-full bg-white rounded-t-3xl p-6 border-t border-slate-200 space-y-4 shadow-2xl animate-slideUp max-h-[70vh] overflow-y-auto">
               <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                <span className="text-sm font-extrabold text-slate-850">Daftar Isi</span>
-                <button onClick={() => setIsMobileTocOpen(false)} className="text-slate-450 hover:text-slate-700" id="mobile-toc-close">
+                <span className="text-sm font-extrabold text-slate-800">Daftar Isi</span>
+                <button onClick={() => setIsMobileTocOpen(false)} className="text-slate-500 hover:text-slate-700" id="mobile-toc-close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -298,7 +298,7 @@ export default function PrivacyPage() {
               </div>
               
               {/* Highlight callout box - emerald */}
-              <div className="bg-emerald-50 border border-emerald-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-emerald-500/5">
+              <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-emerald-500/5">
                 <h4 className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                   Kedaulatan Konten & Hak Milik Berkas Anda
@@ -322,13 +322,13 @@ export default function PrivacyPage() {
                 </h2>
               </div>
               
-              {/* Highlight callout box - indigo */}
-              <div className="bg-indigo-50 border border-indigo-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-indigo-500/5">
-                <h4 className="text-xs font-black text-indigo-850 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+              {/* Highlight callout box - blue */}
+              <div className="bg-blue-50 border border-blue-200/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-blue-500/5">
+                <h4 className="text-xs font-black text-blue-800 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                   Teknologi Enkripsi Seluler & Transmisi
                 </h4>
-                <p className="text-xs font-bold text-indigo-700 leading-relaxed">
+                <p className="text-xs font-bold text-blue-700 leading-relaxed">
                   Semua transaksi data dari browser Anda ke server kami, maupun transfer data antara Storage Node VPS ke Google Drive, dilindungi enkripsi SSL/TLS tingkat tinggi dalam transit guna mencegah pembacaan data ilegal di tengah jalan (*man-in-the-middle attack*).
                 </p>
               </div>
@@ -430,7 +430,7 @@ export default function PrivacyPage() {
               </div>
               
               {/* Highlight callout box - amber */}
-              <div className="bg-amber-50 border border-amber-250/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-amber-500/5">
+              <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-5 md:p-6 space-y-3 shadow-sm shadow-amber-500/5">
                 <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                   Kepatuhan Google API Services User Data Policy
