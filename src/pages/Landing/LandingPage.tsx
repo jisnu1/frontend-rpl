@@ -1025,7 +1025,7 @@ export default function LandingPage() {
                       </div>
 
                       {/* Center: Scrollable Chat Panel */}
-                      <div className={`lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between ${
+                      <div className={`lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between overflow-hidden w-full ${
                         isDemoModalOpen ? 'flex-1 h-full' : 'h-[450px] lg:h-[480px]'
                       }`}>
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
@@ -1105,7 +1105,7 @@ export default function LandingPage() {
                         {/* Interactive Suggestion Triggers */}
                         <div className="shrink-0 pb-3">
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Pertanyaan Rekomendasi:</span>
-                          <div className="flex gap-1.5 overflow-x-auto pb-1.5">
+                          <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none w-full">
                             <button
                               onClick={() => sendAiMessage("Tolong buat kesimpulan utama dokumen ini.")}
                               disabled={aiIsTyping}
