@@ -576,14 +576,14 @@ export default function WorkspaceNotebook() {
         <div className="flex-1 overflow-y-auto px-4 py-8 md:px-12 max-w-6xl mx-auto w-full space-y-8">
           
           {/* Header Banner */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-br from-indigo-900 to-indigo-850 p-6 md:p-8 rounded-[2rem] text-white shadow-xl">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-cyan-500 to-blue-500 p-6 md:p-8 rounded-[2rem] text-white shadow-xl border border-cyan-400/20">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold tracking-wider uppercase text-indigo-200">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold tracking-wider uppercase text-blue-100">
                 <Brain className="w-4 h-4 text-emerald-400" />
-                <span>Asisten Notebook AI</span>
+                <span>AI Workspace Assistant</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Notebook LLM Workspaces</h1>
-              <p className="text-sm text-indigo-150 max-w-xl font-medium">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">AI Workspace</h1>
+              <p className="text-sm text-blue-50 max-w-xl font-medium">
                 Pusatkan bahan belajar Anda. Unggah dokumen PDF, Excel, dan JPG, buat catatan kustom, lalu lakukan tanya-jawab terfokus yang dibatasi batas token ketat.
               </p>
             </div>
@@ -601,7 +601,7 @@ export default function WorkspaceNotebook() {
           {/* Quota limit warnings */}
           <div className="bg-white border border-slate-150 p-5 rounded-2xl flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
@@ -653,11 +653,11 @@ export default function WorkspaceNotebook() {
               {workspaces.map((ws) => (
                 <div 
                   key={ws.id}
-                  className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-indigo-400 transition-all flex flex-col justify-between group relative overflow-hidden h-48"
+                  className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-primary transition-all flex flex-col justify-between group relative overflow-hidden h-48"
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
-                      <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black">
+                      <div className="w-11 h-11 bg-primary/10 text-primary rounded-2xl flex items-center justify-center font-black">
                         <Brain className="w-5 h-5" />
                       </div>
                       
@@ -686,7 +686,7 @@ export default function WorkspaceNotebook() {
 
                     <button
                       onClick={() => handleEnterWorkspace(ws)}
-                      className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                      className="px-4 py-1.5 bg-primary hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <span>Buka</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -720,12 +720,12 @@ export default function WorkspaceNotebook() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-black text-slate-800 truncate">{selectedWorkspace.name}</h2>
-                  <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full text-[9px] font-bold text-indigo-600 uppercase tracking-wide">
-                    Notebook
+                  <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-full text-[9px] font-bold text-primary uppercase tracking-wide">
+                    AI Workspace
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-450 truncate font-semibold">
-                  {selectedWorkspace.description || 'Sesi grounded notebook AI.'}
+                  {selectedWorkspace.description || 'Sesi obrolan cerdas berbasis dokumen dan catatan.'}
                 </p>
               </div>
             </div>
@@ -788,7 +788,7 @@ export default function WorkspaceNotebook() {
                   onClick={() => setLeftTab('sources')}
                   className={`flex-1 py-3 text-center text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     leftTab === 'sources' 
-                      ? 'border-indigo-650 text-indigo-650 bg-indigo-50/10'
+                      ? 'border-primary text-primary bg-primary/5'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -798,7 +798,7 @@ export default function WorkspaceNotebook() {
                   onClick={() => setLeftTab('notes')}
                   className={`flex-1 py-3 text-center text-xs font-bold border-b-2 transition-all cursor-pointer ${
                     leftTab === 'notes' 
-                      ? 'border-indigo-650 text-indigo-650 bg-indigo-50/10'
+                      ? 'border-primary text-primary bg-primary/5'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -816,7 +816,7 @@ export default function WorkspaceNotebook() {
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">File Pendukung</span>
                       <button
                         onClick={handleOpenSourcePicker}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100/70 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-blue-800 bg-primary/10 hover:bg-primary/20 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Kaitkan Berkas</span>
@@ -847,7 +847,7 @@ export default function WorkspaceNotebook() {
                               className="group p-3 rounded-2xl bg-white border border-slate-150 hover:border-slate-350 shadow-sm flex items-center justify-between gap-3 relative transition-all"
                             >
                               <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
+                                <div className="p-2 bg-primary/10 text-primary rounded-xl shrink-0">
                                   <FileText className="w-4 h-4" />
                                 </div>
                                 <div className="min-w-0">
@@ -896,7 +896,7 @@ export default function WorkspaceNotebook() {
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Catatan Belajar</span>
                       <button
                         onClick={() => handleOpenNoteModal()}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100/70 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-primary hover:text-blue-800 bg-primary/10 hover:bg-primary/20 px-2 py-1.5 rounded-lg transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Buat Catatan</span>
@@ -939,7 +939,7 @@ export default function WorkspaceNotebook() {
                               <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={() => handleOpenNoteModal(note)}
-                                  className="p-1 rounded text-slate-400 hover:text-indigo-650 hover:bg-slate-55 cursor-pointer"
+                                  className="p-1 rounded text-slate-400 hover:text-primary hover:bg-slate-55 cursor-pointer"
                                   title="Edit Catatan"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
@@ -1007,11 +1007,11 @@ export default function WorkspaceNotebook() {
                 
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center space-y-3 px-6 py-10">
-                    <div className="w-16 h-16 rounded-[1.75rem] bg-indigo-50 text-indigo-650 flex items-center justify-center shadow-md">
+                    <div className="w-16 h-16 rounded-[1.75rem] bg-primary/10 text-primary flex items-center justify-center shadow-md">
                       <Brain className="w-8 h-8" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-slate-800">Notebook Grounded Chat</h3>
+                      <h3 className="text-sm font-black text-slate-800">AI Grounded Chat</h3>
                       <p className="text-xs text-slate-450 mt-1 max-w-sm font-semibold">
                         Kirimkan pertanyaan di bawah. AI akan menjawab HANYA berdasarkan referensi dokumen terunggah dan catatan aktif di samping.
                       </p>
@@ -1028,7 +1028,7 @@ export default function WorkspaceNotebook() {
                         >
                           {/* AI Icon */}
                           {!isUser && (
-                            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm font-black">
+                            <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm font-black">
                               <Sparkles className="w-4 h-4" />
                             </div>
                           )}
@@ -1037,7 +1037,7 @@ export default function WorkspaceNotebook() {
                           <div className={`
                             max-w-[85%] rounded-[1.5rem] px-4 py-3 shadow-[0px_2px_8px_rgba(15,23,42,0.02)]
                             ${isUser 
-                              ? 'bg-indigo-600 text-white rounded-tr-none' 
+                              ? 'bg-primary text-white rounded-tr-none' 
                               : 'bg-white border border-slate-150 text-slate-800 rounded-tl-none'}
                           `}>
                             {isUser ? (
@@ -1053,7 +1053,7 @@ export default function WorkspaceNotebook() {
                     {/* Typing indicator */}
                     {isAiTyping && (
                       <div className="flex gap-3 justify-start animate-pulse">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-650 text-white flex items-center justify-center shrink-0 shadow-sm font-black">
+                        <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm font-black">
                           <Sparkles className="w-4 h-4" />
                         </div>
                         <div className="bg-white border border-slate-150 rounded-[1.5rem] rounded-tl-none px-4 py-3 shadow-[0px_2px_8px_rgba(15,23,42,0.02)]">
@@ -1086,13 +1086,13 @@ export default function WorkspaceNotebook() {
                         ? 'Token limit terlampaui. Lepas beberapa file.' 
                         : 'Kirim pertanyaan berdasarkan dokumen & catatan aktif...'
                     }
-                    className="flex-1 px-4 py-3 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl text-xs font-semibold bg-[#FAFBFD] disabled:opacity-50 outline-none transition-all shadow-inner"
+                    className="flex-1 px-4 py-3 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary rounded-2xl text-xs font-semibold bg-[#FAFBFD] disabled:opacity-50 outline-none transition-all shadow-inner"
                   />
 
                   <button
                     type="submit"
                     disabled={!chatInput.trim() || isAiTyping || isTokenLimitExceeded}
-                    className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl shadow-md transition-all hover:scale-[1.03] disabled:opacity-50 cursor-pointer"
+                    className="p-3 bg-primary hover:bg-blue-700 text-white rounded-2xl shadow-md transition-all hover:scale-[1.03] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -1114,7 +1114,7 @@ export default function WorkspaceNotebook() {
                 {/* Header */}
                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                   <div className="space-y-1">
-                    <span className="inline-flex px-2 py-0.5 bg-indigo-50 rounded-full text-[9px] font-bold text-indigo-600 uppercase tracking-wide">
+                    <span className="inline-flex px-2 py-0.5 bg-primary/10 rounded-full text-[9px] font-bold text-primary uppercase tracking-wide">
                       Dokumen AI Generasi
                     </span>
                     <h3 className="text-sm font-black text-slate-800">{generatedDoc.title}</h3>
@@ -1122,7 +1122,7 @@ export default function WorkspaceNotebook() {
                   
                   <button 
                     onClick={() => setGeneratedDoc(null)}
-                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-450 transition-colors"
+                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-455 transition-colors"
                   >
                     <X className="w-5.5 h-5.5" />
                   </button>
@@ -1139,13 +1139,13 @@ export default function WorkspaceNotebook() {
                 <div className="p-4 border-t border-slate-150 flex items-center justify-end gap-3 bg-slate-50/50">
                   <button
                     onClick={() => setGeneratedDoc(null)}
-                    className="px-4 py-2 border border-slate-200 text-slate-650 hover:bg-white text-xs font-bold rounded-xl transition-all cursor-pointer bg-white"
+                    className="px-4 py-2 border border-slate-200 text-slate-655 hover:bg-white text-xs font-bold rounded-xl transition-all cursor-pointer bg-white"
                   >
                     Tutup
                   </button>
                   <button
                     onClick={() => handleCopyToClipboard(generatedDoc.content)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-4 py-2 bg-primary hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Salin Konten</span>
@@ -1168,7 +1168,7 @@ export default function WorkspaceNotebook() {
             
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-50 text-indigo-650 rounded-xl">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl">
                   <Brain className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-black text-slate-800">Workspace Baru</h3>
@@ -1193,7 +1193,7 @@ export default function WorkspaceNotebook() {
                   value={newWorkspaceName}
                   onChange={(e) => setNewWorkspaceName(e.target.value)}
                   placeholder="Misal: Proyek Rekayasa Perangkat Lunak"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none outline-0 transition-all bg-[#FAFBFD]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-primary focus:ring-1 focus:ring-primary outline-none outline-0 transition-all bg-[#FAFBFD]"
                 />
               </div>
 
@@ -1206,7 +1206,7 @@ export default function WorkspaceNotebook() {
                   onChange={(e) => setNewWorkspaceDesc(e.target.value)}
                   placeholder="Kelompokkan tugas RPL, PR analisis dokumen, dll."
                   rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none outline-0 transition-all bg-[#FAFBFD] resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-primary focus:ring-1 focus:ring-primary outline-none outline-0 transition-all bg-[#FAFBFD] resize-none"
                 />
               </div>
 
@@ -1268,7 +1268,7 @@ export default function WorkspaceNotebook() {
             
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-50 text-indigo-650 rounded-xl">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl">
                   <FileCode className="w-5 h-5" />
                 </div>
                 <h3 className="text-sm font-black text-slate-800">
@@ -1295,7 +1295,7 @@ export default function WorkspaceNotebook() {
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
                   placeholder="Misal: Teori Model View Controller (MVC)"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none outline-0 transition-all bg-[#FAFBFD]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-primary focus:ring-1 focus:ring-primary outline-none outline-0 transition-all bg-[#FAFBFD]"
                 />
               </div>
 
@@ -1309,7 +1309,7 @@ export default function WorkspaceNotebook() {
                   onChange={(e) => setNoteContent(e.target.value)}
                   placeholder="Tuliskan catatan penting Anda di sini..."
                   rows={6}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none outline-0 transition-all bg-[#FAFBFD] resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-xs font-semibold focus:border-primary focus:ring-1 focus:ring-primary outline-none outline-0 transition-all bg-[#FAFBFD] resize-none"
                 />
               </div>
 
@@ -1334,7 +1334,6 @@ export default function WorkspaceNotebook() {
           </div>
         </div>
       )}
-
       {/* ─────────────────────────────────────────────────────────────
           6. DIALOG MODAL: DOCUMENT SOURCE PICKER (CLOUD & GDRIVE)
           ───────────────────────────────────────────────────────────── */}
@@ -1345,7 +1344,7 @@ export default function WorkspaceNotebook() {
             {/* Header */}
             <div className="p-5 border-b border-slate-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-50 text-indigo-650 rounded-xl">
+                <div className="p-2 bg-primary/10 text-primary rounded-xl">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
@@ -1370,7 +1369,7 @@ export default function WorkspaceNotebook() {
                 onClick={() => setPickerTab('local')}
                 className={`flex-1 py-3 text-center text-xs font-bold border-b-2 transition-all cursor-pointer ${
                   pickerTab === 'local' 
-                    ? 'border-indigo-650 text-indigo-650 bg-white'
+                    ? 'border-primary text-primary bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -1380,7 +1379,7 @@ export default function WorkspaceNotebook() {
                 onClick={() => setPickerTab('gdrive')}
                 className={`flex-1 py-3 text-center text-xs font-bold border-b-2 transition-all cursor-pointer ${
                   pickerTab === 'gdrive' 
-                    ? 'border-indigo-650 text-indigo-650 bg-white'
+                    ? 'border-primary text-primary bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -1395,12 +1394,12 @@ export default function WorkspaceNotebook() {
                 {pickerTab === 'local' ? (
                   <>
                     <button 
-                      onClick={() => {
+                       onClick={() => {
                         setLocalPath([]);
                         setCurrentLocalFolderId(undefined);
                         loadLocalPickerContents(undefined);
                       }}
-                      className="hover:text-indigo-600 transition-colors cursor-pointer"
+                      className="hover:text-primary transition-colors cursor-pointer"
                     >
                       Root
                     </button>
@@ -1414,7 +1413,7 @@ export default function WorkspaceNotebook() {
                             setCurrentLocalFolderId(p.id);
                             loadLocalPickerContents(p.id);
                           }}
-                          className="hover:text-indigo-600 transition-colors cursor-pointer max-w-[100px] truncate"
+                          className="hover:text-primary transition-colors cursor-pointer max-w-[100px] truncate"
                         >
                           {p.name}
                         </button>
@@ -1431,7 +1430,7 @@ export default function WorkspaceNotebook() {
                           loadGDrivePickerContents(selectedGdriveAcc.id, undefined);
                         }
                       }}
-                      className="hover:text-indigo-600 transition-colors cursor-pointer"
+                      className="hover:text-primary transition-colors cursor-pointer"
                     >
                       Drive Root
                     </button>
@@ -1447,7 +1446,7 @@ export default function WorkspaceNotebook() {
                               loadGDrivePickerContents(selectedGdriveAcc.id, p.id);
                             }
                           }}
-                          className="hover:text-indigo-600 transition-colors cursor-pointer max-w-[100px] truncate"
+                          className="hover:text-primary transition-colors cursor-pointer max-w-[100px] truncate"
                         >
                           {p.name}
                         </button>
@@ -1477,7 +1476,7 @@ export default function WorkspaceNotebook() {
               {pickerLoading ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="flex flex-col items-center gap-2">
-                    <svg className="animate-spin h-7 w-7 text-indigo-650" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-7 w-7 text-primary" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -1492,7 +1491,7 @@ export default function WorkspaceNotebook() {
                   {localPath.length > 0 && (
                     <div 
                       onClick={handleLocalBackClick}
-                      className="p-2.5 border-b border-slate-50 flex items-center gap-3 hover:bg-slate-50 cursor-pointer text-xs font-bold text-indigo-600 transition-colors"
+                      className="p-2.5 border-b border-slate-50 flex items-center gap-3 hover:bg-slate-50 cursor-pointer text-xs font-bold text-primary transition-colors"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       <span>Kembali ke Atas</span>
@@ -1528,7 +1527,7 @@ export default function WorkspaceNotebook() {
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <FileText className={`w-4.5 h-4.5 ${isValid ? 'text-indigo-600' : 'text-slate-400'}`} />
+                          <FileText className={`w-4.5 h-4.5 ${isValid ? 'text-primary' : 'text-slate-400'}`} />
                           <span className="text-xs font-bold text-slate-700 truncate pr-2" title={file.originalFileName}>
                             {file.originalFileName}
                           </span>
@@ -1566,7 +1565,7 @@ export default function WorkspaceNotebook() {
                       {gdrivePath.length > 0 && (
                         <div 
                           onClick={handleGdriveBackClick}
-                          className="p-2.5 border-b border-slate-50 flex items-center gap-3 hover:bg-slate-50 cursor-pointer text-xs font-bold text-indigo-600 transition-colors"
+                          className="p-2.5 border-b border-slate-50 flex items-center gap-3 hover:bg-slate-50 cursor-pointer text-xs font-bold text-primary transition-colors"
                         >
                           <ArrowLeft className="w-4 h-4" />
                           <span>Kembali ke Atas</span>
@@ -1601,7 +1600,7 @@ export default function WorkspaceNotebook() {
                               {isFolder ? (
                                 <Folder className="w-4.5 h-4.5 text-primary shrink-0" />
                               ) : (
-                                <FileText className={`w-4.5 h-4.5 shrink-0 ${isValid ? 'text-indigo-650' : 'text-slate-400'}`} />
+                                <FileText className={`w-4.5 h-4.5 shrink-0 ${isValid ? 'text-primary' : 'text-slate-400'}`} />
                               )}
                               <span className="text-xs font-bold text-slate-700 truncate pr-2" title={item.name}>
                                 {item.name}
