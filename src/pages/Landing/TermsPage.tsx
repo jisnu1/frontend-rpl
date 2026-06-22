@@ -187,7 +187,7 @@ export default function TermsPage() {
             {/* Intro */}
             <div className="text-sm font-semibold leading-relaxed space-y-4">
               <p>
-                Selamat datang di Horizon Cloud. Dokumen Ketentuan Layanan (*Terms of Service*) ini merupakan perjanjian hukum yang sah antara Anda selaku pengguna dengan tim pengembang Horizon Cloud mengenai penggunaan platform penyimpanan multi-cloud kami.
+                Selamat datang di Horizon Cloud. Dokumen Ketentuan Layanan (<i>Terms of Service</i>) ini merupakan perjanjian hukum yang sah antara Anda selaku pengguna dengan tim pengembang Horizon Cloud mengenai penggunaan platform penyimpanan multi-cloud kami.
               </p>
               <p>
                 Dengan membuat akun, mengakses dashboard, menghubungkan penyimpanan cloud eksternal, atau mengunggah data apa pun ke server kami, Anda menyatakan menyetujui seluruh ketentuan di bawah ini secara sadar dan sukarela.
@@ -274,13 +274,13 @@ export default function TermsPage() {
               </div>
 
               <p className="text-xs font-semibold leading-relaxed">
-                As pengguna, Anda setuju untuk **TIDAK** melakukan tindakan berikut:
+                As pengguna, Anda setuju untuk <b>TIDAK</b> melakukan tindakan berikut:
               </p>
               <ul className="list-disc pl-6 text-xs font-bold text-slate-500 space-y-2 leading-relaxed">
                 <li>Mengunggah virus, malware, adware, ransomware, atau skrip berbahaya lainnya.</li>
                 <li>Mencoba mengeksploitasi sistem atau mematikan database R2DBC dan VPS Storage Node.</li>
                 <li>Mengunggah file yang melanggar Hak Kekayaan Intelektual (IPR) milik orang lain atau konten ilegal.</li>
-                <li>Melakukan serangan *brute force* pada halaman login atau spamming pada server AI.</li>
+                <li>Melakukan serangan <i>brute force</i> pada halaman login atau spamming pada server AI.</li>
                 <li>Menyebarkan tautan berbagi berkas publik yang melanggar ketentuan hukum negara.</li>
               </ul>
             </section>
@@ -301,7 +301,7 @@ export default function TermsPage() {
                   <strong className="text-slate-800 font-extrabold">Penyimpanan Fisik</strong>: Menyimpan dan memindahkan berkas fisik Anda di server VPS Storage Node lokal kami.
                 </li>
                 <li>
-                  <strong className="text-slate-800 font-extrabold">Pratampilan Berkas</strong>: Melakukan render dokumen (PDF, gambar, video, audio) untuk memfasilitasi penayangan langsung (*streaming*) di browser Anda.
+                  <strong className="text-slate-800 font-extrabold">Pratampilan Berkas</strong>: Melakukan render dokumen (PDF, gambar, video, audio) untuk memfasilitasi penayangan langsung (<i>streaming</i>) di browser Anda.
                 </li>
                 <li>
                   <strong className="text-slate-800 font-extrabold">Analisis AI & OCR</strong>: Mengekstrak teks tulisan dari dokumen PDF yang Anda unggah untuk keperluan pembuatan ringkasan otomatis dan layanan chat interaktif AI.
@@ -325,13 +325,13 @@ export default function TermsPage() {
                   Imbauan Penting: Lakukan Backup Mandiri Sekunder
                 </h4>
                 <p className="text-xs font-bold text-amber-700 leading-relaxed">
-                  Layanan Horizon Cloud disediakan secara "apa adanya" (as-is) tanpa jaminan tanpa gangguan. Kami sangat menyarankan pengguna untuk selalu memiliki salinan cadangan (*backup*) sekunder dari data-data penting di perangkat fisik lokal masing-masing.
+                  Layanan Horizon Cloud disediakan secara "apa adanya" (as-is) tanpa jaminan tanpa gangguan. Kami sangat menyarankan pengguna untuk selalu memiliki salinan cadangan (<i>backup</i>) sekunder dari data-data penting di perangkat fisik lokal masing-masing.
                 </p>
               </div>
 
               <div className="text-xs font-semibold leading-relaxed space-y-3">
                 <p>
-                  Kami tidak bertanggung jawab atas kegagalan transfer file, kerusakan berkas, atau hilangnya data pada Storage Node maupun akun Google Drive Anda yang disebabkan oleh pemadaman jaringan API pihak ketiga, bencana alam (*force majeure*), atau gangguan teknis server luar.
+                  Kami tidak bertanggung jawab atas kegagalan transfer file, kerusakan berkas, atau hilangnya data pada Storage Node maupun akun Google Drive Anda yang disebabkan oleh pemadaman jaringan API pihak ketiga, bencana alam (<i>force majeure</i>), atau gangguan teknis server luar.
                 </p>
                 <p>
                   Fitur migrasi cloud dan integrasi AI sangat bergantung pada kelancaran layanan pihak ketiga (Google API, Brevo API, Groq/Gemini API) dan dapat berubah sewaktu-waktu tanpa pemberitahuan.
@@ -352,7 +352,7 @@ export default function TermsPage() {
               </p>
               <ul className="list-disc pl-6 text-xs font-bold text-slate-500 space-y-2 leading-relaxed">
                 <li>Anda terbukti melanggar butir-butir ketentuan di dalam dokumen Ketentuan Layanan ini.</li>
-                <li>Akun gratis Anda terdeteksi tidak aktif (*idle*) selama lebih dari 12 bulan berturut-turut.</li>
+                <li>Akun gratis Anda terdeteksi tidak aktif (<i>idle</i>) selama lebih dari 12 bulan berturut-turut.</li>
                 <li>Terjadi tindakan eksploitasi API yang mengancam stabilitas operasional server pengguna lain.</li>
               </ul>
             </section>

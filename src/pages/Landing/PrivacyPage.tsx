@@ -329,16 +329,16 @@ export default function PrivacyPage() {
                   Teknologi Enkripsi Seluler & Transmisi
                 </h4>
                 <p className="text-xs font-bold text-blue-700 leading-relaxed">
-                  Semua transaksi data dari browser Anda ke server kami, maupun transfer data antara Storage Node VPS ke Google Drive, dilindungi enkripsi SSL/TLS tingkat tinggi dalam transit guna mencegah pembacaan data ilegal di tengah jalan (*man-in-the-middle attack*).
+                  Semua transaksi data dari browser Anda ke server kami, maupun transfer data antara Storage Node VPS ke Google Drive, dilindungi enkripsi SSL/TLS tingkat tinggi dalam transit guna mencegah pembacaan data ilegal di tengah jalan (<i>man-in-the-middle attack</i>).
                 </p>
               </div>
 
               <div className="text-xs font-semibold leading-relaxed space-y-3">
                 <p>
-                  Kredensial login Anda diamankan dengan metode enkripsi searah menggunakan kriptografi **BCrypt** di database utama.
+                  Kredensial login Anda diamankan dengan metode enkripsi searah menggunakan kriptografi <b>BCrypt</b> di database utama.
                 </p>
                 <p>
-                  Setiap akun pengguna memiliki isolasi direktori berkas yang ketat di tingkat server, didukung oleh validasi otentikasi token JWT (*JSON Web Token*) yang kedaluwarsa secara terjadwal untuk mencegah kebocoran sesi login.
+                  Setiap akun pengguna memiliki isolasi direktori berkas yang ketat di tingkat server, didukung oleh validasi otentikasi token JWT (<i>JSON Web Token</i>) yang kedaluwarsa secara terjadwal untuk mencegah kebocoran sesi login.
                 </p>
               </div>
             </section>
