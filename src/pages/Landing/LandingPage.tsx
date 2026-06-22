@@ -30,6 +30,7 @@ import { submitBugReport } from '../../api/reports';
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activePricingTab, setActivePricingTab] = useState<'freemium' | 'academic' | 'premium'>('academic');
 
   // SEO Dynamic Meta Configuration
   useEffect(() => {
@@ -526,7 +527,22 @@ export default function LandingPage() {
                       </div>
                     </div>
                     
-                    <div className="flex bg-slate-200/80 p-1.5 rounded-2xl gap-1.5 overflow-x-auto shadow-inner">
+                    {/* Dropdown Select on Mobile */}
+                    <div className="w-full lg:hidden">
+                      <select
+                        id="showcase-tab-select"
+                        value={activeShowcaseTab}
+                        onChange={(e) => setActiveShowcaseTab(e.target.value as 'migration' | 'ai' | 'storage')}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
+                      >
+                        <option value="migration">🔄 Migrasi Server-to-Server</option>
+                        <option value="ai">📄 AI Workspace</option>
+                        <option value="storage">💾 Storage Node VPS</option>
+                      </select>
+                    </div>
+
+                    {/* Button Tabs on Desktop */}
+                    <div className="hidden lg:flex bg-slate-200/80 p-1.5 rounded-2xl gap-1.5 shadow-inner">
                       <button
                         id="showcase-tab-migration"
                         onClick={() => setActiveShowcaseTab('migration')}
@@ -1251,9 +1267,10 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="flex md:grid md:grid-cols-3 gap-8 md:gap-12 overflow-x-auto md:overflow-visible pb-6 md:pb-0 snap-x snap-mandatory scrollbar-none">
+            {/* Steps List */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 relative">
               {/* Step 1 */}
-              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
+              <div className="text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   1
                 </div>
@@ -1264,7 +1281,7 @@ export default function LandingPage() {
               </div>
 
               {/* Step 2 */}
-              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
+              <div className="text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   2
                 </div>
@@ -1275,7 +1292,7 @@ export default function LandingPage() {
               </div>
 
               {/* Step 3 */}
-              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
+              <div className="text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   3
                 </div>
@@ -1352,15 +1369,49 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Tab Selector on Mobile */}
+            <div className="flex md:hidden bg-slate-100 p-1 rounded-2xl mb-6 max-w-xs mx-auto border border-slate-200/60">
+              <button 
+                onClick={() => setActivePricingTab('freemium')} 
+                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  activePricingTab === 'freemium' 
+                    ? 'bg-white text-primary shadow-sm font-black' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Freemium
+              </button>
+              <button 
+                onClick={() => setActivePricingTab('academic')} 
+                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  activePricingTab === 'academic' 
+                    ? 'bg-white text-primary shadow-sm font-black' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Academic
+              </button>
+              <button 
+                onClick={() => setActivePricingTab('premium')} 
+                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  activePricingTab === 'premium' 
+                    ? 'bg-white text-primary shadow-md font-black' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Premium
+              </button>
+            </div>
+
             {/* Pricing Cards List */}
-            <div id="harga-cards" className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 pt-8 items-stretch overflow-x-auto md:overflow-visible pb-8 md:pb-0 snap-x snap-mandatory scrollbar-none px-4 -mx-4 md:px-0 md:mx-0">
+            <div id="harga-cards" className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 items-stretch">
               
               {/* Card 1: Freemium */}
-              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'FREEMIUM'
                   ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
-              }`}>
+              } ${activePricingTab === 'freemium' ? 'flex' : 'hidden md:flex'}`}>
                 {recommendedPlan === 'FREEMIUM' && (
                   <span className="absolute -top-3 left-8 px-3.5 py-1 rounded-full text-[10px] font-black bg-primary text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
                     <Sparkles className="w-3 h-3" /> Rekomendasi
@@ -1425,11 +1476,11 @@ export default function LandingPage() {
               </div>
 
               {/* Card 2: Academic */}
-              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'ACADEMIC'
                   ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
-              }`}>
+              } ${activePricingTab === 'academic' ? 'flex' : 'hidden md:flex'}`}>
                 {recommendedPlan === 'ACADEMIC' && (
                   <span className="absolute -top-3 left-8 px-3.5 py-1 rounded-full text-[10px] font-black bg-primary text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
                     <Sparkles className="w-3 h-3" /> Rekomendasi
@@ -1498,11 +1549,11 @@ export default function LandingPage() {
               </div>
 
               {/* Card 3: Premium Individual */}
-              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'PREMIUM'
                   ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
-              }`}>
+              } ${activePricingTab === 'premium' ? 'flex' : 'hidden md:flex'}`}>
                 {recommendedPlan === 'PREMIUM' && (
                   <span className="absolute -top-3 left-8 px-3.5 py-1 rounded-full text-[10px] font-black bg-primary text-white uppercase tracking-wider shadow-sm flex items-center gap-1">
                     <Sparkles className="w-3 h-3" /> Rekomendasi
@@ -1512,7 +1563,7 @@ export default function LandingPage() {
                 <div className="space-y-6">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-amber-600 uppercase tracking-widest">Kapasitas Maksimal</span>
+                      <span className="text-xs font-black text-amber-650 uppercase tracking-widest">Kapasitas Maksimal</span>
                       <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wide">Hemat 33%</span>
                     </div>
                     <h3 className="text-xl font-black text-slate-900 mt-1">Premium Individual</h3>
