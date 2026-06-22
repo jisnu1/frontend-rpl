@@ -23,11 +23,14 @@ import {
   HardDrive,
   AlertTriangle,
   Loader2,
-  File
+  File,
+  Menu
 } from 'lucide-react';
 import { submitBugReport } from '../../api/reports';
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // SEO Dynamic Meta Configuration
   useEffect(() => {
     document.title = "Horizon Cloud - Solusi Migrasi & Manajemen Multi Cloud Storage";
@@ -374,7 +377,7 @@ export default function LandingPage() {
       
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-md border-b border-slate-150/80">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-[#0053db] flex items-center justify-center shadow-md">
               <Cloud className="w-5.5 h-5.5 text-white" />
@@ -393,23 +396,62 @@ export default function LandingPage() {
             <a href="#lapor-bug" id="nav-lapor-bug" className="hover:text-primary transition-colors font-extrabold text-blue-600">Lapor Bug</a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link 
               to="/login" 
               id="nav-login-btn"
-              className="px-5 py-2.5 text-sm font-bold text-slate-700 hover:text-primary hover:bg-slate-50 rounded-xl transition-all cursor-pointer"
+              className="hidden sm:inline-block px-5 py-2.5 text-sm font-bold text-slate-700 hover:text-primary hover:bg-slate-50 rounded-xl transition-all cursor-pointer"
             >
               Masuk
             </Link>
             <Link 
               to="/register" 
               id="nav-register-btn"
-              className="px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#003da3] rounded-xl shadow-[0_4px_15px_rgba(0,74,198,0.25)] hover:shadow-[0_6px_20px_rgba(0,74,198,0.35)] transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="hidden sm:inline-block px-5 py-2.5 text-sm font-bold text-white bg-primary hover:bg-[#003da3] rounded-xl shadow-[0_4px_15px_rgba(0,74,198,0.25)] hover:shadow-[0_6px_20px_rgba(0,74,198,0.35)] transition-all hover:-translate-y-0.5 cursor-pointer"
             >
               Daftar Sekarang
             </Link>
+            
+            {/* Hamburger Button for Mobile */}
+            <button
+              id="mobile-menu-toggle-btn"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl text-slate-650 hover:text-primary hover:bg-slate-100 transition-all border border-slate-205"
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5.5 h-5.5" /> : <Menu className="w-5.5 h-5.5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-20 left-0 right-0 z-30 bg-white/95 backdrop-blur-lg border-b border-slate-150/80 shadow-lg animate-fadeIn flex flex-col p-6 space-y-6">
+            <nav className="flex flex-col gap-4 font-bold text-slate-600">
+              <a href="#fitur" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-primary transition-colors py-2.5 border-b border-slate-100/50">Fitur Utama</a>
+              <a href="#cara-kerja" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-primary transition-colors py-2.5 border-b border-slate-100/50">Cara Kerja</a>
+              <a href="#harga" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-primary transition-colors py-2.5 border-b border-slate-100/50">Paket & Biaya</a>
+              <a href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-primary transition-colors py-2.5 border-b border-slate-100/50">FAQ</a>
+              <a href="#lapor-bug" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-primary transition-colors py-2.5 text-blue-600 font-extrabold">Lapor Bug</a>
+            </nav>
+            <div className="flex flex-col gap-3 pt-2">
+              <Link 
+                to="/login" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="w-full py-3 text-center text-sm font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all border border-slate-200/40"
+              >
+                Masuk
+              </Link>
+              <Link 
+                to="/register" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="w-full py-3 text-center text-sm font-bold text-white bg-primary hover:bg-[#003da3] rounded-xl shadow-md transition-all"
+              >
+                Daftar Sekarang
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Page Layout */}
@@ -530,7 +572,7 @@ export default function LandingPage() {
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         
                         {/* Left Side: Source Explorer */}
-                        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
+                        <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px]">
                           <div className="space-y-4">
                              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                               <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -542,7 +584,7 @@ export default function LandingPage() {
                             </div>
                             
                             {/* Storage Provider Dropdowns */}
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <div className="flex-1 flex flex-col gap-1">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Sumber Data</span>
                                 <select
@@ -674,7 +716,7 @@ export default function LandingPage() {
                         </div>
 
                         {/* Right Side: Real Batch Progress Dashboard Mockup */}
-                        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-150 p-5 flex flex-col justify-between shadow-sm h-[480px]">
+                        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-150 p-5 flex flex-col justify-between shadow-sm h-auto lg:h-[480px]">
                           {migrationStatus === 'idle' ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 animate-fadeIn">
                               <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200 shadow-inner">
@@ -767,7 +809,7 @@ export default function LandingPage() {
                                         </div>
 
                                         {/* Direction logic flow: cloud source -> cloud target */}
-                                        <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
+                                        <div className="flex flex-wrap items-center gap-2 text-[9px] font-bold text-slate-400">
                                           <span className="flex items-center gap-1">
                                             {getProviderVisuals(sourceProvider).icon}
                                             {getProviderVisuals(sourceProvider).name}
@@ -815,7 +857,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
                       
                       {/* Left: Document Selection sidebar */}
-                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px]">
                         <div className="space-y-4">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
                             Berkas Terkait Workspace
@@ -880,7 +922,7 @@ export default function LandingPage() {
                       </div>
 
                       {/* Center: Scrollable Chat Panel */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[480px]">
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[450px] lg:h-[480px]">
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
                           <span className="text-xs font-black text-slate-800 truncate max-w-[250px] sm:max-w-md">
                             Diskusi Aktif: <span className="text-primary font-bold">{aiSelectedDoc}</span>
@@ -988,7 +1030,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
                       
                       {/* Left: Storage Gauge */}
-                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
+                      <div className="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px]">
                         <div className="space-y-4">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-wider block pb-2 border-b border-slate-100">
                             Storage Node status
@@ -1049,7 +1091,7 @@ export default function LandingPage() {
                       </div>
 
                       {/* Right: File Explorer Table */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[480px] overflow-hidden">
+                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-auto lg:h-[480px] overflow-hidden">
                         <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-widest block pb-2 border-b border-slate-100">
                             File Manager: /Penyimpanan-Horizon
@@ -1146,47 +1188,47 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {/* Feature 1 */}
-              <div className="group bg-slate-50 p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <RefreshCw className="w-6 h-6" />
+              <div className="group bg-slate-50 p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-primary flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-3">Pindahkan File Tanpa Kuota, Tanpa Menunggu</h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 mb-2 sm:mb-3">Pindahkan File Tanpa Kuota, Tanpa Menunggu</h3>
+                <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed font-semibold">
                   Transfer data berukuran giga-byte secara instan dari Google Drive langsung ke server VPS Storage Node Anda. Proses selesai otomatis di server tanpa menghabiskan kuota internet ponsel Anda.
                 </p>
               </div>
 
               {/* Feature 2 */}
-              <div className="group bg-slate-50 p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <FileText className="w-6 h-6" />
+              <div className="group bg-slate-50 p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-3">Asisten Pintar yang Membaca untuk Anda</h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 mb-2 sm:mb-3">Asisten Pintar yang Membaca untuk Anda</h3>
+                <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed font-semibold">
                   Unggah file PDF materi kuliah, laporan kerja, atau skripsi. Gunakan asisten AI Horizon untuk memindai dokumen, merangkum poin-poin utama, dan melakukan tanya-jawab secara langsung.
                 </p>
               </div>
 
               {/* Feature 3 */}
-              <div className="group bg-slate-50 p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Share2 className="w-6 h-6" />
+              <div className="group bg-slate-50 p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Share2 className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-3">Berbagi Cepat & Terkontrol</h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 mb-2 sm:mb-3">Berbagi Cepat & Terkontrol</h3>
+                <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed font-semibold">
                   Dapatkan tautan berbagi publik yang dienkripsi secara penuh dengan proteksi batas waktu kedaluwarsa otomatis. Berbagi file besar ke rekan tim menjadi aman dan terkendali.
                 </p>
               </div>
 
               {/* Feature 4 */}
-              <div className="group bg-slate-50 p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Database className="w-6 h-6" />
+              <div className="group bg-slate-50 p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-150 transition-all duration-300 hover:bg-white hover:shadow-[0_15px_45px_rgba(0,74,198,0.08)] hover:-translate-y-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Database className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-3">Brankas File Berkecepatan Tinggi Anda</h3>
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 mb-2 sm:mb-3">Brankas File Berkecepatan Tinggi Anda</h3>
+                <p className="text-[10px] sm:text-xs text-slate-500 leading-relaxed font-semibold">
                   Peroleh penyimpanan data cloud personal di server VPS Storage Node khusus. Kecepatan download-upload maksimal, aman terisolasi secara privat, dan bebas dari pelacakan eksternal.
                 </p>
               </div>
@@ -1209,9 +1251,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            <div className="flex md:grid md:grid-cols-3 gap-8 md:gap-12 overflow-x-auto md:overflow-visible pb-6 md:pb-0 snap-x snap-mandatory scrollbar-none">
               {/* Step 1 */}
-              <div className="text-center space-y-4 relative">
+              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   1
                 </div>
@@ -1222,7 +1264,7 @@ export default function LandingPage() {
               </div>
 
               {/* Step 2 */}
-              <div className="text-center space-y-4 relative">
+              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   2
                 </div>
@@ -1233,7 +1275,7 @@ export default function LandingPage() {
               </div>
 
               {/* Step 3 */}
-              <div className="text-center space-y-4 relative">
+              <div className="min-w-[80%] sm:min-w-[50%] md:min-w-0 flex-shrink-0 snap-center text-center space-y-4 relative">
                 <div className="w-16 h-16 rounded-full bg-primary text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                   3
                 </div>
@@ -1311,12 +1353,12 @@ export default function LandingPage() {
             </div>
 
             {/* Pricing Cards List */}
-            <div id="harga-cards" className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 items-stretch">
+            <div id="harga-cards" className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 pt-8 items-stretch overflow-x-auto md:overflow-visible pb-8 md:pb-0 snap-x snap-mandatory scrollbar-none px-4 -mx-4 md:px-0 md:mx-0">
               
               {/* Card 1: Freemium */}
-              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'FREEMIUM'
-                  ? 'border-primary ring-4 ring-primary/10 shadow-xl scale-[1.03] md:-translate-y-2'
+                  ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
               }`}>
                 {recommendedPlan === 'FREEMIUM' && (
@@ -1383,9 +1425,9 @@ export default function LandingPage() {
               </div>
 
               {/* Card 2: Academic */}
-              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'ACADEMIC'
-                  ? 'border-primary ring-4 ring-primary/10 shadow-xl scale-[1.03] md:-translate-y-2'
+                  ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
               }`}>
                 {recommendedPlan === 'ACADEMIC' && (
@@ -1456,9 +1498,9 @@ export default function LandingPage() {
               </div>
 
               {/* Card 3: Premium Individual */}
-              <div className={`bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
+              <div className={`min-w-[85%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 snap-center bg-white border rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative ${
                 recommendedPlan === 'PREMIUM'
-                  ? 'border-primary ring-4 ring-primary/10 shadow-xl scale-[1.03] md:-translate-y-2'
+                  ? 'border-primary ring-4 ring-primary/10 shadow-xl lg:scale-[1.03] md:-translate-y-2'
                   : 'border-slate-200 hover:border-slate-350 hover:shadow-md'
               }`}>
                 {recommendedPlan === 'PREMIUM' && (
