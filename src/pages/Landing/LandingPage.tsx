@@ -84,6 +84,24 @@ export default function LandingPage() {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   };
 
+  // Helper function to get provider name and icon dynamically
+  const getProviderVisuals = (provider: string) => {
+    switch (provider) {
+      case 'GOOGLE_DRIVE':
+        return { name: 'Google Drive', icon: <HardDrive className="w-3.5 h-3.5 text-sky-500 shrink-0" /> };
+      case 'DROPBOX':
+        return { name: 'Dropbox', icon: <Cloud className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> };
+      case 'ONEDRIVE':
+        return { name: 'OneDrive', icon: <Cloud className="w-3.5 h-3.5 text-blue-500 shrink-0" /> };
+      case 'STORAGE_NODE':
+        return { name: 'VPS Storage 1', icon: <Database className="w-3.5 h-3.5 text-primary shrink-0" /> };
+      case 'STORAGE_NODE_2':
+        return { name: 'VPS Storage 2', icon: <Database className="w-3.5 h-3.5 text-purple-600 shrink-0" /> };
+      default:
+        return { name: provider, icon: <Cloud className="w-3.5 h-3.5 text-slate-400 shrink-0" /> };
+    }
+  };
+
   // 1. Migration Demo
   const [migrationChecked, setMigrationChecked] = useState<number[]>([0, 1]);
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'running' | 'done'>('idle');
@@ -433,8 +451,21 @@ export default function LandingPage() {
               </a>
             </div>
 
+            {/* Interactive Showcase Mockup Section Tagline & Header */}
+            <div className="pt-20 space-y-3 max-w-3xl mx-auto">
+              <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-black uppercase tracking-widest">
+                Simulator Interaktif
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Coba Demo Fitur Horizon Cloud Tanpa Backend
+              </h2>
+              <p className="text-sm text-slate-500 font-semibold leading-relaxed">
+                Visualisasikan kemudahan migrasi batch instan cloud-to-cloud (drive-to-drive), obrolan cerdas asisten AI dengan dokumen privat, serta manajemen file Storage Node lokal langsung di simulator bawah ini.
+              </p>
+            </div>
+
             {/* Interactive Showcase Mockup Section */}
-            <div className="pt-16 max-w-5xl mx-auto">
+            <div className="pt-8 max-w-5xl mx-auto">
               <div className="bg-white p-4 rounded-3xl shadow-[0_40px_100px_-20px_rgba(0,74,198,0.15)] border border-slate-200/80">
                 <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 sm:p-8 text-left space-y-6">
                   
@@ -501,9 +532,9 @@ export default function LandingPage() {
                         {/* Left Side: Source Explorer */}
                         <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-[480px]">
                           <div className="space-y-4">
-                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                               <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                                <Cloud className="w-4 h-4 text-primary" /> Koneksi Storage Node
+                                <Cloud className="w-4 h-4 text-primary" /> Pengelola File Multi-Cloud
                               </span>
                               <span className="text-[10px] bg-blue-50 text-primary border border-blue-100 font-extrabold px-2 py-0.5 rounded-full">
                                 Terkoneksi API
@@ -516,25 +547,42 @@ export default function LandingPage() {
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Sumber Data</span>
                                 <select
                                   value={sourceProvider}
-                                  onChange={(e) => setSourceProvider(e.target.value)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSourceProvider(val);
+                                    if (val === targetProvider) {
+                                      setTargetProvider(val === 'STORAGE_NODE' ? 'GOOGLE_DRIVE' : 'STORAGE_NODE');
+                                    }
+                                  }}
                                   disabled={migrationStatus === 'running'}
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer disabled:opacity-60"
                                 >
                                   <option value="GOOGLE_DRIVE">Google Drive</option>
                                   <option value="DROPBOX">Dropbox</option>
                                   <option value="ONEDRIVE">OneDrive</option>
+                                  <option value="STORAGE_NODE">Storage VPS 1</option>
+                                  <option value="STORAGE_NODE_2">Storage VPS 2</option>
                                 </select>
                               </div>
                               <div className="flex-1 flex flex-col gap-1">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Tujuan Transfer</span>
                                 <select
                                   value={targetProvider}
-                                  onChange={(e) => setTargetProvider(e.target.value)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTargetProvider(val);
+                                    if (val === sourceProvider) {
+                                      setSourceProvider(val === 'GOOGLE_DRIVE' ? 'STORAGE_NODE' : 'GOOGLE_DRIVE');
+                                    }
+                                  }}
                                   disabled={migrationStatus === 'running'}
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer disabled:opacity-60"
                                 >
                                   <option value="STORAGE_NODE">Storage VPS 1</option>
                                   <option value="STORAGE_NODE_2">Storage VPS 2</option>
+                                  <option value="GOOGLE_DRIVE">Google Drive</option>
+                                  <option value="DROPBOX">Dropbox</option>
+                                  <option value="ONEDRIVE">OneDrive</option>
                                 </select>
                               </div>
                             </div>
@@ -721,13 +769,13 @@ export default function LandingPage() {
                                         {/* Direction logic flow: cloud source -> cloud target */}
                                         <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400">
                                           <span className="flex items-center gap-1">
-                                            {sourceProvider === 'GOOGLE_DRIVE' ? <HardDrive className="w-3 h-3 text-sky-500" /> : <Cloud className="w-3 h-3 text-blue-500" />}
-                                            {sourceProvider === 'GOOGLE_DRIVE' ? 'GDrive' : sourceProvider === 'DROPBOX' ? 'Dropbox' : 'OneDrive'}
+                                            {getProviderVisuals(sourceProvider).icon}
+                                            {getProviderVisuals(sourceProvider).name}
                                           </span>
                                           <ArrowRight className="w-2.5 h-2.5 text-slate-350" />
                                           <span className="flex items-center gap-1">
-                                            <Database className="w-3 h-3 text-primary" />
-                                            {targetProvider === 'STORAGE_NODE' ? 'VPS Storage 1' : 'VPS Storage 2'}
+                                            {getProviderVisuals(targetProvider).icon}
+                                            {getProviderVisuals(targetProvider).name}
                                           </span>
                                           <span className="ml-auto font-mono">{file.size}</span>
                                         </div>
