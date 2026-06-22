@@ -18,7 +18,8 @@ import {
   Share2,
   Check,
   Cpu,
-  Layers
+  Layers,
+  Sliders
 } from 'lucide-react';
 import { submitBugReport } from '../../api/reports';
 
