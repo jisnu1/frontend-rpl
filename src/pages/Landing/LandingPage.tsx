@@ -31,6 +31,19 @@ import { submitBugReport } from '../../api/reports';
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activePricingTab, setActivePricingTab] = useState<'freemium' | 'academic' | 'premium'>('academic');
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+  // Prevent body scroll when demo modal is open on mobile
+  useEffect(() => {
+    if (isDemoModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isDemoModalOpen]);
 
   // SEO Dynamic Meta Configuration
   useEffect(() => {
@@ -507,24 +520,74 @@ export default function LandingPage() {
               </p>
             </div>
 
+            {/* Inline CTA Card for Mobile (Shown when modal is closed) */}
+            {!isDemoModalOpen && (
+              <div className="lg:hidden pt-8 w-full max-w-md mx-auto px-4">
+                <div className="bg-white border border-slate-150 rounded-3xl p-6 shadow-xl text-center space-y-5 animate-fadeIn">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-[#0053db] flex items-center justify-center mx-auto shadow-md shadow-primary/10">
+                    <Sparkles className="w-7 h-7 text-white animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-base font-black text-slate-900">Simulator Horizon Live</h3>
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      Coba simulasi migrasi instan server-to-server, asisten AI Workspace, dan manajemen penyimpanan VPS langsung di genggaman Anda melalui simulator full-screen premium kami.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsDemoModalOpen(true)}
+                    type="button"
+                    className="w-full py-3.5 bg-primary hover:bg-[#003da3] text-white text-xs font-black rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    Buka Simulator Interaktif
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Interactive Showcase Mockup Section */}
-            <div className="pt-8 w-full max-w-5xl mx-auto">
-              <div className="bg-white p-4 rounded-3xl shadow-[0_40px_100px_-20px_rgba(0,74,198,0.15)] border border-slate-200/80">
-                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 sm:p-8 text-left space-y-6">
+            <div className={
+              isDemoModalOpen 
+                ? "fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 z-[100] animate-fadeIn" 
+                : "hidden lg:block pt-8 w-full max-w-5xl mx-auto"
+            }>
+              <div className={
+                isDemoModalOpen 
+                  ? "w-full h-full sm:h-[92vh] sm:max-w-2xl bg-white flex flex-col rounded-none sm:rounded-3xl shadow-2xl overflow-hidden" 
+                  : "bg-white p-4 rounded-3xl shadow-[0_40px_100px_-20px_rgba(0,74,198,0.15)] border border-slate-200/80"
+              }>
+                <div className={
+                  isDemoModalOpen 
+                    ? "bg-slate-50 flex-1 flex flex-col overflow-hidden p-4 sm:p-6 text-left" 
+                    : "bg-slate-50 rounded-2xl border border-slate-100 p-5 sm:p-8 text-left space-y-6"
+                }>
                   
                   {/* Mockup Window Header & Tabs */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex gap-1.5">
-                        <span className="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm" />
-                        <span className="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block shadow-sm" />
-                        <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5 shrink-0">
+                    <div className="flex items-center justify-between w-full lg:w-auto">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex gap-1.5">
+                          <span className="w-3.5 h-3.5 rounded-full bg-rose-500 inline-block shadow-sm" />
+                          <span className="w-3.5 h-3.5 rounded-full bg-amber-500 inline-block shadow-sm" />
+                          <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
+                        </div>
+                        <div className="h-4 w-px bg-slate-200 mx-1" />
+                        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                          <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Demo Horizon Live</span>
+                        </div>
                       </div>
-                      <div className="h-4 w-px bg-slate-200 mx-1" />
-                      <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200/50">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Demo Horizon Live</span>
-                      </div>
+                      
+                      {/* Close button on mobile modal */}
+                      {isDemoModalOpen && (
+                        <button
+                          onClick={() => setIsDemoModalOpen(false)}
+                          className="lg:hidden p-1.5 text-slate-400 hover:text-slate-650 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                          aria-label="Tutup Simulator"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
                     
                     {/* Premium Segmented Controls for Mobile */}
@@ -604,13 +667,13 @@ export default function LandingPage() {
 
                   {/* Tab Content 1: Migrasi Server-to-Server */}
                   {activeShowcaseTab === 'migration' && (
-                    <div className="space-y-6 animate-fadeIn">
+                    <div className={`animate-fadeIn ${isDemoModalOpen ? 'flex-1 overflow-y-auto py-4 space-y-4' : 'space-y-6'}`}>
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                         
                         {/* Left Side: Source Explorer */}
-                        <div className={`lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px] ${
-                          migrationStatus !== 'idle' ? 'hidden lg:flex' : 'flex'
-                        }`}>
+                        <div className={`lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between ${
+                          isDemoModalOpen ? 'h-[460px]' : 'h-auto lg:h-[480px]'
+                        } ${migrationStatus !== 'idle' ? 'hidden lg:flex' : 'flex'}`}>
                           <div className="space-y-4">
                              <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                               <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -754,9 +817,9 @@ export default function LandingPage() {
                         </div>
 
                         {/* Right Side: Real Batch Progress Dashboard Mockup */}
-                        <div className={`lg:col-span-7 bg-white rounded-2xl border border-slate-150 p-5 flex flex-col justify-between shadow-sm h-auto lg:h-[480px] ${
-                          migrationStatus === 'idle' ? 'hidden lg:flex' : 'flex'
-                        }`}>
+                        <div className={`lg:col-span-7 bg-white rounded-2xl border border-slate-150 p-5 flex flex-col justify-between shadow-sm ${
+                          isDemoModalOpen ? 'h-[460px]' : 'h-auto lg:h-[480px]'
+                        } ${migrationStatus === 'idle' ? 'hidden lg:flex' : 'flex'}`}>
                           {migrationStatus === 'idle' ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-4 animate-fadeIn">
                               <div className="w-16 h-16 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-200 shadow-inner">
@@ -894,7 +957,7 @@ export default function LandingPage() {
                   )}
                   {/* Tab Content 2: AI Workspace */}
                   {activeShowcaseTab === 'ai' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
+                    <div className={`animate-fadeIn ${isDemoModalOpen ? 'flex-1 flex flex-col pt-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch'}`}>
                       
                       {/* Left: Document Selection sidebar */}
                       <div className="hidden lg:flex lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px]">
@@ -962,7 +1025,9 @@ export default function LandingPage() {
                       </div>
 
                       {/* Center: Scrollable Chat Panel */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-[450px] lg:h-[480px]">
+                      <div className={`lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between ${
+                        isDemoModalOpen ? 'flex-1 h-full' : 'h-[450px] lg:h-[480px]'
+                      }`}>
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
                           <span className="text-xs font-black text-slate-800 truncate max-w-[250px] sm:max-w-md">
                             Diskusi Aktif: <span className="text-primary font-bold">{aiSelectedDoc}</span>
@@ -1097,7 +1162,7 @@ export default function LandingPage() {
 
                   {/* Tab Content 3: Storage Node VPS */}
                   {activeShowcaseTab === 'storage' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fadeIn">
+                    <div className={`animate-fadeIn ${isDemoModalOpen ? 'flex-1 overflow-y-auto py-4 space-y-4' : 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch'}`}>
                       
                       {/* Left: Storage Gauge */}
                       <div className="hidden lg:flex lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-150 shadow-sm flex flex-col justify-between h-auto lg:h-[480px]">
@@ -1161,7 +1226,9 @@ export default function LandingPage() {
                       </div>
 
                       {/* Right: File Explorer Table */}
-                      <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between h-auto lg:h-[480px] overflow-hidden">
+                      <div className={`lg:col-span-8 bg-white rounded-2xl border border-slate-150 p-5 shadow-sm flex flex-col justify-between overflow-hidden ${
+                        isDemoModalOpen ? 'h-[460px]' : 'h-auto lg:h-[480px]'
+                      }`}>
                         <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                           <span className="text-xs font-black text-slate-500 uppercase tracking-widest block pb-2 border-b border-slate-100">
                             File Manager: /Penyimpanan-Horizon
