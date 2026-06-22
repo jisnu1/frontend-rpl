@@ -3,10 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     font-family: 'Manrope', sans-serif;
-    /* Prevent horizontal overflow on mobile */
-    overflow-x: hidden;
   }
 
   /* Prevent iOS auto-zoom on focused inputs/selects (need font-size >= 16px) */

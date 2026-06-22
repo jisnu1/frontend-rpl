@@ -377,7 +377,7 @@ export default function LandingPage() {
       
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-md border-b border-slate-150/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-[#0053db] flex items-center justify-center shadow-md">
               <Cloud className="w-5.5 h-5.5 text-white" />
@@ -465,7 +465,7 @@ export default function LandingPage() {
             <div className="absolute -top-30 right-1/4 w-[350px] h-[350px] rounded-full bg-indigo-300/30 blur-[80px]" />
           </div>
 
-          <div className="max-w-5xl mx-auto text-center space-y-8">
+          <div className="w-full max-w-5xl mx-auto text-center space-y-8">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-[1.15] px-2">
               Pindahkan File Raksasa & <br className="hidden sm:inline" />
               Kuasai Isi Dokumen Anda—<span className="bg-gradient-to-r from-primary to-[#0053db] bg-clip-text text-transparent">Instan Tanpa Menyedot Kuota!</span>
@@ -494,7 +494,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Showcase Mockup Section Tagline & Header */}
-            <div className="pt-20 space-y-3 max-w-3xl mx-auto">
+            <div className="pt-20 space-y-3 w-full max-w-3xl mx-auto">
               <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-black uppercase tracking-widest">
                 Simulator Interaktif
               </span>
@@ -507,7 +507,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Showcase Mockup Section */}
-            <div className="pt-8 max-w-5xl mx-auto">
+            <div className="pt-8 w-full max-w-5xl mx-auto">
               <div className="bg-white p-4 rounded-3xl shadow-[0_40px_100px_-20px_rgba(0,74,198,0.15)] border border-slate-200/80">
                 <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 sm:p-8 text-left space-y-6">
                   
@@ -1175,7 +1175,7 @@ export default function LandingPage() {
 
         {/* Features Section */}
         <section id="fitur" className="py-20 md:py-28 bg-white border-y border-slate-100 px-6">
-          <div className="max-w-7xl mx-auto space-y-16">
+          <div className="w-full max-w-7xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-2xl mx-auto">
               <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest">
                 Fitur Unggulan
@@ -1238,7 +1238,7 @@ export default function LandingPage() {
 
         {/* How It Works Section */}
         <section id="cara-kerja" className="py-20 md:py-28 px-6">
-          <div className="max-w-5xl mx-auto space-y-16">
+          <div className="w-full max-w-5xl mx-auto space-y-16">
             <div className="text-center space-y-4 max-w-xl mx-auto">
               <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest">
                 Langkah Mudah
@@ -1290,7 +1290,7 @@ export default function LandingPage() {
 
         {/* Interactive Calculator & Subscription Pricing Section */}
         <section id="harga" className="py-20 md:py-28 bg-white border-t border-slate-100 px-6">
-          <div className="max-w-7xl mx-auto space-y-16">
+          <div className="w-full max-w-7xl mx-auto space-y-16">
             
             {/* Header */}
             <div className="text-center space-y-4 max-w-2xl mx-auto">
@@ -1306,7 +1306,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Calculator Slider Widget */}
-            <div className="max-w-xl mx-auto bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-150 shadow-sm space-y-6">
+            <div className="w-full max-w-xl mx-auto bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-150 shadow-sm space-y-6">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                   <Sliders className="w-4 h-4 text-primary" />
@@ -1573,7 +1573,7 @@ export default function LandingPage() {
             </div>
 
             {/* Security Guarantee Box */}
-            <div className="max-w-4xl mx-auto bg-blue-50/60 border border-blue-200/60 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+            <div className="w-full max-w-4xl mx-auto bg-blue-50/60 border border-blue-200/60 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
               <div className="w-14 h-14 rounded-2xl bg-white border border-blue-200 text-primary flex items-center justify-center shrink-0 shadow-sm">
                 <ShieldCheck className="w-8 h-8" />
               </div>
@@ -1590,7 +1590,7 @@ export default function LandingPage() {
 
         {/* FAQ Section */}
         <section id="faq" className="py-20 md:py-28 bg-[#F8FAFC] border-t border-slate-100 px-6">
-          <div className="max-w-4xl mx-auto space-y-16">
+          <div className="w-full max-w-4xl mx-auto space-y-16">
             <div className="text-center space-y-4">
               <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest">
                 Tanya Jawab
@@ -1642,7 +1642,7 @@ export default function LandingPage() {
             <div className="absolute top-0 left-1/4 w-[250px] h-[250px] rounded-full bg-blue-500/20 blur-[80px]" />
           </div>
 
-          <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="w-full max-w-3xl mx-auto text-center space-y-8">
             <div className="w-14 h-14 rounded-2xl bg-white/10 text-primary flex items-center justify-center mx-auto shadow-md border border-white/10">
               <MessageSquareWarning className="w-6 h-6 text-white" />
             </div>
@@ -1670,7 +1670,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
               <Cloud className="w-4.5 h-4.5 text-white" />
