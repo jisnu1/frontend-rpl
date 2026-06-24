@@ -44,7 +44,7 @@ export default function UpgradeModal({
   }, [isOpen]);
 
   useEffect(() => {
-    const snapSrcUrl = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    const snapSrcUrl = 'https://app.midtrans.com/snap/snap.js';
     const myClientKey = 'Mid-client-nzZhSNcNnhVgB2WW';
     
     const existingScript = document.querySelector(`script[src="${snapSrcUrl}"]`);
