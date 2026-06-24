@@ -47,9 +47,9 @@ export default function UpgradeModal({
     const snapSrcUrl = 'https://app.sandbox.midtrans.com/snap/snap.js';
     const myClientKey = 'Mid-client-nzZhSNcNnhVgB2WW';
     
-    let script = document.querySelector(`script[src="${snapSrcUrl}"]`);
-    if (!script) {
-      script = document.createElement('script');
+    const existingScript = document.querySelector(`script[src="${snapSrcUrl}"]`);
+    if (!existingScript) {
+      const script = document.createElement('script');
       script.src = snapSrcUrl;
       script.setAttribute('data-client-key', myClientKey);
       document.body.appendChild(script);
