@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Loader2, Sparkles, X, BookOpen, User as UserIcon } from 'lucide-react';
-import { requestSubscriptionUpgrade, fetchMySubscriptionRequest, fetchUserProfile } from '../../api/auth';
+import { Check, Loader2, Sparkles, X, BookOpen, User as UserIcon, CreditCard } from 'lucide-react';
+import { requestSubscriptionUpgrade, fetchMySubscriptionRequest, fetchUserProfile, cancelSubscriptionRequest } from '../../api/auth';
 import { sendAcademicOtp, verifyAcademicOtp } from '../../api/academicAuth';
 import { SubscriptionRequest } from '../../types/auth.types';
 import { useAuth } from '../../context/AuthContext';
@@ -42,6 +42,19 @@ export default function UpgradeModal({
       loadPendingRequest();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const snapSrcUrl = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    const myClientKey = 'Mid-client-Mv227tkUBoVcye1Y';
+    
+    let script = document.querySelector(`script[src="${snapSrcUrl}"]`);
+    if (!script) {
+      script = document.createElement('script');
+      script.src = snapSrcUrl;
+      script.setAttribute('data-client-key', myClientKey);
+      document.body.appendChild(script);
+    }
+  }, []);
 
   const loadPendingRequest = async () => {
     setLoading(true);
@@ -147,6 +160,53 @@ export default function UpgradeModal({
     } finally {
       setActionLoading(null);
     }
+  };
+
+  const handleCancelPayment = async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await cancelSubscriptionRequest();
+      setInvoiceUrl(null);
+      setPendingRequest(null);
+      await loadPendingRequest();
+    } catch (err: any) {
+      setErrorMsg("Gagal membatalkan tagihan pembayaran. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLaunchSnap = () => {
+    if (!pendingRequest || !pendingRequest.xenditInvoiceId) {
+      setErrorMsg("Token pembayaran tidak ditemukan. Silakan hubungi admin.");
+      return;
+    }
+    
+    const snapToken = pendingRequest.xenditInvoiceId;
+    
+    if (!(window as any).snap) {
+      setErrorMsg("SDK Pembayaran Midtrans belum termuat. Silakan tunggu sebentar atau refresh halaman.");
+      return;
+    }
+
+    (window as any).snap.pay(snapToken, {
+      onSuccess: async (result: any) => {
+        setLoading(true);
+        await loadPendingRequest();
+        if (onSuccess) onSuccess();
+      },
+      onPending: async (result: any) => {
+        setLoading(true);
+        await loadPendingRequest();
+      },
+      onError: (result: any) => {
+        setErrorMsg("Proses pembayaran gagal atau dibatalkan oleh sistem.");
+      },
+      onClose: () => {
+        loadPendingRequest();
+      }
+    });
   };
 
   if (!isOpen) return null;
@@ -271,36 +331,67 @@ export default function UpgradeModal({
               <Loader2 className="w-10 h-10 text-primary animate-spin" />
             </div>
           ) : invoiceUrl ? (
-            <div className="space-y-4">
-              <div className="w-full h-[500px] border border-slate-200 rounded-2xl overflow-hidden shadow-sm relative">
-                <iframe
-                  src={invoiceUrl}
-                  className="w-full h-full border-0"
-                  title="Pembayaran Midtrans"
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <button
-                  onClick={() => {
-                    setInvoiceUrl(null);
-                    loadPendingRequest();
-                  }}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl text-sm transition-all cursor-pointer"
-                >
-                  Kembali ke Pilihan Paket
-                </button>
-                <button
-                  onClick={async () => {
-                    setLoading(true);
-                    await loadPendingRequest();
-                    if (onSuccess) onSuccess();
-                  }}
-                  className="flex-1 py-3 bg-primary hover:bg-primary-dark text-white font-black rounded-xl text-sm transition-all shadow-md shadow-primary/15 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>Cek Status Pembayaran</span>
-                </button>
-              </div>
-            </div>
+            (() => {
+              const requestedPlan = plans.find(p => p.id === pendingRequest?.requestedTier);
+              const planName = requestedPlan?.name || (pendingRequest?.requestedTier === 'PREMIUM_INDIVIDUAL' ? 'Premium Individual' : 'Premium Academic');
+              const amount = pendingRequest?.amount || (pendingRequest?.requestedTier === 'PREMIUM_INDIVIDUAL' ? 20000 : 15000);
+
+              return (
+                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 text-center space-y-6 max-w-lg mx-auto shadow-sm my-4">
+                  <div className="mx-auto w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 border border-amber-100 shadow-inner">
+                    <CreditCard className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Pembayaran Menunggu Penyelesaian</h3>
+                    <p className="text-xs text-slate-500 font-bold mt-1.5">
+                      Anda memiliki transaksi upgrade aktif untuk paket <span className="text-slate-800">{planName}</span>
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white rounded-2xl p-5 border border-slate-150 text-left space-y-3 shadow-sm">
+                    <div className="flex justify-between text-[10px] font-black text-slate-400 tracking-wider">
+                      <span>METODE PEMBAYARAN</span>
+                      <span>MIDTRANS SANDBOX</span>
+                    </div>
+                    <div className="border-t border-slate-100 my-2"></div>
+                    <div className="flex justify-between items-center text-sm font-bold text-slate-600">
+                      <span>Total Tagihan:</span>
+                      <span className="text-lg font-black text-primary">
+                        Rp {amount.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 pt-2">
+                    <button
+                      onClick={handleLaunchSnap}
+                      className="w-full py-3.5 bg-primary hover:bg-primary-dark text-white font-black rounded-xl text-sm transition-all shadow-md shadow-primary/15 cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+                    >
+                      Bayar Sekarang (Midtrans)
+                    </button>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleCancelPayment}
+                        className="flex-1 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-black rounded-xl text-xs transition-all cursor-pointer"
+                      >
+                        Batalkan & Pilih Paket Lain
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setLoading(true);
+                          await loadPendingRequest();
+                          if (onSuccess) onSuccess();
+                        }}
+                        className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-black rounded-xl text-xs transition-all cursor-pointer"
+                      >
+                        Cek Status
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
           ) : (
             <div className="grid gap-6 md:grid-cols-3">
               {plans.map((plan) => {

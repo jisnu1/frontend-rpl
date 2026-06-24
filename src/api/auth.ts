@@ -76,3 +76,7 @@ export async function fetchMySubscriptionRequest(): Promise<SubscriptionRequest 
   return response.data;
 }
 
+export async function cancelSubscriptionRequest(): Promise<void> {
+  await apiClient.delete('/users/me/subscription-request');
+}
+
