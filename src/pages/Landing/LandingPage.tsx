@@ -215,7 +215,7 @@ export default function LandingPage() {
       } else if (lower.includes('metodologi') || lower.includes('cara') || lower.includes('sistem')) {
          aiReply = "Metodologi evaluasi sistem Horizon Cloud meliputi pengujian throughput migrasi data, analisis token rate-limiting, isolasi folder pengguna pada database R2DBC, serta enkripsi SSL/TLS transit end-to-end.";
       } else if (lower.includes('harga') || lower.includes('biaya') || lower.includes('paket')) {
-         aiReply = "Horizon Cloud menawarkan 3 paket: Freemium (Gratis, 2 Workspaces, 1 GB Storage VPS), Academic (Rp 15.000/bln, 15 Workspaces, 10 GB Storage), dan Premium Individual (Rp 20.000/bln, Unlimited Workspaces, 15 GB Storage).";
+         aiReply = "Horizon Cloud menawarkan 3 paket: Freemium (Gratis, 2 Workspaces, 1 GB Storage VPS), Academic (Rp 10.000/bln, 15 Workspaces, 10 GB Storage), dan Premium Individual (Rp 15.000/bln, Unlimited Workspaces, 15 GB Storage).";
       }
       
       setAiChatMessages(prev => [...prev, { sender: 'ai', text: aiReply }]);
@@ -1529,8 +1529,8 @@ export default function LandingPage() {
                   <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wide">Rekomendasi Paket Langganan:</span>
                   <span className="text-sm font-black text-slate-800">
                     {recommendedPlan === 'FREEMIUM' && 'Freemium (Gratis Selamanya)'}
-                    {recommendedPlan === 'ACADEMIC' && 'Premium Academic (Rp 15.000 / bulan)'}
-                    {recommendedPlan === 'PREMIUM' && 'Premium Individual (Rp 20.000 / bulan)'}
+                    {recommendedPlan === 'ACADEMIC' && 'Premium Academic (Rp 10.000 / bulan)'}
+                    {recommendedPlan === 'PREMIUM' && 'Premium Individual (Rp 15.000 / bulan)'}
                   </span>
                 </div>
                 <a
@@ -1673,14 +1673,14 @@ export default function LandingPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black text-primary uppercase tracking-widest">Klaim Mahasiswa</span>
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-50 text-primary border border-blue-200 uppercase tracking-wide">Hemat 40%</span>
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-blue-50 text-primary border border-blue-200 uppercase tracking-wide">Hemat 50%</span>
                     </div>
                     <h3 className="text-xl font-black text-slate-900 mt-1">Premium Academic</h3>
                     <div className="flex items-baseline gap-1 mt-4">
-                      <span className="text-3xl font-extrabold text-slate-900 tracking-tight">Rp 15.000</span>
+                      <span className="text-3xl font-extrabold text-slate-900 tracking-tight">Rp 10.000</span>
                       <span className="text-xs text-slate-400 font-bold">/ bulan</span>
                     </div>
-                    <span className="text-[10px] font-semibold text-slate-400 block mt-1">Harga normal: Rp 25.000</span>
+                    <span className="text-[10px] font-semibold text-slate-400 block mt-1">Harga normal: Rp 20.000</span>
                   </div>
 
                   <p className="text-xs text-slate-400 font-bold leading-relaxed border-t border-slate-100 pt-4">
@@ -1746,11 +1746,11 @@ export default function LandingPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black text-amber-650 uppercase tracking-widest">Kapasitas Maksimal</span>
-                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wide">Hemat 33%</span>
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 uppercase tracking-wide">Hemat 50%</span>
                     </div>
                     <h3 className="text-xl font-black text-slate-900 mt-1">Premium Individual</h3>
                     <div className="flex items-baseline gap-1 mt-4">
-                      <span className="text-3xl font-extrabold text-slate-900 tracking-tight">Rp 20.000</span>
+                      <span className="text-3xl font-extrabold text-slate-900 tracking-tight">Rp 15.000</span>
                       <span className="text-xs text-slate-400 font-bold">/ bulan</span>
                     </div>
                     <span className="text-[10px] font-semibold text-slate-400 block mt-1">Harga normal: Rp 30.000</span>
