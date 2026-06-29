@@ -240,9 +240,9 @@ export default function UpgradeModal({
       id: 'PREMIUM_INDIVIDUAL',
       name: 'Premium Individual',
       icon: Sparkles,
-      price: 'Rp 20.000 / bulan',
+      price: 'Rp 15.000 / bulan',
       originalPrice: 'Rp 30.000',
-      discountPercentage: 'Hemat 33%',
+      discountPercentage: 'Hemat 50%',
       color: 'amber',
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-200 shadow-sm shadow-amber-500/5',
       features: [
@@ -265,9 +265,9 @@ export default function UpgradeModal({
       id: 'PREMIUM_ACADEMIC',
       name: 'Premium Academic',
       icon: BookOpen,
-      price: 'Rp 15.000 / bulan',
-      originalPrice: 'Rp 25.000',
-      discountPercentage: 'Hemat 40%',
+      price: 'Rp 10.000 / bulan',
+      originalPrice: 'Rp 20.000',
+      discountPercentage: 'Hemat 50%',
       color: 'cyan',
       badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200 shadow-sm shadow-cyan-500/5',
       features: [
@@ -334,7 +334,7 @@ export default function UpgradeModal({
             (() => {
               const requestedPlan = plans.find(p => p.id === pendingRequest?.requestedTier);
               const planName = requestedPlan?.name || (pendingRequest?.requestedTier === 'PREMIUM_INDIVIDUAL' ? 'Premium Individual' : 'Premium Academic');
-              const amount = pendingRequest?.amount || (pendingRequest?.requestedTier === 'PREMIUM_INDIVIDUAL' ? 20000 : 15000);
+              const amount = pendingRequest?.amount || (pendingRequest?.requestedTier === 'PREMIUM_INDIVIDUAL' ? 15000 : 10000);
 
               return (
                 <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 text-center space-y-6 max-w-lg mx-auto shadow-sm my-4">
