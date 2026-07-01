@@ -102,13 +102,13 @@ function ActivityItem({ act }: { act: BackgroundActivity }) {
 
 export default function BackgroundActivityContainer() {
   const { activities } = useActivity();
-  const uploadActivities = activities.filter(act => act.type === 'upload');
+  const visibleActivities = activities.filter(act => act.type === 'upload' || act.type === 'download');
 
-  if (uploadActivities.length === 0) return null;
+  if (visibleActivities.length === 0) return null;
 
   return (
     <div className="fixed top-24 right-6 z-[9998] flex flex-col gap-3 max-h-[calc(100vh-10rem)] overflow-y-auto custom-scrollbar pointer-events-auto">
-      {uploadActivities.map((act) => (
+      {visibleActivities.map((act) => (
         <ActivityItem key={act.id} act={act} />
       ))}
     </div>

@@ -125,7 +125,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '', onStora
   });
 
   const { error: toastError, success: toastSuccess } = useToast();
-  const { downloadFile } = useActivity();
+  const { downloadFile, activities } = useActivity();
 
   const getFolderProvider = (folder: DashboardFolder | null) => {
     if (!folder) return 'STORAGE_NODE';
@@ -880,6 +880,7 @@ export default function Dashboard({ uploadTrigger = 0, searchQuery = '', onStora
             onShareFile={setActiveShareFile}
             onDeleteFile={setConfirmDeleteFile}
             onPreviewFile={setActivePreviewFile}
+            activities={activities}
           />
         </>
       )}

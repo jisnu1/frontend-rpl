@@ -12,6 +12,7 @@ import FileIcon from '../../../components/ui/FileIcon';
 import Card from '../../../components/ui/Card';
 
 import { DashboardFolder, DashboardFile } from '../Dashboard';
+import { BackgroundActivity } from '../../../context/ActivityContext';
 
 interface FileBrowserProps {
   isLoading: boolean;
@@ -33,6 +34,7 @@ interface FileBrowserProps {
   onShareFile: (file: DashboardFile) => void;
   onDeleteFile: (file: DashboardFile) => void;
   onPreviewFile: (file: DashboardFile) => void;
+  activities?: BackgroundActivity[];
 }
 
 export default function FileBrowser({
@@ -54,7 +56,8 @@ export default function FileBrowser({
   onDownloadFile,
   onShareFile,
   onDeleteFile,
-  onPreviewFile
+  onPreviewFile,
+  activities
 }: FileBrowserProps) {
   const isEmpty = !isLoading && filteredFiles.length === 0 && filteredFolders.length === 0;
 
@@ -278,20 +281,26 @@ export default function FileBrowser({
                         const ext = getFileExtension(file.originalFileName);
                         const isPdf = ext.toLowerCase() === 'pdf';
                         const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
+                        const uploadAct = activities?.find(
+                          (act) => act.type === 'upload' && act.status === 'running' && act.name === file.originalFileName
+                        );
+                        const isUploading = !!uploadAct;
+                        const progress = uploadAct?.progress || 0;
 
                         return (
                           <tr 
                             key={file.id} 
-                            draggable={activeTab !== 'all'}
-                            onDragStart={activeTab !== 'all' ? (e) => onDragStart(e, file.id, 'FILE', providerStr) : undefined}
+                            draggable={activeTab !== 'all' && !isUploading}
+                            onDragStart={activeTab !== 'all' && !isUploading ? (e) => onDragStart(e, file.id, 'FILE', providerStr) : undefined}
                             onClick={(e) => {
+                              if (isUploading) return;
                               const target = e.target as HTMLElement;
                               if (target.closest('button') || target.closest('a')) {
                                 return;
                               }
                               onPreviewFile(file);
                             }}
-                            className="group hover:bg-slate-50/40 transition-colors cursor-pointer select-none"
+                            className={`group hover:bg-slate-50/40 transition-colors select-none ${isUploading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
                           >
                             {/* Nama */}
                             <td className="px-4 md:px-8 py-4 md:py-5">
@@ -327,38 +336,47 @@ export default function FileBrowser({
                             </td>
 
                             <td className="pl-1 pr-3 md:pl-2 md:pr-6 py-4 md:py-5" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex justify-end gap-1 md:gap-2 shrink-0 relative z-10">
-                                 <button
-                                   onClick={(e) => {
-                                       e.stopPropagation();
-                                       onDownloadFile(file);
-                                   }}
-                                  className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
-                                  title="Unduh Berkas"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onShareFile(file);
-                                  }}
-                                  className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
-                                  title="Bagikan Akses Berkas"
-                                >
-                                  <Share2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteFile(file);
-                                  }}
-                                  className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-55 transition-all cursor-pointer"
-                                  title="Hapus Berkas"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
+                              {isUploading ? (
+                                <div className="flex items-center justify-end gap-2 text-xs font-bold text-indigo-600">
+                                  <div className="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden hidden sm:block">
+                                    <div className="h-full bg-indigo-600 transition-all duration-150" style={{ width: `${progress}%` }} />
+                                  </div>
+                                  <span className="animate-pulse shrink-0">Mengunggah ({progress}%)</span>
+                                </div>
+                              ) : (
+                                <div className="flex justify-end gap-1 md:gap-2 shrink-0 relative z-10">
+                                   <button
+                                     onClick={(e) => {
+                                         e.stopPropagation();
+                                         onDownloadFile(file);
+                                     }}
+                                    className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
+                                    title="Unduh Berkas"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onShareFile(file);
+                                    }}
+                                    className="flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100/70 transition-all cursor-pointer"
+                                    title="Bagikan Akses Berkas"
+                                  >
+                                    <Share2 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDeleteFile(file);
+                                    }}
+                                    className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-55 transition-all cursor-pointer"
+                                    title="Hapus Berkas"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );
@@ -389,11 +407,20 @@ export default function FileBrowser({
                   filteredFiles.map((file) => {
                     const ext = getFileExtension(file.originalFileName);
                     const isPdf = ext.toLowerCase() === 'pdf';
+                    const uploadAct = activities?.find(
+                      (act) => act.type === 'upload' && act.status === 'running' && act.name === file.originalFileName
+                    );
+                    const isUploading = !!uploadAct;
+                    const progress = uploadAct?.progress || 0;
+
                     return (
                       <div
                         key={file.id}
-                        onClick={() => onPreviewFile(file)}
-                        className="flex items-center justify-between p-3 hover:bg-slate-50/40 active:bg-slate-50 transition-all select-none cursor-pointer"
+                        onClick={() => {
+                          if (isUploading) return;
+                          onPreviewFile(file);
+                        }}
+                        className={`flex items-center justify-between p-3 hover:bg-slate-50/40 active:bg-slate-50 transition-all select-none ${isUploading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <FileIcon type={ext} className="w-5 h-5 shrink-0" />
@@ -401,36 +428,40 @@ export default function FileBrowser({
                             <p className="text-xs font-bold text-slate-800 truncate pr-2 max-w-[180px]" title={file.originalFileName}>
                               {file.originalFileName}
                             </p>
-                            <p className="text-[9px] text-slate-450 font-semibold mt-0.5">
+                            <p className="text-[9px] text-slate-455 font-semibold mt-0.5">
                               {formatSize(file.size)} • {file.providerLabel || (file.provider === 'STORAGE_NODE' ? 'Local' : 'GDrive')}
                             </p>
                           </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-1 shrink-0 animate-fadeIn" onClick={e => e.stopPropagation()}>
-                           <button
-                             onClick={() => onDownloadFile(file)}
-                            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                            title="Download"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onShareFile(file)}
-                            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                            title="Bagikan"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onDeleteFile(file)}
-                            className="p-2 text-red-500 hover:bg-red-55 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {isUploading ? (
+                          <span className="text-[10px] font-bold text-indigo-600 animate-pulse shrink-0">Mengunggah ({progress}%)</span>
+                        ) : (
+                          <div className="flex items-center gap-1 shrink-0 animate-fadeIn" onClick={e => e.stopPropagation()}>
+                             <button
+                               onClick={() => onDownloadFile(file)}
+                              className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                              title="Download"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => onShareFile(file)}
+                              className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                              title="Bagikan"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => onDeleteFile(file)}
+                              className="p-2 text-red-500 hover:bg-red-55 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -468,20 +499,26 @@ export default function FileBrowser({
                     const ext = getFileExtension(file.originalFileName);
                     const isPdf = ext.toLowerCase() === 'pdf';
                     const providerStr = file.provider === 'STORAGE_NODE' ? 'LOCAL' : 'GOOGLE_DRIVE';
+                    const uploadAct = activities?.find(
+                      (act) => act.type === 'upload' && act.status === 'running' && act.name === file.originalFileName
+                    );
+                    const isUploading = !!uploadAct;
+                    const progress = uploadAct?.progress || 0;
 
                     return (
                       <Card 
                         key={file.id} 
-                        draggable={activeTab !== 'all'}
-                        onDragStart={activeTab !== 'all' ? (e) => onDragStart(e, file.id, 'FILE', providerStr) : undefined}
+                        draggable={activeTab !== 'all' && !isUploading}
+                        onDragStart={activeTab !== 'all' && !isUploading ? (e) => onDragStart(e, file.id, 'FILE', providerStr) : undefined}
                         onClick={(e) => {
+                          if (isUploading) return;
                           const target = e.target as HTMLElement;
                           if (target.closest('button') || target.closest('a')) {
                             return;
                           }
                           onPreviewFile(file);
                         }}
-                        className="p-4 sm:p-5 flex flex-col gap-4 group cursor-pointer hover:shadow-md hover:border-slate-350 transition-all active:scale-[0.98] select-none"
+                        className={`p-4 sm:p-5 flex flex-col gap-4 group transition-all select-none ${isUploading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer hover:shadow-md hover:border-slate-350 active:scale-[0.98]'}`}
                       >
                         
                         {/* Header Kartu */}
@@ -507,44 +544,53 @@ export default function FileBrowser({
                         </div>
 
                         {/* Footer & Aksi */}
-                        <div 
-                          className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-auto"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="text-[10px] sm:text-xs font-bold text-slate-500">{formatSize(file.size)}</span>
-                          <div className="flex gap-0.5 sm:gap-1 w-full sm:w-auto justify-end">
-                             <button
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 onDownloadFile(file);
-                               }}
-                              className="p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
-                              title="Download"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onShareFile(file);
-                              }}
-                              className="flex p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
-                              title="Bagikan"
-                            >
-                              <Share2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteFile(file);
-                              }}
-                              className="p-1 rounded-lg text-red-500 hover:bg-red-55 transition-colors cursor-pointer shrink-0"
-                              title="Hapus"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                        {isUploading ? (
+                          <div className="border-t border-slate-100 pt-3 flex items-center justify-between w-full mt-auto" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden mr-3">
+                              <div className="h-full bg-indigo-600 transition-all duration-150" style={{ width: `${progress}%` }} />
+                            </div>
+                            <span className="text-[10px] font-bold text-indigo-600 animate-pulse shrink-0">Mengunggah ({progress}%)</span>
                           </div>
-                        </div>
+                        ) : (
+                          <div 
+                            className="border-t border-slate-100 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-auto"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="text-[10px] sm:text-xs font-bold text-slate-500">{formatSize(file.size)}</span>
+                            <div className="flex gap-0.5 sm:gap-1 w-full sm:w-auto justify-end">
+                               <button
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   onDownloadFile(file);
+                                 }}
+                                className="p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
+                                title="Download"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onShareFile(file);
+                                }}
+                                className="flex p-1 rounded-lg text-slate-500 hover:bg-slate-100/70 transition-colors border border-transparent hover:border-slate-100 cursor-pointer shrink-0"
+                                title="Bagikan"
+                              >
+                                <Share2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeleteFile(file);
+                                }}
+                                className="p-1 rounded-lg text-red-500 hover:bg-red-55 transition-colors cursor-pointer shrink-0"
+                                title="Hapus"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                       </Card>
                     );
