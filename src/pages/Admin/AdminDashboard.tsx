@@ -24,6 +24,9 @@ import {
   rejectSubscriptionRequest,
   directUpdateUserSubscription,
   deleteUser,
+  downloadUsersCsv,
+  downloadActivitiesCsv,
+  downloadAiTokenLogsCsv,
   AppSetting,
   AdminUserResponse,
   UserActivity,
@@ -306,6 +309,60 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDownloadUsersCsv = async () => {
+    try {
+      showMessage('Sedang mengunduh CSV...', 'success');
+      const blob = await downloadUsersCsv();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `users_export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      showMessage('Gagal mengunduh CSV user.', 'error');
+    }
+  };
+
+  const handleDownloadActivitiesCsv = async () => {
+    try {
+      showMessage('Sedang mengunduh CSV...', 'success');
+      const blob = await downloadActivitiesCsv();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `activities_export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      showMessage('Gagal mengunduh CSV log aktivitas.', 'error');
+    }
+  };
+
+  const handleDownloadAiTokenLogsCsv = async () => {
+    try {
+      showMessage('Sedang mengunduh CSV...', 'success');
+      const blob = await downloadAiTokenLogsCsv();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ai_token_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      showMessage('Gagal mengunduh CSV log token AI.', 'error');
+    }
+  };
+
   // Formatting helpers
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
@@ -405,7 +462,7 @@ export default function AdminDashboard() {
         )}
 
         {!loading && activeTab === 'stats' && (
-          <StatsTab tokenStats={tokenStats} formatDate={formatDate} />
+          <StatsTab tokenStats={tokenStats} formatDate={formatDate} onDownloadCsv={handleDownloadAiTokenLogsCsv} />
         )}
 
         {!loading && activeTab === 'users' && (
@@ -421,6 +478,7 @@ export default function AdminDashboard() {
             onDeleteUser={handleDeleteUser}
             onApproveRequest={handleApproveRequest}
             onRejectRequest={handleRejectRequest}
+            onDownloadCsv={handleDownloadUsersCsv}
           />
         )}
 
@@ -431,6 +489,7 @@ export default function AdminDashboard() {
             onPrevPage={() => setLogPage(prev => Math.max(0, prev - 1))}
             onNextPage={() => setLogPage(prev => prev + 1)}
             formatDate={formatDate}
+            onDownloadCsv={handleDownloadActivitiesCsv}
           />
         )}
 

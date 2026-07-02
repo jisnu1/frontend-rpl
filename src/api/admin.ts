@@ -121,3 +121,24 @@ export async function directUpdateUserSubscription(userId: number, tier: string)
 export async function deleteUser(userId: number): Promise<void> {
   await apiClient.delete(`/users/${userId}`);
 }
+
+export async function downloadUsersCsv(): Promise<Blob> {
+  const response = await apiClient.get('/admin/users/export', {
+    responseType: 'blob'
+  });
+  return response.data;
+}
+
+export async function downloadActivitiesCsv(): Promise<Blob> {
+  const response = await apiClient.get('/admin/activities/export', {
+    responseType: 'blob'
+  });
+  return response.data;
+}
+
+export async function downloadAiTokenLogsCsv(): Promise<Blob> {
+  const response = await apiClient.get('/admin/ai/token-logs/export', {
+    responseType: 'blob'
+  });
+  return response.data;
+}

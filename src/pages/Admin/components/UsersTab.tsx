@@ -1,4 +1,5 @@
 import React from 'react';
+import { Download } from 'lucide-react';
 import UsersTable from './UsersTable';
 import { AdminUserResponse } from '../../../api/admin';
 import { SubscriptionRequest } from '../../../types/auth.types';
@@ -15,6 +16,7 @@ interface UsersTabProps {
   onDeleteUser: (user: AdminUserResponse) => void;
   onApproveRequest: (id: number) => void;
   onRejectRequest: (id: number) => void;
+  onDownloadCsv: () => void;
 }
 
 export default function UsersTab({
@@ -28,7 +30,8 @@ export default function UsersTab({
   onToggleStatus,
   onDeleteUser,
   onApproveRequest,
-  onRejectRequest
+  onRejectRequest,
+  onDownloadCsv
 }: UsersTabProps) {
   return (
     <div className="space-y-6 flex-1">
@@ -78,6 +81,18 @@ export default function UsersTab({
           </div>
         </div>
       )}
+
+      {/* Users List Header & Download */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 className="text-sm font-bold text-slate-800">Manajemen User</h3>
+        <button
+          onClick={onDownloadCsv}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition-all"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Download CSV</span>
+        </button>
+      </div>
 
       <UsersTable
         users={users}
